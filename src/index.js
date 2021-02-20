@@ -1,10 +1,9 @@
 import Color from 'color';
 import EventEmitter from 'events';
 
-const BLOCK_HEIGHT = 20;
-const FONT_SIZE = 13;
+const DEFAULT_NODE_HEIGHT = 15;
 const ALPHA = 0.7;
-const FONT = `${FONT_SIZE}px consolas,"Liberation Mono",courier,monospace`;
+const DEFAULT_FONT = `12px consolas,"Liberation Mono",courier,monospace`;
 
 const defaultColor = Color.hsl(180, 30, 70);
 
@@ -20,26 +19,6 @@ const walk = (treeList, cb, level = 0) => {
 
 /** Class representing a replica of Chrome DevTools Performance flame chart. */
 class FlameChart extends EventEmitter {
-    ctx = null;
-    node = null;
-
-    timelineStart = 0;
-    timelineEnd = 0;
-    timelineDimension = 0;
-    timelineDelta = 0;
-    headerHeight = BLOCK_HEIGHT + 2;
-    charWidth = 0;
-    charHeight = 0;
-    positionY = 0;
-    positionX = 0;
-    zoom = 0;
-    mouse = {
-        x: 0,
-        y: 0
-    };
-    colors = {};
-    lastRandomColor = defaultColor;
-
     /**
      * Create a instance
      * @param {HTMLCanvasElement} canvas - target element
@@ -51,12 +30,14 @@ class FlameChart extends EventEmitter {
      * @param {number} data[].duration - node duration
      * @param {string} data[].type - node type (use it for custom colorize)
      * @param {Object[]} data[].children - node children (same structure as for node)
-     * @param {Object.<string, string>} colors - color dictionary, where key is the node type and value is the color in any format
-     * @param {Object[]} timestamps - badges for timestamps
+     * @param {Object.<string, string>} [colors] - color dictionary, where key is the node type and value is the color in any format
+     * @param {Object[]} [timestamps] - badges for timestamps
      * @param {string} timestamps[].shortName - short name of badge, which used for the main view
      * @param {string} timestamps[].fullName - full name of badge, which used for the tooltip
      * @param {string} timestamps[].color - color of badge in any format
      * @param {string} timestamps[].timestamp - time position of badge
+     * @param {string} [font=DEFAULT_FONT] - font
+     * @param {number} [nodeHeight=DEFAULT_NODE_HEIGHT] - node height in px
      * */
     constructor({
                     canvas,
@@ -64,51 +45,62 @@ class FlameChart extends EventEmitter {
                     height = canvas.height,
                     data,
                     colors = {},
-                    timestamps = [
-                        {
-                            shortName: 'DCL',
-                            fullName: 'DomContentLoaded',
-                            timestamp: 2000,
-                            color: 'red'
-                        },
-                        {
-                            shortName: 'L',
-                            fullName: 'Load',
-                            timestamp: 2050,
-                            color: 'blue'
-                        }
-                    ]
+                    timestamps = [],
+                    font = DEFAULT_FONT,
+                    nodeHeight = DEFAULT_NODE_HEIGHT
                 }) {
         super();
 
+        this.timelineStart = 0;
+        this.timelineEnd = 0;
+        this.timelineDimension = 0;
+        this.timelineDelta = 0;
+        this.charWidth = 0;
+        this.charHeight = 0;
+        this.positionY = 0;
+        this.positionX = 0;
+        this.zoom = 0;
+        this.mouse = {
+            x: 0,
+            y: 0
+        };
+        this.colors = {};
+        this.lastRandomColor = defaultColor;
+
+        this.font = font;
+        this.nodeHeight = nodeHeight;
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
-        this.width = width;
-        this.height = height;
-        this.data = data;
         this.userColors = colors;
-        this.timestamps = timestamps;
+
+        this.setTimestamps(timestamps, false);
+        this.setData(data, false);
+
+        this.handleMouseWheel = this.handleMouseWheel.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleMouseClick = this.handleMouseClick.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
 
         this.init();
     }
 
-    init = () => {
-        const { charWidth, charHeight } = this.calcFontSize();
-
-        this.calcMinMax();
-
-        this.blockPadding = BLOCK_HEIGHT - charHeight;
-        this.charWidth = charWidth;
-        this.charHeight = charHeight;
-
+    init() {
         if (this.ctx) {
-            this.ctx.font = FONT;
+            const metrics = this.ctx.measureText('w');
+            const fontHeight = metrics.fontBoundingBoxAscent;
 
-            this.initialZoom = this.width / (this.max - this.min);
-            this.zoom = this.initialZoom;
-            this.positionX = this.min;
+            this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight + metrics.fontBoundingBoxDescent)) / 2 + metrics.fontBoundingBoxDescent);
+            this.charWidth = metrics.width;
+            this.charHeight = fontHeight + metrics.fontBoundingBoxDescent;
+            this.headerHeight = this.nodeHeight + this.charHeight + this.blockPadding;
 
+            this.ctx.font = this.font;
+
+            this.initView();
             this.initListeners();
+
             this.render();
         }
     }
@@ -117,7 +109,50 @@ class FlameChart extends EventEmitter {
         this.removeListeners();
     }
 
-    initListeners = () => {
+    setData(data, update = true) {
+        this.data = data;
+
+        if (update) {
+            this.update();
+        }
+    }
+
+    setTimestamps(timestamps, update = true) {
+        this.timestamps = timestamps.map(({ color, ...rest }) => ({
+            ...rest,
+            color: new Color(color).alpha(ALPHA).rgb().toString()
+        }));
+
+        if (update) {
+            this.update();
+        }
+    }
+
+    update() {
+        this.calcView();
+        this.render();
+    }
+
+    calcView() {
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+
+        this.calcMinMax();
+
+        this.initialZoom = this.width / (this.max - this.min);
+    }
+
+    resetView() {
+        this.zoom = this.initialZoom;
+        this.positionX = this.min;
+    }
+
+    initView() {
+        this.calcView();
+        this.resetView();
+    }
+
+    initListeners() {
         if (this.canvas) {
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
@@ -128,7 +163,7 @@ class FlameChart extends EventEmitter {
         }
     }
 
-    removeListeners = () => {
+    removeListeners() {
         if (this.canvas) {
             this.canvas.removeEventListener('wheel', this.handleMouseWheel);
             this.canvas.removeEventListener('mousedown', this.handleMouseDown);
@@ -139,52 +174,54 @@ class FlameChart extends EventEmitter {
         }
     }
 
-    handleMouseWheel = (e) => {
+    handleMouseWheel(e) {
         const { deltaY, deltaX } = e;
         e.preventDefault();
 
         const realView = this.calcRealView();
-        const zoomDelta = (deltaY / 1000) * this.zoom;
         const positionScrollDelta = deltaX / this.zoom;
+        let zoomDelta = (deltaY / 1000) * this.zoom;
 
-        if (this.checkMovePossibility(positionScrollDelta)) {
-            this.positionX += positionScrollDelta;
-        }
+        this.tryToChangePosition(positionScrollDelta);
 
-        if (this.zoom - zoomDelta >= this.initialZoom) {
+        zoomDelta = this.zoom - zoomDelta >= this.initialZoom ? zoomDelta : this.zoom - this.initialZoom
+
+        if (zoomDelta !== 0) {
             const proportion = this.mouse.x / this.width;
             const timeDelta = realView - (this.width / (this.zoom - zoomDelta));
             const positionDelta = timeDelta * proportion;
 
             this.zoom -= zoomDelta;
 
-            if (this.checkMovePossibility(positionDelta)) {
-                this.positionX += positionDelta;
-            } else if (this.positionX + positionDelta + realView >= this.max) {
-                this.positionX = this.max - realView;
-            }
-        }
+            this.tryToChangePosition(positionDelta);
 
-        this.render();
+            this.render();
+        }
     }
 
-    handleMouseDown = () => this.moveActive = true;
+    handleMouseDown() {
+        this.moveActive = true;
+    }
 
-    handleMouseUp = () => this.moveActive = false;
+    handleMouseUp() {
+        this.moveActive = false;
+    }
 
-    handleMouseClick = () => this.handleRegionHit(this.mouse.x, this.mouse.y)
+    handleMouseClick() {
+        this.handleRegionHit(this.mouse.x, this.mouse.y)
+    }
 
-    handleMouseMove = (e) => {
+    handleMouseMove(e) {
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.zoom;
 
-            if (this.checkMovePossibility(mouseDeltaX)) {
-                this.positionX += mouseDeltaX;
-            }
+            this.tryToChangePosition(mouseDeltaX)
 
-            if (this.positionY + mouseDeltaY > 0) {
+            if (this.positionY + mouseDeltaY >= 0) {
                 this.positionY += mouseDeltaY;
+            } else {
+                this.positionY = 0;
             }
 
             this.render();
@@ -194,15 +231,23 @@ class FlameChart extends EventEmitter {
         this.mouse.y = e.offsetY;
     }
 
-    checkMovePossibility = (positionDelta) => (
-        this.positionX + positionDelta + this.calcRealView() <= this.max && this.positionX + positionDelta >= this.min
-    )
+    tryToChangePosition(positionDelta) {
+        const realView = this.calcRealView();
 
-    calcRealView = () => {
+        if (this.positionX + positionDelta + realView <= this.max && this.positionX + positionDelta >= this.min) {
+            this.positionX += positionDelta;
+        } else if (this.positionX + positionDelta <= this.min) {
+            this.positionX = this.min;
+        } else if (this.positionX + positionDelta + realView >= this.max) {
+            this.positionX = this.max - realView;
+        }
+    }
+
+    calcRealView() {
         return this.width / this.zoom;
     }
 
-    calcTimeline = () => {
+    calcTimeline() {
         const timeWidth = this.max - this.min;
         const minPixelDelta = 90;
         const initialLinesCount = this.width / minPixelDelta;
@@ -219,7 +264,7 @@ class FlameChart extends EventEmitter {
         this.timelineDimension = numberFix > 0 ? numberFix : 0;
     }
 
-    calcMinMax = () => {
+    calcMinMax() {
         const { data, timestamps } = this;
 
         let isFirst = true;
@@ -239,27 +284,6 @@ class FlameChart extends EventEmitter {
 
         this.min = timestamps.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, min);
         this.max = timestamps.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, max);
-    }
-
-    calcFontSize = () => {
-        const div = document.createElement('div');
-
-        div.innerHTML = 'w';
-        div.style.font = FONT;
-        div.style.display = 'inline-block';
-        div.style.visibility = 'hidden';
-        div.style.position = 'absolute';
-
-        document.body.appendChild(div);
-
-        const result = {
-            charWidth: div.clientWidth,
-            charHeight: div.clientHeight,
-        };
-
-        document.body.removeChild(div);
-
-        return result;
     }
 
     clearHitRegions() {
@@ -288,7 +312,7 @@ class FlameChart extends EventEmitter {
         this.emit('select', node);
     }
 
-    getColor = (type) => {
+    getColor(category, type) {
         if (this.colors[type]) {
             return this.colors[type];
         } else if (this.userColors[type]) {
@@ -305,11 +329,13 @@ class FlameChart extends EventEmitter {
         }
     }
 
-    calcRect = (start, duration, level) => ({
-        x: this.timeToPosition(start),
-        y: (level * BLOCK_HEIGHT + level * 1) - this.positionY + this.headerHeight + this.charHeight,
-        w: duration * this.zoom
-    })
+    calcRect(start, duration, level) {
+        return {
+            x: this.timeToPosition(start),
+            y: (level * this.nodeHeight + level * 1) - this.positionY + this.headerHeight,
+            w: duration * this.zoom
+        }
+    }
 
     timeToPosition(time) {
         return time * this.zoom - this.positionX * this.zoom
@@ -324,9 +350,9 @@ class FlameChart extends EventEmitter {
 
             if (x + w > 0
                 && x < this.width
-                && y + BLOCK_HEIGHT > 0
+                && y + this.nodeHeight > 0
                 && y < this.height) {
-                this.addHitRegion(node, x, y, w, BLOCK_HEIGHT)
+                this.addHitRegion(node, x, y, w, this.nodeHeight)
                 this.renderRect(this.getColor(type), name, x, y, w);
 
                 if (this.selectedRegion && node === this.selectedRegion.node) {
@@ -338,16 +364,18 @@ class FlameChart extends EventEmitter {
         if (strokePosition) {
             const { x, y, w } = strokePosition;
 
-            this.renderStroke(x, y, w, BLOCK_HEIGHT);
+            this.renderStroke(x, y, w, this.nodeHeight);
         }
     }
 
     renderTimestamps() {
+        this.ctx.clearRect(0, 0, this.width, this.charHeight);
+
         this.timestamps.slice()
             .sort((a, b) => a.timestamp - b.timestamp)
             .reduce((prevEnding, node) => {
                 const { timestamp, color, shortName } = node;
-                const { width } = ctx.measureText(shortName);
+                const { width } = this.ctx.measureText(shortName);
                 const fullWidth = width + this.blockPadding * 2;
                 const position = this.timeToPosition(timestamp);
                 const blockPosition = position > 0 ? prevEnding > position ? prevEnding : position : position;
@@ -369,7 +397,7 @@ class FlameChart extends EventEmitter {
             }, 0)
     }
 
-    forEachTime = (cb) => {
+    forEachTime(cb) {
         for (let i = this.timelineStart; i <= this.timelineEnd; i++) {
             const timePosition = i * this.timelineDelta + this.min;
             const pixelPosition = this.timeToPosition(timePosition.toFixed(this.timelineDimension));
@@ -378,21 +406,26 @@ class FlameChart extends EventEmitter {
         }
     }
 
-    renderLines() {
+    renderLines(start, height) {
+        this.ctx.fillStyle = 'rgb(126, 126, 126, 0.5)';
+
         this.forEachTime((pixelPosition) => {
-            this.ctx.fillStyle = 'rgb(126, 126, 126, 0.5)';
-            this.ctx.fillRect(pixelPosition, this.charHeight, 1, this.height - this.charHeight);
+            this.ctx.fillRect(pixelPosition, start, 1, height);
         });
     }
 
     renderTimes() {
         this.ctx.clearRect(0, 0, this.width, this.charHeight);
 
-        this.forEachTime((pixelPosition, timePosition) => {
-            this.ctx.fillStyle = 'black';
-            this.ctx.fillText(timePosition.toFixed(this.timelineDimension) + 'ms', pixelPosition + this.blockPadding, this.charHeight - 4);
+        this.ctx.fillStyle = 'black';
 
-            this.ctx.fillStyle = 'rgb(126,126,126, 0.5)';
+        this.forEachTime((pixelPosition, timePosition) => {
+            this.ctx.fillText(timePosition.toFixed(this.timelineDimension) + 'ms', pixelPosition + this.blockPadding, this.charHeight - 4);
+        });
+
+        this.ctx.fillStyle = 'rgb(126,126,126, 0.5)';
+
+        this.forEachTime((pixelPosition) => {
             this.ctx.fillRect(pixelPosition, 0, 1, this.charHeight);
         });
     }
@@ -403,9 +436,9 @@ class FlameChart extends EventEmitter {
         this.ctx.strokeRect(x, y, w, h);
     }
 
-    renderRect = (color, text, x, y, w) => {
+    renderRect(color, text, x, y, w) {
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(x, y, w, BLOCK_HEIGHT);
+        this.ctx.fillRect(x, y, w, this.nodeHeight);
 
         if (text) {
             const textMaxWidth = w - (this.blockPadding * 2 - (x < 0 ? x : 0));
@@ -424,7 +457,7 @@ class FlameChart extends EventEmitter {
 
                 if (text) {
                     this.ctx.fillStyle = 'black';
-                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + BLOCK_HEIGHT - this.blockPadding);
+                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
                 }
             }
         }
@@ -437,9 +470,13 @@ class FlameChart extends EventEmitter {
 
         this.calcTimeline();
 
-        this.renderLines();
-        this.renderTimestamps();
+        this.renderLines(0, this.height);
         this.renderChart();
+
+        this.ctx.clearRect(0, 0, this.width, this.headerHeight);
+        this.renderLines(0, this.headerHeight);
+
+        this.renderTimestamps();
         this.renderTimes();
     }
 }

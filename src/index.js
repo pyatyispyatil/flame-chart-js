@@ -194,9 +194,9 @@ class FlameChart extends EventEmitter {
             this.zoom -= zoomDelta;
 
             this.tryToChangePosition(positionDelta);
-
-            this.render();
         }
+
+        this.render();
     }
 
     handleMouseDown() {
@@ -464,20 +464,22 @@ class FlameChart extends EventEmitter {
     }
 
     render() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        requestAnimationFrame(() => {
+            this.ctx.clearRect(0, 0, this.width, this.height);
 
-        this.clearHitRegions();
+            this.clearHitRegions();
 
-        this.calcTimeline();
+            this.calcTimeline();
 
-        this.renderLines(0, this.height);
-        this.renderChart();
+            this.renderLines(0, this.height);
+            this.renderChart();
 
-        this.ctx.clearRect(0, 0, this.width, this.headerHeight);
-        this.renderLines(0, this.headerHeight);
+            this.ctx.clearRect(0, 0, this.width, this.headerHeight);
+            this.renderLines(0, this.headerHeight);
 
-        this.renderTimestamps();
-        this.renderTimes();
+            this.renderTimestamps();
+            this.renderTimes();
+        });
     }
 }
 

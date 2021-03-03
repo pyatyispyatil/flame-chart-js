@@ -3,6 +3,8 @@ import { generateRandomTree } from './../../src/test-data.js';
 
 const canvas = document.getElementById('root');
 
+const nodeView = document.getElementById('selected-node');
+
 const updateButton = document.getElementById('button');
 
 const startInput = document.getElementById('start');
@@ -50,6 +52,12 @@ const flameChart = new FlameChart({
     data: generateData(),
     timestamps,
     colors
+});
+
+flameChart.on('select', (node) => {
+    nodeView.innerHTML = node ? JSON.stringify({
+        ...node, children: undefined
+    }, null, '  ') : '';
 });
 
 window.addEventListener('resize', () => {

@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 
 const DEFAULT_NODE_HEIGHT = 15;
 const ALPHA = 0.7;
-const DEFAULT_FONT = `12px consolas,"Liberation Mono",courier,monospace`;
+const DEFAULT_FONT = `12px`;
 
 const defaultColor = Color.hsl(180, 30, 70);
 
@@ -15,6 +15,15 @@ const walk = (treeList, cb, level = 0) => {
             walk(child.children, cb, level + 1);
         }
     });
+}
+
+const debounce = (cb, delay) => {
+    let timeout;
+
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => cb(...args), delay);
+    }
 }
 
 /** Class representing a replica of Chrome DevTools Performance flame chart. */
@@ -66,6 +75,9 @@ class FlameChart extends EventEmitter {
         };
         this.colors = {};
         this.lastRandomColor = defaultColor;
+
+        this.selectedRegion = null;
+        this.hoveredRegion = null;
 
         this.font = font;
         this.nodeHeight = nodeHeight;
@@ -223,12 +235,18 @@ class FlameChart extends EventEmitter {
             } else {
                 this.positionY = 0;
             }
-
-            this.render();
         }
 
         this.mouse.x = e.offsetX;
         this.mouse.y = e.offsetY;
+
+        const prevHoveredRegion = this.hoveredRegion;
+
+        this.checkRegionHover();
+
+        if (this.moveActive || this.hoveredRegion || (prevHoveredRegion && !this.hoveredRegion)) {
+            this.render();
+        }
     }
 
     tryToChangePosition(positionDelta) {
@@ -297,9 +315,7 @@ class FlameChart extends EventEmitter {
     }
 
     handleRegionHit(mouseX, mouseY) {
-        this.selectedRegion = this.hitRegions.find(({ x, y, w, h }) => (
-            mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h
-        ));
+        this.selectedRegion = this.getHoveredRegion(mouseX, mouseY);
 
         this.render();
 
@@ -307,9 +323,17 @@ class FlameChart extends EventEmitter {
     }
 
     handleNodeSelect(node) {
-        console.log(node);
-
         this.emit('select', node);
+    }
+
+    checkRegionHover() {
+        this.hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+    }
+
+    getHoveredRegion(mouseX, mouseY) {
+        return this.hitRegions.find(({ x, y, w, h }) => (
+            mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h
+        ));
     }
 
     getColor(category, type) {
@@ -463,6 +487,60 @@ class FlameChart extends EventEmitter {
         }
     }
 
+    renderTooltip() {
+        if (this.hoveredRegion) {
+            const { node: { start, duration, children, name } } = this.hoveredRegion;
+            const mouseX = this.mouse.x + 10;
+            const mouseY = this.mouse.y + 10;
+
+            const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
+
+            const header = `${name}`;
+            const dur = `duration: ${duration.toFixed(2)} ms ${ children && children.length ? `(self ${selfTime.toFixed(2)} ms)` : ''}`;
+            const st = `start: ${start.toFixed(2)}`;
+
+            const maxWidth = [header, dur, st]
+                .map((text) => this.ctx.measureText(text))
+                .reduce((acc, {width}) => Math.max(acc, width), 0);
+            const fullWidth = maxWidth + this.blockPadding * 2;
+
+            this.ctx.shadowColor = 'black';
+            this.ctx.shadowBlur = 5;
+
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillRect(
+                mouseX,
+                mouseY,
+                fullWidth + this.blockPadding * 2,
+                this.charHeight * 3 + this.blockPadding * 2
+            );
+
+            this.ctx.shadowColor = null;
+            this.ctx.shadowBlur = null;
+
+            this.ctx.fillStyle = 'black';
+            this.ctx.fillText(
+                header,
+                mouseX + this.blockPadding,
+                mouseY + this.nodeHeight - this.blockPadding
+            );
+
+            this.ctx.fillStyle = '#688f45';
+
+            this.ctx.fillText(
+                dur,
+                mouseX + this.blockPadding,
+                mouseY + this.nodeHeight - this.blockPadding + this.charHeight + 2
+            );
+
+            this.ctx.fillText(
+                st,
+                mouseX + this.blockPadding,
+                mouseY + this.nodeHeight - this.blockPadding + this.charHeight * 2 + 4
+            );
+        }
+    }
+
     render() {
         requestAnimationFrame(() => {
             this.ctx.clearRect(0, 0, this.width, this.height);
@@ -479,6 +557,8 @@ class FlameChart extends EventEmitter {
 
             this.renderTimestamps();
             this.renderTimes();
+
+            this.renderTooltip();
         });
     }
 }

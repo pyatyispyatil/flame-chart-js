@@ -151,7 +151,11 @@ class FlameChart extends EventEmitter {
 
         this.calcMinMax();
 
-        this.initialZoom = this.width / (this.max - this.min);
+        if (this.max - this.min > 0) {
+            this.initialZoom = this.width / (this.max - this.min);
+        } else {
+            this.initialZoom = 1;
+        }
     }
 
     resetView() {
@@ -272,7 +276,7 @@ class FlameChart extends EventEmitter {
         const initialTimeLineDelta = timeWidth / initialLinesCount;
 
         const realView = this.calcRealView();
-        const proportion = realView / timeWidth;
+        const proportion = realView / (timeWidth || 1);
 
         this.timelineDelta = initialTimeLineDelta / Math.pow(2, Math.floor(Math.log2(1 / proportion)));
         this.timelineStart = Math.floor((this.positionX - this.min) / this.timelineDelta);
@@ -308,9 +312,9 @@ class FlameChart extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(node, x, y, w, h) {
+    addHitRegion(type, data, x, y, w, h) {
         this.hitRegions.push({
-            node, x, y, w, h
+            type, data, x, y, w, h
         })
     }
 
@@ -319,7 +323,9 @@ class FlameChart extends EventEmitter {
 
         this.render();
 
-        this.handleNodeSelect(this.selectedRegion && this.selectedRegion.node);
+        if (this.selectedRegion && this.selectedRegion.type === 'node') {
+            this.handleNodeSelect(this.selectedRegion && this.selectedRegion.data);
+        }
     }
 
     handleNodeSelect(node) {
@@ -336,7 +342,7 @@ class FlameChart extends EventEmitter {
         ));
     }
 
-    getColor(category, type) {
+    getColor(type) {
         if (this.colors[type]) {
             return this.colors[type];
         } else if (this.userColors[type]) {
@@ -346,7 +352,7 @@ class FlameChart extends EventEmitter {
 
             return this.colors[type];
         } else {
-            this.lastRandomColor = defaultColor.rotate(10);
+            this.lastRandomColor = this.lastRandomColor.rotate(10);
             this.colors[type] = this.lastRandomColor.alpha(ALPHA).rgb().toString();
 
             return this.colors[type];
@@ -357,7 +363,7 @@ class FlameChart extends EventEmitter {
         return {
             x: this.timeToPosition(start),
             y: (level * this.nodeHeight + level * 1) - this.positionY + this.headerHeight,
-            w: duration * this.zoom
+            w: (duration * this.zoom) - 1
         }
     }
 
@@ -376,10 +382,10 @@ class FlameChart extends EventEmitter {
                 && x < this.width
                 && y + this.nodeHeight > 0
                 && y < this.height) {
-                this.addHitRegion(node, x, y, w, this.nodeHeight)
+                this.addHitRegion('node', node, x, y, w, this.nodeHeight);
                 this.renderRect(this.getColor(type), name, x, y, w);
 
-                if (this.selectedRegion && node === this.selectedRegion.node) {
+                if (this.selectedRegion && node === this.selectedRegion.data) {
                     strokePosition = { x, y, w };
                 }
             }
@@ -402,7 +408,7 @@ class FlameChart extends EventEmitter {
                 const { width } = this.ctx.measureText(shortName);
                 const fullWidth = width + this.blockPadding * 2;
                 const position = this.timeToPosition(timestamp);
-                const blockPosition = position > 0 ? prevEnding > position ? prevEnding : position : position;
+                const blockPosition = this.calcTimestampBlockPosition(position, prevEnding, width);
 
                 this.ctx.strokeStyle = color;
                 this.ctx.beginPath();
@@ -417,8 +423,22 @@ class FlameChart extends EventEmitter {
                 this.ctx.fillStyle = 'black';
                 this.ctx.fillText(shortName, blockPosition + this.blockPadding, this.charHeight * 2);
 
+                this.addHitRegion('timestamp', node, blockPosition, this.charHeight, fullWidth, this.charHeight + this.blockPadding);
+
                 return blockPosition + fullWidth;
             }, 0)
+    }
+
+    calcTimestampBlockPosition(position, prevEnding) {
+        if (position > 0) {
+            if (prevEnding > position) {
+                return prevEnding;
+            } else {
+                return position;
+            }
+        } else {
+            return position;
+        }
     }
 
     forEachTime(cb) {
@@ -489,56 +509,83 @@ class FlameChart extends EventEmitter {
 
     renderTooltip() {
         if (this.hoveredRegion) {
-            const { node: { start, duration, children, name } } = this.hoveredRegion;
-            const mouseX = this.mouse.x + 10;
-            const mouseY = this.mouse.y + 10;
+            switch (this.hoveredRegion.type) {
+                case 'node':
+                    this.renderNodeTooltip();
+                    break;
+                case 'timestamp':
+                    this.renderTimestampTooltip();
+                    break;
+            }
+        }
+    }
+
+    renderTimestampTooltip() {
+        if (this.hoveredRegion) {
+            const { data: { fullName, timestamp } } = this.hoveredRegion;
+
+            const header = `${fullName}`;
+            const time = `${timestamp.toFixed(2)} ms`;
+
+            this.renderTooltipFromData(header, [time]);
+        }
+    }
+
+    renderNodeTooltip() {
+        if (this.hoveredRegion) {
+            const { data: { start, duration, children, name } } = this.hoveredRegion;
 
             const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
             const header = `${name}`;
-            const dur = `duration: ${duration.toFixed(2)} ms ${ children && children.length ? `(self ${selfTime.toFixed(2)} ms)` : ''}`;
+            const dur = `duration: ${duration.toFixed(2)} ms ${children && children.length ? `(self ${selfTime.toFixed(2)} ms)` : ''}`;
             const st = `start: ${start.toFixed(2)}`;
 
-            const maxWidth = [header, dur, st]
-                .map((text) => this.ctx.measureText(text))
-                .reduce((acc, {width}) => Math.max(acc, width), 0);
-            const fullWidth = maxWidth + this.blockPadding * 2;
-
-            this.ctx.shadowColor = 'black';
-            this.ctx.shadowBlur = 5;
-
-            this.ctx.fillStyle = 'white';
-            this.ctx.fillRect(
-                mouseX,
-                mouseY,
-                fullWidth + this.blockPadding * 2,
-                this.charHeight * 3 + this.blockPadding * 2
-            );
-
-            this.ctx.shadowColor = null;
-            this.ctx.shadowBlur = null;
-
-            this.ctx.fillStyle = 'black';
-            this.ctx.fillText(
-                header,
-                mouseX + this.blockPadding,
-                mouseY + this.nodeHeight - this.blockPadding
-            );
-
-            this.ctx.fillStyle = '#688f45';
-
-            this.ctx.fillText(
-                dur,
-                mouseX + this.blockPadding,
-                mouseY + this.nodeHeight - this.blockPadding + this.charHeight + 2
-            );
-
-            this.ctx.fillText(
-                st,
-                mouseX + this.blockPadding,
-                mouseY + this.nodeHeight - this.blockPadding + this.charHeight * 2 + 4
-            );
+            this.renderTooltipFromData(header, [dur, st]);
         }
+    }
+
+    renderTooltipFromData(header, body) {
+        const mouseX = this.mouse.x + 10;
+        const mouseY = this.mouse.y + 10;
+
+        const maxWidth = [header, ...body]
+            .map((text) => this.ctx.measureText(text))
+            .reduce((acc, { width }) => Math.max(acc, width), 0);
+        const fullWidth = maxWidth + this.blockPadding * 2;
+
+        this.ctx.shadowColor = 'black';
+        this.ctx.shadowBlur = 5;
+
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(
+            mouseX,
+            mouseY,
+            fullWidth + this.blockPadding * 2,
+            this.charHeight * (body.length + 1) + this.blockPadding * 2
+        );
+
+        this.ctx.shadowColor = null;
+        this.ctx.shadowBlur = null;
+
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillText(
+            header,
+            mouseX + this.blockPadding,
+            mouseY + this.nodeHeight - this.blockPadding
+        );
+
+        this.ctx.fillStyle = '#688f45';
+
+        body.forEach((text, index) => {
+            const count = index + 1;
+
+            this.ctx.fillText(
+                text,
+                mouseX + this.blockPadding,
+                mouseY + this.nodeHeight - this.blockPadding + (this.charHeight + 2) * count
+            );
+        })
     }
 
     render() {

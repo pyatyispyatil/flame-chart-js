@@ -3,6 +3,7 @@ import { uglify } from 'rollup-plugin-uglify';
 import builtins from 'rollup-plugin-node-builtins';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import json from '@rollup/plugin-json';
 
 export default {
     input: './example/src/index.js',
@@ -21,6 +22,7 @@ export default {
         babel({
             exclude: 'node_modules/**'
         }),
-        uglify()
+        uglify(),
+        json()
     ]
 }

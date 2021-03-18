@@ -56,7 +56,9 @@ const flameChart = new FlameChart({
 
 flameChart.on('select', (node) => {
     nodeView.innerHTML = node ? JSON.stringify({
-        ...node, children: undefined
+        ...node,
+        end: node.start + node.duration,
+        children: undefined
     }, null, '  ') : '';
 });
 

@@ -342,8 +342,10 @@ class FlameChart extends EventEmitter {
         ));
     }
 
-    getColor(type) {
-        if (this.colors[type]) {
+    getColor(type, defaultColor) {
+        if (defaultColor) {
+            return defaultColor;
+        } else if (this.colors[type]) {
             return this.colors[type];
         } else if (this.userColors[type]) {
             const color = new Color(this.userColors[type]);
@@ -383,7 +385,7 @@ class FlameChart extends EventEmitter {
                 && y + this.nodeHeight > 0
                 && y < this.height) {
                 this.addHitRegion('node', node, x, y, w, this.nodeHeight);
-                this.renderRect(this.getColor(type), name, x, y, w);
+                this.renderRect(this.getColor(type, node.color), name, x, y, w);
 
                 if (this.selectedRegion && node === this.selectedRegion.data) {
                     strokePosition = { x, y, w };

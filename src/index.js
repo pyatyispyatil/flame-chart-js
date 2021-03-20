@@ -348,12 +348,12 @@ class FlameChart extends EventEmitter {
         } else if (this.userColors[type]) {
             const color = new Color(this.userColors[type]);
 
-            this.colors[type] = color.alpha(ALPHA).rgb().toString();
+            this.colors[type] = color.rgb().toString();
 
             return this.colors[type];
         } else {
             this.lastRandomColor = this.lastRandomColor.rotate(10);
-            this.colors[type] = this.lastRandomColor.alpha(ALPHA).rgb().toString();
+            this.colors[type] = this.lastRandomColor.rgb().toString();
 
             return this.colors[type];
         }

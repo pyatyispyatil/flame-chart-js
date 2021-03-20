@@ -92,7 +92,6 @@ class FlameChart extends EventEmitter {
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleMouseClick = this.handleMouseClick.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
 
         this.init();
@@ -174,7 +173,6 @@ class FlameChart extends EventEmitter {
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
             this.canvas.addEventListener('mouseleave', this.handleMouseUp);
-            this.canvas.addEventListener('click', this.handleMouseClick);
             this.canvas.addEventListener('mousemove', this.handleMouseMove);
         }
     }
@@ -185,7 +183,6 @@ class FlameChart extends EventEmitter {
             this.canvas.removeEventListener('mousedown', this.handleMouseDown);
             this.canvas.removeEventListener('mouseup', this.handleMouseUp);
             this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
-            this.canvas.removeEventListener('click', this.handleMouseClick);
             this.canvas.removeEventListener('mousemove', this.handleMouseMove);
         }
     }
@@ -217,14 +214,18 @@ class FlameChart extends EventEmitter {
 
     handleMouseDown() {
         this.moveActive = true;
+        this.mouseClickStartPosition = {
+            x: this.mouse.x,
+            y: this.mouse.y
+        };
     }
 
     handleMouseUp() {
         this.moveActive = false;
-    }
 
-    handleMouseClick() {
-        this.handleRegionHit(this.mouse.x, this.mouse.y)
+        if (this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y) {
+            this.handleRegionHit(this.mouse.x, this.mouse.y);
+        }
     }
 
     handleMouseMove(e) {

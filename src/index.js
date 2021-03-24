@@ -1,5 +1,6 @@
 import Color from 'color';
 import EventEmitter from 'events';
+import { walk, getPixelRatio } from './utils.js';
 
 const DEFAULT_NODE_HEIGHT = 15;
 const ALPHA = 0.7;
@@ -7,27 +8,8 @@ const DEFAULT_FONT = `12px`;
 
 const defaultColor = Color.hsl(180, 30, 70);
 
-const walk = (treeList, cb, level = 0) => {
-    treeList.forEach((child) => {
-        cb(child, level);
-
-        if (child.children) {
-            walk(child.children, cb, level + 1);
-        }
-    });
-}
-
-const debounce = (cb, delay) => {
-    let timeout;
-
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => cb(...args), delay);
-    }
-}
-
 /** Class representing a replica of Chrome DevTools Performance flame chart. */
-class FlameChart extends EventEmitter {
+export default class FlameChart extends EventEmitter {
     /**
      * Create a instance
      * @param {HTMLCanvasElement} canvas - target element
@@ -76,6 +58,8 @@ class FlameChart extends EventEmitter {
         };
         this.colors = {};
         this.lastRandomColor = defaultColor;
+        this.width = width;
+        this.height = height;
 
         this.selectedRegion = null;
         this.hoveredRegion = null;
@@ -85,6 +69,7 @@ class FlameChart extends EventEmitter {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.userColors = colors;
+        this.pixelRatio = getPixelRatio(this.ctx);
 
         this.setTimestamps(timestamps, false);
         this.setData(data, false);
@@ -100,6 +85,8 @@ class FlameChart extends EventEmitter {
 
     init() {
         if (this.ctx) {
+            this.fixBlurryFont();
+
             const metrics = this.ctx.measureText('w');
             const fontHeight = metrics.fontBoundingBoxAscent;
 
@@ -115,6 +102,14 @@ class FlameChart extends EventEmitter {
 
             this.render();
         }
+    }
+
+    fixBlurryFont() {
+        this.canvas.width = this.width * this.pixelRatio;
+        this.canvas.height = this.height * this.pixelRatio;
+        this.canvas.style.width = this.width + "px";
+        this.canvas.style.height = this.height + "px";
+        this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
     }
 
     destroy() {
@@ -146,9 +141,6 @@ class FlameChart extends EventEmitter {
     }
 
     calcView() {
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
-
         this.calcMinMax();
 
         if (this.max - this.min > 0) {
@@ -613,5 +605,3 @@ class FlameChart extends EventEmitter {
         });
     }
 }
-
-export default FlameChart;

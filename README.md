@@ -30,7 +30,8 @@ const flameChart = new FlameChart({
             name: 'foo',
             start: 310,
             duration: 50,
-            type: 'sub-task'
+            type: 'sub-task', 
+            color: '#AA0000'
           }
         ]
       }
@@ -53,6 +54,10 @@ const flameChart = new FlameChart({
 
 ```js
 flameChart.setData(newData);
+flameChart.setTimestamps(newTimestamps);
+
+// if you want to reset zoom and position call this
+flameChart.resetView();
 ```
 
 #### Scaling

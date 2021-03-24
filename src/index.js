@@ -37,7 +37,8 @@ class FlameChart extends EventEmitter {
      * @param {string} data[].name - node name
      * @param {number} data[].start - node start time
      * @param {number} data[].duration - node duration
-     * @param {string} data[].type - node type (use it for custom colorize)
+     * @param {string} [data[].type] - node type (use it for custom colorization)
+     * @param {string} [data[].color] - node color (use it for current node colorization)
      * @param {Object[]} data[].children - node children (same structure as for node)
      * @param {Object.<string, string>} [colors] - color dictionary, where key is the node type and value is the color in any format
      * @param {Object[]} [timestamps] - badges for timestamps
@@ -223,7 +224,7 @@ class FlameChart extends EventEmitter {
     handleMouseUp() {
         this.moveActive = false;
 
-        if (this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y) {
+        if (this.mouseClickStartPosition && this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y) {
             this.handleRegionHit(this.mouse.x, this.mouse.y);
         }
     }

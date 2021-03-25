@@ -1,7 +1,8 @@
 import FlameChart from './../../src/index.js';
 import { generateRandomTree } from './../../src/test-data.js';
 
-const canvas = document.getElementById('root');
+const wrapper = document.getElementById('wrapper');
+const canvas = document.getElementById('canvas');
 
 const nodeView = document.getElementById('selected-node');
 
@@ -44,14 +45,30 @@ let levels = 10;
 
 const generateData = () => generateRandomTree(levels, count, start, duration);
 
-canvas.width = window.innerWidth - 40;
-canvas.height = window.innerHeight / 2;
+const getWrapperWH = () => {
+    const style = window.getComputedStyle(wrapper, null);
+
+    return [
+        parseInt(style.getPropertyValue('width')),
+        parseInt(style.getPropertyValue('height')) - 4
+    ];
+}
+
+const [width, height] = getWrapperWH();
+
+const query = location.search
+
+canvas.width = width;
+canvas.height = height;
 
 const flameChart = new FlameChart({
     canvas,
-    data: generateData(),
+    data: query ? [] : generateData(),
     timestamps,
-    colors
+    colors,
+    config: {
+        performance: true
+    }
 });
 
 flameChart.on('select', (node) => {
@@ -63,15 +80,32 @@ flameChart.on('select', (node) => {
 });
 
 window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth - 40;
-    canvas.height = window.innerHeight / 2;
-
-    flameChart.update();
+    flameChart.resize(...getWrapperWH());
 });
 
 updateButton.addEventListener('click', () => {
     flameChart.setData(generateData());
 });
+
+if (query) {
+    const args = query
+        .split('?')
+        .map((arg) => arg.split('='))
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+
+            return acc;
+        }, {});
+
+    if (args.file) {
+        fetch(args.file)
+            .then((res) => res.text())
+            .then((data) => {
+                flameChart.setData(JSON.parse(data));
+                flameChart.resetView();
+            });
+    }
+}
 
 startInput.value = start;
 durationInput.value = duration;

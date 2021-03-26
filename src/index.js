@@ -16,6 +16,7 @@ const ALPHA = 0.7;
 const DEFAULT_FONT = `12px`;
 
 const defaultColor = Color.hsl(180, 30, 70);
+const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 
 const defaultSettings = {
     performance: true
@@ -63,7 +64,6 @@ export default class FlameChart extends EventEmitter {
         this.timelineEnd = 0;
         this.timelineDimension = 0;
         this.timelineDelta = 0;
-        this.charWidth = 0;
         this.charHeight = 0;
         this.positionY = 0;
         this.positionX = 0;
@@ -100,13 +100,16 @@ export default class FlameChart extends EventEmitter {
         if (this.ctx) {
             this.fixBlurryFont();
 
-            const metrics = this.ctx.measureText('w');
-            const fontHeight = metrics.fontBoundingBoxAscent;
+            const metrics = this.ctx.measureText(allChars);
+            const { width: placeholderWidth } = this.ctx.measureText('…');
+            const fontAscent = metrics.actualBoundingBoxAscent;
+            const fontDescent = metrics.actualBoundingBoxDescent;
+            const fontHeight = fontAscent + fontDescent;
 
-            this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight + metrics.fontBoundingBoxDescent)) / 2 + metrics.fontBoundingBoxDescent);
-            this.charWidth = metrics.width;
-            this.charHeight = fontHeight + metrics.fontBoundingBoxDescent;
+            this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight)) / 2);
+            this.charHeight = fontHeight;
             this.headerHeight = this.nodeHeight + this.charHeight + this.blockPadding;
+            this.placeholderWidth = placeholderWidth;
 
             this.ctx.font = this.font;
 
@@ -276,6 +279,8 @@ export default class FlameChart extends EventEmitter {
         )) {
             this.reclusterizeClusteredFlatTree();
         }
+
+        this.checkRegionHover();
 
         this.render();
     }
@@ -516,8 +521,7 @@ export default class FlameChart extends EventEmitter {
             width,
             nodeHeight,
             height,
-            selectedRegion,
-            charWidth
+            selectedRegion
         } = this;
 
         const processNode = ({ node, level }) => {
@@ -552,7 +556,7 @@ export default class FlameChart extends EventEmitter {
                     this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
                 }
 
-                if (w >= charWidth && nodes.length === 1) {
+                if (w >= 4 && nodes.length === 1) {
                     this.addTextToRenderQueue(nodes[0].node.name, x, y, w);
                 }
             }
@@ -571,7 +575,8 @@ export default class FlameChart extends EventEmitter {
     }
 
     renderTimestamps() {
-        this.ctx.clearRect(0, 0, this.width, this.charHeight);
+        this.clear(this.width, this.charHeight);
+        const timesHeight = this.charHeight + 4;
 
         this.timestamps.slice()
             .sort((a, b) => a.timestamp - b.timestamp)
@@ -590,12 +595,12 @@ export default class FlameChart extends EventEmitter {
                 this.ctx.stroke();
 
                 this.setCtxColor(color);
-                this.ctx.fillRect(blockPosition, this.charHeight, fullWidth, this.charHeight + this.blockPadding);
+                this.ctx.fillRect(blockPosition, timesHeight, fullWidth, this.charHeight + this.blockPadding);
 
                 this.setCtxColor('black');
-                this.ctx.fillText(shortName, blockPosition + this.blockPadding, this.charHeight * 2);
+                this.ctx.fillText(shortName, blockPosition + this.blockPadding, timesHeight + this.charHeight);
 
-                this.addHitRegion('timestamp', node, blockPosition, this.charHeight, fullWidth, this.charHeight + this.blockPadding);
+                this.addHitRegion('timestamp', node, blockPosition, timesHeight, fullWidth, this.charHeight + this.blockPadding);
 
                 return blockPosition + fullWidth;
             }, 0)
@@ -631,7 +636,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     renderTimes() {
-        this.ctx.clearRect(0, 0, this.width, this.charHeight);
+        this.clear(this.width, this.charHeight);
 
         this.setCtxColor('black');
 
@@ -639,7 +644,7 @@ export default class FlameChart extends EventEmitter {
             this.ctx.fillText(
                 timePosition.toFixed(this.timelineDimension) + 'ms',
                 pixelPosition + this.blockPadding,
-                this.charHeight - 4
+                this.charHeight
             );
         });
 
@@ -679,7 +684,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     setCtxColor(color) {
-        if (this.lastUsedColor !== color) {
+        if (color && this.lastUsedColor !== color) {
             this.ctx.fillStyle = color;
             this.lastUsedColor = color;
         }
@@ -690,8 +695,11 @@ export default class FlameChart extends EventEmitter {
             const textMaxWidth = w - (this.blockPadding * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
-                if (text.length * this.charWidth > textMaxWidth) {
-                    const maxChars = Math.floor(textMaxWidth / this.charWidth);
+                const { width: textWidth } = this.ctx.measureText(text);
+
+                if (textWidth > textMaxWidth) {
+                    const avgCharWidth = textWidth / (text.length);
+                    const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
                     const halfChars = (maxChars - 1) / 2;
 
                     if (halfChars > 0) {
@@ -772,7 +780,7 @@ export default class FlameChart extends EventEmitter {
             mouseX,
             mouseY,
             fullWidth + this.blockPadding * 2,
-            this.charHeight * (body.length + 1) + this.blockPadding * 2
+            (this.charHeight + 2) * (body.length + 1) + this.blockPadding * 2
         );
 
         this.ctx.shadowColor = null;
@@ -798,12 +806,9 @@ export default class FlameChart extends EventEmitter {
     }
 
     clear(w, h, x = 0, y = 0) {
-        this.ctx.save();
-
-        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        this.ctx.clearRect(x, y, w, h);
-
-        this.ctx.restore();
+        this.ctx.clearRect(x, y, w, h - 1);
+        this.setCtxColor('white');
+        this.ctx.fillRect(x, y, w, h);
     }
 
     render() {
@@ -812,7 +817,7 @@ export default class FlameChart extends EventEmitter {
         this.lastAnimationFrame = requestAnimationFrame(() => {
             this.lastUsedColor = null;
 
-            this.clear(this.width * this.pixelRatio, this.height * this.pixelRatio);
+            this.clear(this.width, this.height);
 
             this.clearHitRegions();
 
@@ -826,7 +831,7 @@ export default class FlameChart extends EventEmitter {
                 this.renderDetailedChart();
             }
 
-            this.clear(this.width * this.pixelRatio, this.headerHeight * this.pixelRatio);
+            this.clear(this.width, this.headerHeight);
             this.renderLines(0, this.headerHeight);
 
             this.renderTimestamps();

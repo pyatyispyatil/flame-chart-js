@@ -100,16 +100,20 @@ export default class FlameChart extends EventEmitter {
         if (this.ctx) {
             this.fixBlurryFont();
 
-            const metrics = this.ctx.measureText(allChars);
+            const {
+                actualBoundingBoxAscent: fontAscent,
+                actualBoundingBoxDescent: fontDescent,
+                width: allCharsWidth
+            } = this.ctx.measureText(allChars);
             const { width: placeholderWidth } = this.ctx.measureText('…');
-            const fontAscent = metrics.actualBoundingBoxAscent;
-            const fontDescent = metrics.actualBoundingBoxDescent;
             const fontHeight = fontAscent + fontDescent;
 
             this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight)) / 2);
             this.charHeight = fontHeight;
             this.headerHeight = this.nodeHeight + this.charHeight + this.blockPadding;
             this.placeholderWidth = placeholderWidth;
+            this.avgCharWidth = allCharsWidth / allChars.length;
+            this.minTextWidth = this.avgCharWidth + this.placeholderWidth;
 
             this.ctx.font = this.font;
 
@@ -274,15 +278,15 @@ export default class FlameChart extends EventEmitter {
             this.tryToChangePosition(positionDelta);
         }
 
-        if (this.isPerformanceMode && (
-            startPosition !== this.positionX || startZoom !== this.zoom
-        )) {
-            this.reclusterizeClusteredFlatTree();
-        }
-
         this.checkRegionHover();
 
-        this.render();
+        this.render(() => {
+            if (this.isPerformanceMode && (
+                startPosition !== this.positionX || startZoom !== this.zoom
+            )) {
+                this.reclusterizeClusteredFlatTree();
+            }
+        });
     }
 
     handleMouseDown() {
@@ -324,14 +328,14 @@ export default class FlameChart extends EventEmitter {
 
         this.checkRegionHover();
 
-        if (this.isPerformanceMode && (
-            startPosition !== this.positionX
-        )) {
-            this.reclusterizeClusteredFlatTree();
-        }
-
         if (this.moveActive || this.hoveredRegion || (prevHoveredRegion && !this.hoveredRegion)) {
-            this.render();
+            this.render(() => {
+                if (this.isPerformanceMode && (
+                    startPosition !== this.positionX
+                )) {
+                    this.reclusterizeClusteredFlatTree();
+                }
+            });
         }
     }
 
@@ -476,7 +480,8 @@ export default class FlameChart extends EventEmitter {
             width,
             nodeHeight,
             height,
-            selectedRegion
+            selectedRegion,
+            minTextWidth
         } = this;
 
         const processNodes = ({ node, level }) => {
@@ -497,7 +502,7 @@ export default class FlameChart extends EventEmitter {
                     this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
                 }
 
-                if (w > 4) {
+                if (w >= minTextWidth) {
                     this.addTextToRenderQueue(name, x, y, w);
                 }
             }
@@ -521,7 +526,8 @@ export default class FlameChart extends EventEmitter {
             width,
             nodeHeight,
             height,
-            selectedRegion
+            selectedRegion,
+            minTextWidth
         } = this;
 
         const processNode = ({ node, level }) => {
@@ -556,7 +562,7 @@ export default class FlameChart extends EventEmitter {
                     this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
                 }
 
-                if (w >= 4 && nodes.length === 1) {
+                if (w >= minTextWidth && nodes.length === 1) {
                     this.addTextToRenderQueue(nodes[0].node.name, x, y, w);
                 }
             }
@@ -695,32 +701,34 @@ export default class FlameChart extends EventEmitter {
             const textMaxWidth = w - (this.blockPadding * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
-                const { width: textWidth } = this.ctx.measureText(text);
-
-                if (textWidth > textMaxWidth) {
-                    const avgCharWidth = textWidth / (text.length);
-                    const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
-                    const halfChars = (maxChars - 1) / 2;
-
-                    if (halfChars > 0) {
-                        text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
-                    } else {
-                        text = '';
-                    }
-                }
-
-                if (text) {
-                    this.textRenderQueue.push({ text, x, y });
-                }
+                this.textRenderQueue.push({ text, x, y, w, textMaxWidth });
             }
         }
     }
 
     resolveTextRenderQueue() {
         this.setCtxColor('black');
-        this.textRenderQueue.forEach(({ text, x, y }) => {
-            this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
+
+        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
+            const { width: textWidth } = this.ctx.measureText(text);
+
+            if (textWidth > textMaxWidth) {
+                const avgCharWidth = textWidth / (text.length);
+                const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
+                const halfChars = (maxChars - 1) / 2;
+
+                if (halfChars > 0) {
+                    text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
+                } else {
+                    text = '';
+                }
+            }
+
+            if (text) {
+                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
+            }
         });
+
         this.textRenderQueue = [];
     }
 
@@ -811,10 +819,14 @@ export default class FlameChart extends EventEmitter {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    render() {
+    render(preRender) {
         cancelAnimationFrame(this.lastAnimationFrame);
 
         this.lastAnimationFrame = requestAnimationFrame(() => {
+            if (preRender) {
+                preRender();
+            }
+
             this.lastUsedColor = null;
 
             this.clear(this.width, this.height);

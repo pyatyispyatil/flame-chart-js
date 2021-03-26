@@ -799,6 +799,7 @@ export default class FlameChart extends EventEmitter {
         cancelAnimationFrame(this.lastAnimationFrame);
 
         this.lastAnimationFrame = requestAnimationFrame(() => {
+            this.lastUsedColor = null;
             this.ctx.clearRect(0, 0, this.width, this.height);
 
             this.clearHitRegions();

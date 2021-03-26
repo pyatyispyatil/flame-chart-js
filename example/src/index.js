@@ -65,10 +65,7 @@ const flameChart = new FlameChart({
     canvas,
     data: query ? [] : generateData(),
     timestamps,
-    colors,
-    config: {
-        performance: true
-    }
+    colors
 });
 
 flameChart.on('select', (node) => {

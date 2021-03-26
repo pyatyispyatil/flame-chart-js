@@ -52,9 +52,17 @@ const flameChart = new FlameChart({
     colors: {
         'task': '#FFFFFF',
         'sub-task': '#000000'
+    },
+    settings: {
+        performance: true
     }
 });
 ```
+
+#### Settings
+
+`performance: boolean (default: true)` - turn on brief visualization when nearby blocks are sticking together.
+This greatly improves performance, but sometimes reduces detail.
 
 #### Data format
 

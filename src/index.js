@@ -131,6 +131,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     fixBlurryFont() {
+        this.canvas.style.backgroundColor = 'white';
         this.canvas.style.overflow = 'hidden';
         this.canvas.style.width = this.width + 'px';
         this.canvas.style.height = this.height + 'px';
@@ -665,6 +666,8 @@ export default class FlameChart extends EventEmitter {
 
     resolveRectRenderQueue() {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
+            this.setCtxColor(color);
+
             items.forEach(({ x, y, w }) => this.renderRect(color, x, y, w));
         });
 
@@ -672,7 +675,6 @@ export default class FlameChart extends EventEmitter {
     }
 
     renderRect(color, x, y, w) {
-        this.setCtxColor(color);
         this.ctx.fillRect(x, y, w, this.nodeHeight);
     }
 
@@ -795,12 +797,22 @@ export default class FlameChart extends EventEmitter {
         })
     }
 
+    clear(w, h, x = 0, y = 0) {
+        this.ctx.save();
+
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.clearRect(x, y, w, h);
+
+        this.ctx.restore();
+    }
+
     render() {
         cancelAnimationFrame(this.lastAnimationFrame);
 
         this.lastAnimationFrame = requestAnimationFrame(() => {
             this.lastUsedColor = null;
-            this.ctx.clearRect(0, 0, this.width, this.height);
+
+            this.clear(this.width * this.pixelRatio, this.height * this.pixelRatio);
 
             this.clearHitRegions();
 
@@ -814,7 +826,7 @@ export default class FlameChart extends EventEmitter {
                 this.renderDetailedChart();
             }
 
-            this.ctx.clearRect(0, 0, this.width, this.headerHeight);
+            this.clear(this.width * this.pixelRatio, this.headerHeight * this.pixelRatio);
             this.renderLines(0, this.headerHeight);
 
             this.renderTimestamps();

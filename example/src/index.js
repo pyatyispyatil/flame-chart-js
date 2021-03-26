@@ -12,6 +12,7 @@ const startInput = document.getElementById('start');
 const durationInput = document.getElementById('duration');
 const countInput = document.getElementById('count');
 const levelsInput = document.getElementById('levels');
+const performanceInput = document.getElementById('performance');
 
 const timestamps = [
     {
@@ -42,6 +43,7 @@ let duration = 5000;
 let start = 500;
 let count = 500;
 let levels = 10;
+let performance = true;
 
 const generateData = () => generateRandomTree(levels, count, start, duration);
 
@@ -65,7 +67,10 @@ const flameChart = new FlameChart({
     canvas,
     data: query ? [] : generateData(),
     timestamps,
-    colors
+    colors,
+    settings: {
+        performance
+    }
 });
 
 flameChart.on('select', (node) => {
@@ -108,9 +113,17 @@ startInput.value = start;
 durationInput.value = duration;
 countInput.value = count;
 levelsInput.value = levels;
+performanceInput.checked = performance;
 
 startInput.addEventListener('change', (e) => start = parseInt(e.target.value));
 durationInput.addEventListener('change', (e) => duration = parseInt(e.target.value));
 countInput.addEventListener('change', (e) => count = parseInt(e.target.value));
 levelsInput.addEventListener('change', (e) => levels = parseInt(e.target.value));
+performanceInput.addEventListener('change', (e) => {
+    performance = e.target.checked;
+
+    flameChart.setSettings({
+        performance
+    });
+});
 

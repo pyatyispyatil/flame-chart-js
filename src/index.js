@@ -2,7 +2,8 @@ import Color from 'color';
 import EventEmitter from 'events';
 import {
     getPixelRatio,
-    flatTree
+    flatTree,
+    walk
 } from './utils.js';
 import {
     metaClusterizeFlatTree,
@@ -57,12 +58,6 @@ export default class FlameChart extends EventEmitter {
                     nodeHeight = DEFAULT_NODE_HEIGHT,
                 }) {
         super();
-        const fullSettings = {
-            ...defaultSettings,
-            ...settings
-        }
-
-        this.isPerformanceMode = fullSettings.performance;
 
         this.timelineStart = 0;
         this.timelineEnd = 0;
@@ -87,6 +82,7 @@ export default class FlameChart extends EventEmitter {
         this.userColors = colors;
         this.pixelRatio = getPixelRatio(this.ctx);
 
+        this.setSettings(settings, false);
         this.setTimestamps(timestamps, false);
         this.setData(data, false);
 
@@ -175,6 +171,19 @@ export default class FlameChart extends EventEmitter {
             ...rest,
             color: new Color(color).alpha(ALPHA).rgb().toString()
         }));
+
+        if (update) {
+            this.update();
+        }
+    }
+
+    setSettings(settings, update = true) {
+        const fullSettings = {
+            ...defaultSettings,
+            ...settings
+        }
+
+        this.isPerformanceMode = fullSettings.performance;
 
         if (update) {
             this.update();

@@ -1,12 +1,25 @@
 import Color from 'color';
 import EventEmitter from 'events';
-import { walk, getPixelRatio } from './utils.js';
+import {
+    getPixelRatio,
+    flatTree,
+    walk
+} from './utils.js';
+import {
+    metaClusterizeFlatTree,
+    clusterizeFlatTree,
+    reclusterizeClusteredFlatTree
+} from './tree-clusters.js';
 
 const DEFAULT_NODE_HEIGHT = 15;
 const ALPHA = 0.7;
 const DEFAULT_FONT = `12px`;
 
 const defaultColor = Color.hsl(180, 30, 70);
+
+const defaultSettings = {
+    performance: true
+}
 
 /** Class representing a replica of Chrome DevTools Performance flame chart. */
 export default class FlameChart extends EventEmitter {
@@ -30,6 +43,8 @@ export default class FlameChart extends EventEmitter {
      * @param {string} timestamps[].timestamp - time position of badge
      * @param {string} [font=DEFAULT_FONT] - font
      * @param {number} [nodeHeight=DEFAULT_NODE_HEIGHT] - node height in px
+     * @param {Object} [settings] - configuration
+     * @param {boolean} [settings.performance] - turn on performance mode
      * */
     constructor({
                     canvas,
@@ -38,8 +53,9 @@ export default class FlameChart extends EventEmitter {
                     data,
                     colors = {},
                     timestamps = [],
+                    settings = {},
                     font = DEFAULT_FONT,
-                    nodeHeight = DEFAULT_NODE_HEIGHT
+                    nodeHeight = DEFAULT_NODE_HEIGHT,
                 }) {
         super();
 
@@ -56,21 +72,17 @@ export default class FlameChart extends EventEmitter {
             x: 0,
             y: 0
         };
-        this.colors = {};
-        this.lastRandomColor = defaultColor;
         this.width = width;
         this.height = height;
 
-        this.selectedRegion = null;
-        this.hoveredRegion = null;
-
         this.font = font;
         this.nodeHeight = nodeHeight;
-        this.ctx = canvas.getContext('2d');
+        this.ctx = canvas.getContext('2d', { alpha: false });
         this.canvas = canvas;
         this.userColors = colors;
         this.pixelRatio = getPixelRatio(this.ctx);
 
+        this.setSettings(settings, false);
         this.setTimestamps(timestamps, false);
         this.setData(data, false);
 
@@ -80,6 +92,7 @@ export default class FlameChart extends EventEmitter {
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
 
+        this.resetStorages();
         this.init();
     }
 
@@ -97,6 +110,7 @@ export default class FlameChart extends EventEmitter {
 
             this.ctx.font = this.font;
 
+            this.clearHitRegions();
             this.initView();
             this.initListeners();
 
@@ -104,11 +118,24 @@ export default class FlameChart extends EventEmitter {
         }
     }
 
+    resetStorages() {
+        this.colors = {};
+        this.lastRandomColor = defaultColor;
+
+        this.selectedRegion = null;
+        this.hoveredRegion = null;
+        this.lastAnimationFrame = null;
+        this.lastUsedColor = null;
+        this.textRenderQueue = [];
+        this.rectRenderQueue = {};
+    }
+
     fixBlurryFont() {
+        this.canvas.style.overflow = 'hidden';
+        this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
         this.canvas.width = this.width * this.pixelRatio;
         this.canvas.height = this.height * this.pixelRatio;
-        this.canvas.style.width = this.width + "px";
-        this.canvas.style.height = this.height + "px";
         this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
     }
 
@@ -116,8 +143,23 @@ export default class FlameChart extends EventEmitter {
         this.removeListeners();
     }
 
-    setData(data, update = true) {
+    setData(data = [], update = true) {
         this.data = data;
+
+        this.flatTree = flatTree(data)
+            .sort((a, b) => (a.level - b.level) || a.start - b.start);
+
+        this.calcMinMax();
+        this.calcInitialZoom();
+        this.resetView();
+        this.resetStorages();
+
+        if (this.isPerformanceMode) {
+            this.metaClusterizedFlatTree = metaClusterizeFlatTree(this.flatTree);
+            this.initialClusterizedFlatTree = clusterizeFlatTree(this.metaClusterizedFlatTree, this.zoom, this.min, this.max);
+
+            this.reclusterizeClusteredFlatTree();
+        }
 
         if (update) {
             this.update();
@@ -135,14 +177,38 @@ export default class FlameChart extends EventEmitter {
         }
     }
 
+    setSettings(settings, update = true) {
+        const fullSettings = {
+            ...defaultSettings,
+            ...settings
+        }
+
+        this.isPerformanceMode = fullSettings.performance;
+
+        if (update) {
+            this.update();
+        }
+    }
+
+    resize(width, height) {
+        this.width = width || this.width;
+        this.height = height || this.height;
+
+        if (this.isPerformanceMode) {
+            this.reclusterizeClusteredFlatTree();
+        }
+
+        this.fixBlurryFont();
+        this.update();
+    }
+
     update() {
-        this.calcView();
+        this.calcMinMax();
+        this.calcInitialZoom();
         this.render();
     }
 
-    calcView() {
-        this.calcMinMax();
-
+    calcInitialZoom() {
         if (this.max - this.min > 0) {
             this.initialZoom = this.width / (this.max - this.min);
         } else {
@@ -151,12 +217,12 @@ export default class FlameChart extends EventEmitter {
     }
 
     resetView() {
-        this.zoom = this.initialZoom;
+        this.setZoom(this.initialZoom);
         this.positionX = this.min;
     }
 
     initView() {
-        this.calcView();
+        this.calcInitialZoom();
         this.resetView();
     }
 
@@ -185,6 +251,8 @@ export default class FlameChart extends EventEmitter {
         e.preventDefault();
 
         const realView = this.calcRealView();
+        const startPosition = this.positionX;
+        const startZoom = this.zoom;
         const positionScrollDelta = deltaX / this.zoom;
         let zoomDelta = (deltaY / 1000) * this.zoom;
 
@@ -197,9 +265,15 @@ export default class FlameChart extends EventEmitter {
             const timeDelta = realView - (this.width / (this.zoom - zoomDelta));
             const positionDelta = timeDelta * proportion;
 
-            this.zoom -= zoomDelta;
+            this.setZoom(this.zoom - zoomDelta);
 
             this.tryToChangePosition(positionDelta);
+        }
+
+        if (this.isPerformanceMode && (
+            startPosition !== this.positionX || startZoom !== this.zoom
+        )) {
+            this.reclusterizeClusteredFlatTree();
         }
 
         this.render();
@@ -222,6 +296,8 @@ export default class FlameChart extends EventEmitter {
     }
 
     handleMouseMove(e) {
+        const startPosition = this.positionX;
+
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.zoom;
@@ -242,9 +318,19 @@ export default class FlameChart extends EventEmitter {
 
         this.checkRegionHover();
 
+        if (this.isPerformanceMode && (
+            startPosition !== this.positionX
+        )) {
+            this.reclusterizeClusteredFlatTree();
+        }
+
         if (this.moveActive || this.hoveredRegion || (prevHoveredRegion && !this.hoveredRegion)) {
             this.render();
         }
+    }
+
+    setZoom(zoom) {
+        this.zoom = zoom;
     }
 
     tryToChangePosition(positionDelta) {
@@ -257,6 +343,15 @@ export default class FlameChart extends EventEmitter {
         } else if (this.positionX + positionDelta + realView >= this.max) {
             this.positionX = this.max - realView;
         }
+    }
+
+    reclusterizeClusteredFlatTree() {
+        this.actualClusterizedFlatTree = reclusterizeClusteredFlatTree(
+            this.initialClusterizedFlatTree,
+            this.zoom,
+            this.positionX,
+            this.positionX + this.calcRealView()
+        );
     }
 
     calcRealView() {
@@ -281,20 +376,20 @@ export default class FlameChart extends EventEmitter {
     }
 
     calcMinMax() {
-        const { data, timestamps } = this;
+        const { flatTree, timestamps } = this;
 
         let isFirst = true;
         let min = 0;
         let max = 0;
 
-        walk(data, ({ start, duration }) => {
+        flatTree.forEach(({ node: { start, end } }) => {
             if (isFirst) {
                 min = start;
-                max = start + duration;
+                max = end;
                 isFirst = false;
             } else {
                 min = min < start ? min : start;
-                max = max > start + duration ? max : start + duration;
+                max = max > end ? max : end;
             }
         });
 
@@ -356,10 +451,12 @@ export default class FlameChart extends EventEmitter {
     }
 
     calcRect(start, duration, level) {
+        const w = (duration * this.zoom);
+
         return {
             x: this.timeToPosition(start),
             y: (level * this.nodeHeight + level * 1) - this.positionY + this.headerHeight,
-            w: (duration * this.zoom) - 1
+            w: w >= 2 ? w - 1 : w < 1 ? 1 : w
         }
     }
 
@@ -367,25 +464,103 @@ export default class FlameChart extends EventEmitter {
         return time * this.zoom - this.positionX * this.zoom
     }
 
-    renderChart() {
+    renderDetailedChart() {
         let strokePosition;
+        const {
+            width,
+            nodeHeight,
+            height,
+            selectedRegion
+        } = this;
 
-        walk(this.data, (node, level) => {
-            const { start, duration, name, type } = node;
+        const processNodes = ({ node, level }) => {
+            const { start, duration, name, type, color } = node;
             const { x, y, w } = this.calcRect(start, duration, level);
 
             if (x + w > 0
-                && x < this.width
-                && y + this.nodeHeight > 0
-                && y < this.height) {
-                this.addHitRegion('node', node, x, y, w, this.nodeHeight);
-                this.renderRect(this.getColor(type, node.color), name, x, y, w);
+                && x < width
+                && y + nodeHeight > 0
+                && y < height) {
+                this.addHitRegion('node', node, x, y, w, nodeHeight);
 
-                if (this.selectedRegion && node === this.selectedRegion.data) {
+                if (selectedRegion && node === selectedRegion.data) {
                     strokePosition = { x, y, w };
                 }
+
+                if (w > 0.5) {
+                    this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+                }
+
+                if (w > 4) {
+                    this.addTextToRenderQueue(name, x, y, w);
+                }
             }
-        });
+        };
+
+        this.flatTree.forEach(processNodes);
+
+        this.resolveRectRenderQueue();
+        this.resolveTextRenderQueue();
+
+        if (strokePosition) {
+            const { x, y, w } = strokePosition;
+
+            this.renderStroke(x, y, w, this.nodeHeight);
+        }
+    }
+
+    renderBriefChart() {
+        let strokePosition;
+        const {
+            width,
+            nodeHeight,
+            height,
+            selectedRegion,
+            charWidth
+        } = this;
+
+        const processNode = ({ node, level }) => {
+            let { x, y, w } = this.calcRect(node.start, node.duration, level);
+
+            if (selectedRegion && node === selectedRegion.data) {
+                strokePosition = { x, y, w };
+            }
+
+            this.addHitRegion('node', node, x, y, w, nodeHeight)
+        }
+
+        const processCluster = ({
+                                    start,
+                                    duration,
+                                    type,
+                                    level,
+                                    nodes,
+                                    color
+                                }) => {
+
+            let { x, y, w } = this.calcRect(start, duration, level);
+
+            if (x + w > 0
+                && x < width
+                && y + nodeHeight > 0
+                && y < height) {
+
+                nodes.forEach(processNode);
+
+                if (w >= 0.5) {
+                    this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+                }
+
+                if (w >= charWidth && nodes.length === 1) {
+                    this.addTextToRenderQueue(nodes[0].node.name, x, y, w);
+                }
+            }
+        };
+
+        this.actualClusterizedFlatTree.forEach(processCluster);
+
+        this.resolveRectRenderQueue();
+        this.resolveTextRenderQueue();
 
         if (strokePosition) {
             const { x, y, w } = strokePosition;
@@ -413,10 +588,10 @@ export default class FlameChart extends EventEmitter {
                 this.ctx.lineTo(position, this.height);
                 this.ctx.stroke();
 
-                this.ctx.fillStyle = color;
+                this.setCtxColor(color);
                 this.ctx.fillRect(blockPosition, this.charHeight, fullWidth, this.charHeight + this.blockPadding);
 
-                this.ctx.fillStyle = 'black';
+                this.setCtxColor('black');
                 this.ctx.fillText(shortName, blockPosition + this.blockPadding, this.charHeight * 2);
 
                 this.addHitRegion('timestamp', node, blockPosition, this.charHeight, fullWidth, this.charHeight + this.blockPadding);
@@ -447,7 +622,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     renderLines(start, height) {
-        this.ctx.fillStyle = 'rgb(126, 126, 126, 0.5)';
+        this.setCtxColor('rgb(126, 126, 126, 0.5)');
 
         this.forEachTime((pixelPosition) => {
             this.ctx.fillRect(pixelPosition, start, 1, height);
@@ -457,13 +632,17 @@ export default class FlameChart extends EventEmitter {
     renderTimes() {
         this.ctx.clearRect(0, 0, this.width, this.charHeight);
 
-        this.ctx.fillStyle = 'black';
+        this.setCtxColor('black');
 
         this.forEachTime((pixelPosition, timePosition) => {
-            this.ctx.fillText(timePosition.toFixed(this.timelineDimension) + 'ms', pixelPosition + this.blockPadding, this.charHeight - 4);
+            this.ctx.fillText(
+                timePosition.toFixed(this.timelineDimension) + 'ms',
+                pixelPosition + this.blockPadding,
+                this.charHeight - 4
+            );
         });
 
-        this.ctx.fillStyle = 'rgb(126,126,126, 0.5)';
+        this.setCtxColor('rgb(126, 126, 126, 0.5)');
 
         this.forEachTime((pixelPosition) => {
             this.ctx.fillRect(pixelPosition, 0, 1, this.charHeight);
@@ -476,10 +655,35 @@ export default class FlameChart extends EventEmitter {
         this.ctx.strokeRect(x, y, w, h);
     }
 
-    renderRect(color, text, x, y, w) {
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(x, y, w, this.nodeHeight);
+    addRectToRenderQueue(color, x, y, w) {
+        if (!this.rectRenderQueue[color]) {
+            this.rectRenderQueue[color] = [];
+        }
 
+        this.rectRenderQueue[color].push({ x, y, w });
+    }
+
+    resolveRectRenderQueue() {
+        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
+            items.forEach(({ x, y, w }) => this.renderRect(color, x, y, w));
+        });
+
+        this.rectRenderQueue = {};
+    }
+
+    renderRect(color, x, y, w) {
+        this.setCtxColor(color);
+        this.ctx.fillRect(x, y, w, this.nodeHeight);
+    }
+
+    setCtxColor(color) {
+        if (this.lastUsedColor !== color) {
+            this.ctx.fillStyle = color;
+            this.lastUsedColor = color;
+        }
+    }
+
+    addTextToRenderQueue(text, x, y, w) {
         if (text) {
             const textMaxWidth = w - (this.blockPadding * 2 - (x < 0 ? x : 0));
 
@@ -496,11 +700,18 @@ export default class FlameChart extends EventEmitter {
                 }
 
                 if (text) {
-                    this.ctx.fillStyle = 'black';
-                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
+                    this.textRenderQueue.push({ text, x, y });
                 }
             }
         }
+    }
+
+    resolveTextRenderQueue() {
+        this.setCtxColor('black');
+        this.textRenderQueue.forEach(({ text, x, y }) => {
+            this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
+        });
+        this.textRenderQueue = [];
     }
 
     renderTooltip() {
@@ -553,7 +764,8 @@ export default class FlameChart extends EventEmitter {
         this.ctx.shadowColor = 'black';
         this.ctx.shadowBlur = 5;
 
-        this.ctx.fillStyle = 'white';
+
+        this.setCtxColor('white');
         this.ctx.fillRect(
             mouseX,
             mouseY,
@@ -564,15 +776,14 @@ export default class FlameChart extends EventEmitter {
         this.ctx.shadowColor = null;
         this.ctx.shadowBlur = null;
 
-        this.ctx.fillStyle = 'black';
+        this.setCtxColor('black');
         this.ctx.fillText(
             header,
             mouseX + this.blockPadding,
             mouseY + this.nodeHeight - this.blockPadding
         );
 
-        this.ctx.fillStyle = '#688f45';
-
+        this.setCtxColor('#688f45');
         body.forEach((text, index) => {
             const count = index + 1;
 
@@ -585,7 +796,9 @@ export default class FlameChart extends EventEmitter {
     }
 
     render() {
-        requestAnimationFrame(() => {
+        cancelAnimationFrame(this.lastAnimationFrame);
+
+        this.lastAnimationFrame = requestAnimationFrame(() => {
             this.ctx.clearRect(0, 0, this.width, this.height);
 
             this.clearHitRegions();
@@ -593,7 +806,12 @@ export default class FlameChart extends EventEmitter {
             this.calcTimeline();
 
             this.renderLines(0, this.height);
-            this.renderChart();
+
+            if (this.isPerformanceMode) {
+                this.renderBriefChart();
+            } else {
+                this.renderDetailedChart();
+            }
 
             this.ctx.clearRect(0, 0, this.width, this.headerHeight);
             this.renderLines(0, this.headerHeight);

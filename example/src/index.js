@@ -1,7 +1,8 @@
 import FlameChart from './../../src/index.js';
 import { generateRandomTree } from './../../src/test-data.js';
 
-const canvas = document.getElementById('root');
+const wrapper = document.getElementById('wrapper');
+const canvas = document.getElementById('canvas');
 
 const nodeView = document.getElementById('selected-node');
 
@@ -11,6 +12,7 @@ const startInput = document.getElementById('start');
 const durationInput = document.getElementById('duration');
 const countInput = document.getElementById('count');
 const levelsInput = document.getElementById('levels');
+const performanceInput = document.getElementById('performance');
 
 const timestamps = [
     {
@@ -41,17 +43,34 @@ let duration = 5000;
 let start = 500;
 let count = 500;
 let levels = 10;
+let performance = true;
 
 const generateData = () => generateRandomTree(levels, count, start, duration);
 
-canvas.width = window.innerWidth - 40;
-canvas.height = window.innerHeight / 2;
+const getWrapperWH = () => {
+    const style = window.getComputedStyle(wrapper, null);
+
+    return [
+        parseInt(style.getPropertyValue('width')),
+        parseInt(style.getPropertyValue('height')) - 4
+    ];
+}
+
+const [width, height] = getWrapperWH();
+
+const query = location.search
+
+canvas.width = width;
+canvas.height = height;
 
 const flameChart = new FlameChart({
     canvas,
-    data: generateData(),
+    data: query ? [] : generateData(),
     timestamps,
-    colors
+    colors,
+    settings: {
+        performance
+    }
 });
 
 flameChart.on('select', (node) => {
@@ -63,23 +82,48 @@ flameChart.on('select', (node) => {
 });
 
 window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth - 40;
-    canvas.height = window.innerHeight / 2;
-
-    flameChart.update();
+    flameChart.resize(...getWrapperWH());
 });
 
 updateButton.addEventListener('click', () => {
     flameChart.setData(generateData());
 });
 
+if (query) {
+    const args = query
+        .split('?')
+        .map((arg) => arg.split('='))
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+
+            return acc;
+        }, {});
+
+    if (args.file) {
+        fetch(args.file)
+            .then((res) => res.text())
+            .then((data) => {
+                flameChart.setData(JSON.parse(data));
+                flameChart.resetView();
+            });
+    }
+}
+
 startInput.value = start;
 durationInput.value = duration;
 countInput.value = count;
 levelsInput.value = levels;
+performanceInput.checked = performance;
 
 startInput.addEventListener('change', (e) => start = parseInt(e.target.value));
 durationInput.addEventListener('change', (e) => duration = parseInt(e.target.value));
 countInput.addEventListener('change', (e) => count = parseInt(e.target.value));
 levelsInput.addEventListener('change', (e) => levels = parseInt(e.target.value));
+performanceInput.addEventListener('change', (e) => {
+    performance = e.target.checked;
+
+    flameChart.setSettings({
+        performance
+    });
+});
 

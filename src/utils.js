@@ -8,6 +8,24 @@ export const walk = (treeList, cb, level = 0) => {
     });
 }
 
+export const flatTree = (treeList) => {
+    const result = [];
+    let index = 0;
+
+    walk(treeList, (node, level) => {
+        result.push({
+            node: {
+                ...node,
+                end: node.start + node.duration
+            },
+            level,
+            index: index++
+        });
+    });
+
+    return result;
+}
+
 export const debounce = (cb, delay) => {
     let timeout;
 

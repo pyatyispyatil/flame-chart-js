@@ -1,5 +1,5 @@
 import FlameChart from './../../src/index.js';
-import { generateRandomTree } from './../../src/test-data.js';
+import { generateRandomTree } from './test-data.js';
 
 const wrapper = document.getElementById('wrapper');
 const canvas = document.getElementById('canvas');
@@ -8,11 +8,35 @@ const nodeView = document.getElementById('selected-node');
 
 const updateButton = document.getElementById('button');
 
-const startInput = document.getElementById('start');
-const durationInput = document.getElementById('duration');
-const countInput = document.getElementById('count');
-const levelsInput = document.getElementById('levels');
+const inputsData = {
+    count: 50000,
+    start: 500,
+    end: 5000,
+    minChild: 1,
+    maxChild: 3
+};
+
+const addInputs = (inputsDict) => Object.entries(inputsDict).map(([name, initialValue]) => {
+    const input = document.getElementById(name);
+
+    input.value = initialValue;
+    input.addEventListener('change', (e) => inputsDict[name] = parseInt(e.target.value));
+})
+
+addInputs(inputsData);
+
 const performanceInput = document.getElementById('performance');
+
+let performance = true;
+
+performanceInput.addEventListener('change', (e) => {
+    performance = e.target.checked;
+
+    flameChart.setSettings({
+        performance
+    });
+});
+
 
 const timestamps = [
     {
@@ -39,13 +63,7 @@ const colors = {
     event: '#a4775b'
 };
 
-let duration = 5000;
-let start = 500;
-let count = 500;
-let levels = 10;
-let performance = true;
-
-const generateData = () => generateRandomTree(levels, count, start, duration);
+const generateData = () => generateRandomTree(inputsData);
 
 const getWrapperWH = () => {
     const style = window.getComputedStyle(wrapper, null);
@@ -108,22 +126,4 @@ if (query) {
             });
     }
 }
-
-startInput.value = start;
-durationInput.value = duration;
-countInput.value = count;
-levelsInput.value = levels;
-performanceInput.checked = performance;
-
-startInput.addEventListener('change', (e) => start = parseInt(e.target.value));
-durationInput.addEventListener('change', (e) => duration = parseInt(e.target.value));
-countInput.addEventListener('change', (e) => count = parseInt(e.target.value));
-levelsInput.addEventListener('change', (e) => levels = parseInt(e.target.value));
-performanceInput.addEventListener('change', (e) => {
-    performance = e.target.checked;
-
-    flameChart.setSettings({
-        performance
-    });
-});
 

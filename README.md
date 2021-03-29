@@ -57,6 +57,8 @@ const flameChart = new FlameChart({
         performance: true
     }
 });
+
+flameChart.on('select', (node) => {/*...*/});
 ```
 
 #### Settings

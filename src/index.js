@@ -2,8 +2,7 @@ import Color from 'color';
 import EventEmitter from 'events';
 import {
     getPixelRatio,
-    flatTree,
-    walk
+    flatTree
 } from './utils.js';
 import {
     metaClusterizeFlatTree,
@@ -11,15 +10,17 @@ import {
     reclusterizeClusteredFlatTree
 } from './tree-clusters.js';
 
-const DEFAULT_NODE_HEIGHT = 15;
 const ALPHA = 0.7;
-const DEFAULT_FONT = `12px`;
 
+const MAX_ACCURACY = 6;
 const defaultColor = Color.hsl(180, 30, 70);
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 
 const defaultSettings = {
-    performance: true
+    performance: true,
+    font: `12px`,
+    nodeHeight: 16,
+    timeUnits: 'ms'
 }
 
 /** Class representing a replica of Chrome DevTools Performance flame chart. */
@@ -27,8 +28,6 @@ export default class FlameChart extends EventEmitter {
     /**
      * Create a instance
      * @param {HTMLCanvasElement} canvas - target element
-     * @param {number} [width=canvas.width] - canvas width
-     * @param {number} [height=canvas.height] - canvas height
      * @param {Object[]} data - flame chart data
      * @param {string} data[].name - node name
      * @param {number} data[].start - node start time
@@ -42,27 +41,24 @@ export default class FlameChart extends EventEmitter {
      * @param {string} timestamps[].fullName - full name of badge, which used for the tooltip
      * @param {string} timestamps[].color - color of badge in any format
      * @param {string} timestamps[].timestamp - time position of badge
-     * @param {string} [font=DEFAULT_FONT] - font
-     * @param {number} [nodeHeight=DEFAULT_NODE_HEIGHT] - node height in px
      * @param {Object} [settings] - configuration
      * @param {boolean} [settings.performance] - turn on performance mode
+     * @param {string} [settings.font] - font
+     * @param {number} [settings.nodeHeight] - node height in px
+     * @param {number} [settings.timeUnits='ms'] - time units
      * */
     constructor({
                     canvas,
-                    width = canvas.width,
-                    height = canvas.height,
                     data,
                     colors = {},
                     timestamps = [],
-                    settings = {},
-                    font = DEFAULT_FONT,
-                    nodeHeight = DEFAULT_NODE_HEIGHT,
+                    settings = {}
                 }) {
         super();
 
         this.timelineStart = 0;
         this.timelineEnd = 0;
-        this.timelineDimension = 0;
+        this.timelineAccuracy = 0;
         this.timelineDelta = 0;
         this.charHeight = 0;
         this.positionY = 0;
@@ -72,11 +68,10 @@ export default class FlameChart extends EventEmitter {
             x: 0,
             y: 0
         };
-        this.width = width;
-        this.height = height;
 
-        this.font = font;
-        this.nodeHeight = nodeHeight;
+        this.width = canvas.width;
+        this.height = canvas.height;
+
         this.ctx = canvas.getContext('2d', { alpha: false });
         this.canvas = canvas;
         this.userColors = colors;
@@ -109,7 +104,7 @@ export default class FlameChart extends EventEmitter {
             const fontHeight = fontAscent + fontDescent;
 
             this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight)) / 2);
-            this.charHeight = fontHeight;
+            this.charHeight = fontHeight + 1;
             this.headerHeight = this.nodeHeight + this.charHeight + this.blockPadding;
             this.placeholderWidth = placeholderWidth;
             this.avgCharWidth = allCharsWidth / allChars.length;
@@ -192,6 +187,9 @@ export default class FlameChart extends EventEmitter {
         }
 
         this.isPerformanceMode = fullSettings.performance;
+        this.font = fullSettings.font;
+        this.nodeHeight = fullSettings.nodeHeight;
+        this.timeUnits = fullSettings.timeUnits;
 
         if (update) {
             this.update();
@@ -269,13 +267,15 @@ export default class FlameChart extends EventEmitter {
         zoomDelta = this.zoom - zoomDelta >= this.initialZoom ? zoomDelta : this.zoom - this.initialZoom
 
         if (zoomDelta !== 0) {
-            const proportion = this.mouse.x / this.width;
-            const timeDelta = realView - (this.width / (this.zoom - zoomDelta));
-            const positionDelta = timeDelta * proportion;
+            const zoomed = this.setZoom(this.zoom - zoomDelta);
 
-            this.setZoom(this.zoom - zoomDelta);
+            if (zoomed) {
+                const proportion = this.mouse.x / this.width;
+                const timeDelta = realView - (this.width / this.zoom);
+                const positionDelta = timeDelta * proportion;
 
-            this.tryToChangePosition(positionDelta);
+                this.tryToChangePosition(positionDelta);
+            }
         }
 
         this.checkRegionHover();
@@ -340,7 +340,13 @@ export default class FlameChart extends EventEmitter {
     }
 
     setZoom(zoom) {
-        this.zoom = zoom;
+        if (this.timelineAccuracy < MAX_ACCURACY || zoom <= this.zoom) {
+            this.zoom = zoom;
+
+            return true;
+        }
+
+        return false;
     }
 
     tryToChangePosition(positionDelta) {
@@ -381,8 +387,19 @@ export default class FlameChart extends EventEmitter {
         this.timelineStart = Math.floor((this.positionX - this.min) / this.timelineDelta);
         this.timelineEnd = Math.ceil(realView / this.timelineDelta) + this.timelineStart;
 
-        const numberFix = 3 - Math.ceil(this.timelineDelta * 10).toString().length;
-        this.timelineDimension = numberFix > 0 ? numberFix : 0;
+        this.timelineAccuracy = this.calcNumberFix();
+    }
+
+    calcNumberFix() {
+        const strTimelineDelta = (this.timelineDelta / 2).toString();
+
+        if (strTimelineDelta.includes('e')) {
+            return strTimelineDelta.match(/\d+$/)[0];
+        } else {
+            const zeros = strTimelineDelta.match(/(0\.0*)/);
+
+            return zeros ? zeros[0].length - 1 : 0;
+        }
     }
 
     calcMinMax() {
@@ -466,7 +483,7 @@ export default class FlameChart extends EventEmitter {
         return {
             x: this.timeToPosition(start),
             y: (level * this.nodeHeight + level * 1) - this.positionY + this.headerHeight,
-            w: w >= 2 ? w - 1 : w < 1 ? 1 : w
+            w: w >= 3 ? w - 1 : w < 0.1 ? 0.1 : w
         }
     }
 
@@ -627,7 +644,7 @@ export default class FlameChart extends EventEmitter {
     forEachTime(cb) {
         for (let i = this.timelineStart; i <= this.timelineEnd; i++) {
             const timePosition = i * this.timelineDelta + this.min;
-            const pixelPosition = this.timeToPosition(timePosition.toFixed(this.timelineDimension));
+            const pixelPosition = this.timeToPosition(timePosition.toFixed(this.timelineAccuracy));
 
             cb(pixelPosition, timePosition);
         }
@@ -648,7 +665,7 @@ export default class FlameChart extends EventEmitter {
 
         this.forEachTime((pixelPosition, timePosition) => {
             this.ctx.fillText(
-                timePosition.toFixed(this.timelineDimension) + 'ms',
+                timePosition.toFixed(this.timelineAccuracy) + this.timeUnits,
                 pixelPosition + this.blockPadding,
                 this.charHeight
             );
@@ -749,8 +766,9 @@ export default class FlameChart extends EventEmitter {
         if (this.hoveredRegion) {
             const { data: { fullName, timestamp } } = this.hoveredRegion;
 
+            const timestampsAccuracy = this.timelineAccuracy + 2;
             const header = `${fullName}`;
-            const time = `${timestamp.toFixed(2)} ms`;
+            const time = `${timestamp.toFixed(timestampsAccuracy)} ${this.timeUnits}`;
 
             this.renderTooltipFromData(header, [time]);
         }
@@ -762,9 +780,10 @@ export default class FlameChart extends EventEmitter {
 
             const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
+            const nodeAccuracy = this.timelineAccuracy + 2;
             const header = `${name}`;
-            const dur = `duration: ${duration.toFixed(2)} ms ${children && children.length ? `(self ${selfTime.toFixed(2)} ms)` : ''}`;
-            const st = `start: ${start.toFixed(2)}`;
+            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${this.timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${this.timeUnits})` : ''}`;
+            const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
             this.renderTooltipFromData(header, [dur, st]);
         }

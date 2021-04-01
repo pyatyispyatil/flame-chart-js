@@ -1,5 +1,7 @@
 # flame-chart-js
 
+[![npm flame-chart-js package](https://img.shields.io/npm/v/flame-chart-js)](https://www.npmjs.com/package/flame-chart-js)
+
 ### Installation
 
 `npm i flame-chart-js`

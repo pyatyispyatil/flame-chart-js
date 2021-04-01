@@ -4,11 +4,14 @@ import builtins from 'rollup-plugin-node-builtins';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import html from '@rollup/plugin-html';
+import { template } from './example/src/template.js';
 
 export default {
     input: './example/src/index.js',
     output: {
-        file: './example/index.min.js',
+        dir: 'example/dist',
+        entryFileNames: 'main-[hash].js',
         format: 'iife',
         name: 'bundle'
     },
@@ -23,6 +26,9 @@ export default {
             exclude: 'node_modules/**'
         }),
         uglify(),
-        json()
+        json(),
+        html({
+            template,
+        })
     ]
 }

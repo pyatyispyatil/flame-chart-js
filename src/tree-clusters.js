@@ -1,6 +1,6 @@
-const MIN_CLUSTER_SIZE = 4;
 const MIN_BLOCK_SIZE = 1;
-const STICK_DISTANCE = 0.5;
+const STICK_DISTANCE = 0.25;
+const MIN_CLUSTER_SIZE = MIN_BLOCK_SIZE * 2 + STICK_DISTANCE;
 
 const calcClusterDuration = (nodes) => {
     const firstNode = nodes[0].node;

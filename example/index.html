@@ -18,8 +18,28 @@
             height: 75%;
         }
 
-        .input {
+        .inputLabel {
             padding: 0 6px 0 16px;
+        }
+
+        .input {
+            width: 100px;
+        }
+
+        .inputWrapper {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #inputs {
+            display: inline-block;
+        }
+
+        .updateButton {
+            margin: 16px 0 0 14px;
+            width: 100px;
+            height: 30px;
         }
 
         #wrapper {
@@ -35,13 +55,14 @@
         <canvas id="canvas"></canvas>
     </div>
     <div style="margin-top: 24px;">
-        <label class="input" for="start">start:</label><input style="width:50px;" id="start"/>
-        <label class="input" for="end">end:</label><input style="width:50px;" id="end"/>
-        <label class="input" for="count">count:</label><input style="width:50px;" id="count"/>
-        <label class="input" for="minChild">minChild:</label><input style="width:50px;" id="minChild"/>
-        <label class="input" for="maxChild">maxChild:</label><input style="width:50px;" id="maxChild"/>
-        <label class="input" for="performance">performance:</label><input type="checkbox" id="performance"/>
-        <button style="margin:0 0 0 24px;" id="button">Update</button>
+        <div id="inputs">
+            <div class="inputWrapper">
+                <label class="inputLabel" for="performance">performance:</label><input type="checkbox" id="performance"/>
+            </div>
+        </div>
+        <div>
+            <button class="updateButton" id="button">Update</button>
+        </div>
     </div>
     <div>
         <pre id="selected-node"></pre>

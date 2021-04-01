@@ -470,7 +470,7 @@ export default class FlameChart extends EventEmitter {
 
             return this.colors[type];
         } else {
-            this.lastRandomColor = this.lastRandomColor.rotate(10);
+            this.lastRandomColor = this.lastRandomColor.rotate(27);
             this.colors[type] = this.lastRandomColor.rgb().toString();
 
             return this.colors[type];
@@ -483,7 +483,7 @@ export default class FlameChart extends EventEmitter {
         return {
             x: this.timeToPosition(start),
             y: (level * this.nodeHeight + level * 1) - this.positionY + this.headerHeight,
-            w: w >= 3 ? w - 1 : w < 0.1 ? 0.1 : w
+            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w/3
         }
     }
 
@@ -515,7 +515,7 @@ export default class FlameChart extends EventEmitter {
                     strokePosition = { x, y, w };
                 }
 
-                if (w > 0.5) {
+                if (w > 0.05) {
                     this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
                 }
 
@@ -575,7 +575,7 @@ export default class FlameChart extends EventEmitter {
 
                 nodes.forEach(processNode);
 
-                if (w >= 0.5) {
+                if (w >= 0.25) {
                     this.addRectToRenderQueue(this.getColor(type, color), x, y, w);
                 }
 

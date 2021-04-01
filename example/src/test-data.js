@@ -8,7 +8,7 @@ const randomString = (length, minLength = 4) => {
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
 
-const generateRandomLevel = (count, parent, minChild = 1, maxChild = 10) => {
+const generateRandomLevel = (count, minChild = 1, maxChild = 10, parent) => {
     const childrenCount = count ? rnd(Math.min(count, maxChild), Math.min(count, minChild)) : 0;
     const items = Array(childrenCount).fill(null).map(() => ({ children: [], parent }));
     let rest = count - childrenCount;
@@ -27,10 +27,11 @@ const generateRandomNesting = (count, minChild, maxChild, parent) => {
     const levels = []
     let currentLevel = 0;
     let rest = count;
+    let isStopped = false;
 
-    while (rest > 0) {
+    while (rest > 0 && !isStopped) {
         if (!levels.length) {
-            const layer = generateRandomLevel(rest, parent, minChild, maxChild);
+            const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild, parent);
 
             levels.push([layer.items]);
             rest = layer.rest;
@@ -40,21 +41,19 @@ const generateRandomNesting = (count, minChild, maxChild, parent) => {
 
             for (let i = 0; i < level.length; i++) {
                 for (let j = 0; j < level[i].length; j++) {
-                    const layer = generateRandomLevel(rest, level[i][j], minChild, maxChild);
+                    const layer = generateRandomLevel(rest, minChild, maxChild, level[i][j]);
 
                     rest = layer.rest;
                     innerLevel.push(layer.items);
+
                 }
             }
 
             if (!innerLevel.length) {
-                return {
-                    root: [],
-                    rest
-                };
+                isStopped = true;
+            } else {
+                levels.push(innerLevel);
             }
-
-            levels.push(innerLevel);
         }
 
         currentLevel++;
@@ -75,25 +74,54 @@ const map = (treeList, cb, parent = null) => {
     }));
 };
 
-export const generateRandomTree = ({ count, start, end, minChild, maxChild }) => {
+export const generateRandomTree = ({
+                                       count,
+                                       start,
+                                       end,
+                                       minChild,
+                                       maxChild,
+                                       thinning,
+                                       colorsMonotony,
+                                       colorsCount
+                                   }) => {
     const { root: nestingArrays } = generateRandomNesting(count, minChild, maxChild, null);
+    const types = Array(colorsCount).fill(null).map(() => randomString(10));
+    let counter = 0;
+    let typesCounter = 0;
+    let currentType = types[typesCounter];
 
     const mappedNestingArrays = map(nestingArrays, (items, parent) => {
-        const neighborsCount = items.length;
+        const itemsCount = items.length;
         const innerStart = parent && parent.start ? parent.start : start;
         const innerEnd = parent && parent.end ? parent.end : end;
 
-        const timestamps = Array(neighborsCount * 2)
+        const timestamps = itemsCount > 1 ? Array(itemsCount - 1)
             .fill(null)
             .map(() => rndFloat(innerStart, innerEnd))
-            .sort((a, b) => a - b);
+            .concat(innerStart, innerEnd)
+            .sort((a, b) => a - b) : [innerStart, innerEnd];
 
         items.forEach((item, index) => {
-            item.start = timestamps[index * 2];
-            item.duration = timestamps[index * 2 + 1] - timestamps[index * 2];
-            item.end = timestamps[index * 2 + 1];
+            const currentWindow = timestamps[index + 1] - timestamps[index];
+
+            if (counter > colorsMonotony) {
+                counter = 0;
+                currentType = types[typesCounter];
+                typesCounter++;
+
+                if (typesCounter >= types.length) {
+                    typesCounter = 0;
+                }
+            }
+
+            item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            item.end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            item.duration = item.end - item.start;
             item.name = randomString(14);
+            item.type = currentType;
             item.parent = null;
+
+            counter++;
         });
 
         return items;

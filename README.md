@@ -10,10 +10,10 @@
 
 ### Demo
 
-https://pyatyispyatil.github.io/flame-chart-js/example/
+https://pyatyispyatil.github.io/flame-chart-js/example/dist/index.html
 
 You can insert your data into the example by adding to the url a link to your json file with the prepared data:
-`https://pyatyispyatil.github.io/flame-chart-js/example/index.html?file=http://localhost/data.json`
+`https://pyatyispyatil.github.io/flame-chart-js/example/dist/index.html?file=http://localhost/data.json`
 
 ### Usage
 

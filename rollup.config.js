@@ -5,12 +5,13 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import html from '@rollup/plugin-html';
+import cleaner from 'rollup-plugin-cleaner';
 import { template } from './example/src/template.js';
 
 export default {
     input: './example/src/index.js',
     output: {
-        dir: 'example/dist',
+        dir: './example/dist',
         entryFileNames: 'main-[hash].js',
         format: 'iife',
         name: 'bundle'
@@ -29,6 +30,11 @@ export default {
         json(),
         html({
             template,
+        }),
+        cleaner({
+            targets: [
+                './example/dist'
+            ]
         })
     ]
 }

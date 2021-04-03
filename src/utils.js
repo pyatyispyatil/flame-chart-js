@@ -1,9 +1,9 @@
-export const walk = (treeList, cb, level = 0) => {
+export const walk = (treeList, cb, parent = null, level = 0) => {
     treeList.forEach((child) => {
-        cb(child, level);
+        const res = cb(child, parent, level);
 
         if (child.children) {
-            walk(child.children, cb, level + 1);
+            walk(child.children, cb, res || child, level + 1);
         }
     });
 }
@@ -12,15 +12,18 @@ export const flatTree = (treeList) => {
     const result = [];
     let index = 0;
 
-    walk(treeList, (node, level) => {
-        result.push({
-            node: {
-                ...node,
-                end: node.start + node.duration
-            },
+    walk(treeList, (node, parent, level) => {
+        const newNode = {
+            ...node,
+            end: node.start + node.duration,
+            parent,
             level,
             index: index++
-        });
+        };
+
+        result.push(newNode);
+
+        return newNode;
     });
 
     return result;

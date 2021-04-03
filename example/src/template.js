@@ -1,5 +1,5 @@
 export const template = ({ bundle }) => (
-`<!DOCTYPE html>
+    `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -37,10 +37,43 @@ export const template = ({ bundle }) => (
             display: inline-block;
         }
 
-        .updateButton {
+        .button {
             margin: 16px 0 0 14px;
             width: 100px;
             height: 30px;
+        }
+        
+        .updateButton {
+            flex: 1;
+        }
+        
+        .updateButtonWrapper {
+            display: flex;
+        }
+        
+        .buttonsWrapper {
+            display: inline-block;
+        }
+        
+        .fileButtons {
+            display: inline-block;  
+        }
+        
+        .fileInput {
+            display: block;
+            visibility: hidden;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        
+        .footer {
+            margin-top: 24px;
+            display: flex;
+        }
+        
+        .selectedNode {
+            margin-left: 42px;
         }
 
         #wrapper {
@@ -55,25 +88,36 @@ export const template = ({ bundle }) => (
     <div id="wrapper">
         <canvas id="canvas"></canvas>
     </div>
-    <div style="margin-top: 24px;">
-        <div id="inputs">
-            <div class="inputWrapper">
-                <label class="inputLabel" for="performance">performance:</label><input type="checkbox" id="performance"/>
+    <div class="footer">
+        <div>
+            <div id="inputs">
+                <div class="inputWrapper">
+                    <label class="inputLabel" for="performance">performance:</label><input type="checkbox" id="performance"/>
+                </div>
+            </div>
+            <div>
+                <div class="buttonsWrapper">
+                    <div class="updateButtonWrapper">
+                        <button class="button updateButton" id="update-button">Generate random tree</button>
+                    </div>
+                    <div class="fileButtons">
+                        <button class="button" id="export-button">Export</button>
+                        <button class="button" id="import-button">Import</button>
+                        <input class="fileInput" type="file" id="import-input"/>
+                    </div>
+                </div>
             </div>
         </div>
-        <div>
-            <button class="updateButton" id="button">Update</button>
+        <div class="selectedNode">
+            <pre id="selected-node"></pre>
         </div>
-    </div>
-    <div>
-        <pre id="selected-node"></pre>
     </div>
 </div>
 ${
-    Object.keys(bundle).map((name) => (
-        `<script src="${name}"></script>`
-    ))
-}
+        Object.keys(bundle).map((name) => (
+            `<script src="${name}"></script>`
+        ))
+    }
 </body>
 </html>`
 )

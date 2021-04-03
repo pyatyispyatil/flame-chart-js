@@ -442,9 +442,26 @@ export default class FlameChart extends EventEmitter {
     }
 
     getHoveredRegion(mouseX, mouseY) {
-        return this.hitRegions.find(({ x, y, w, h }) => (
+        const hoveredRegion = this.hitRegions.find(({ x, y, w, h }) => (
             mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h
         ));
+
+        if (hoveredRegion && hoveredRegion.type === 'cluster') {
+            const hoveredNode = hoveredRegion.data.nodes.find(({ level, start, duration }) => {
+                const { x, y, w } = this.calcRect(start, duration, level);
+
+                return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + this.nodeHeight;
+            });
+
+            if (hoveredNode) {
+                return {
+                    data: hoveredNode,
+                    type: 'node'
+                };
+            }
+        }
+
+        return hoveredRegion;
     }
 
     getColor(type, defaultColor) {
@@ -466,12 +483,12 @@ export default class FlameChart extends EventEmitter {
         }
     }
 
-    calcRect(start, duration, level, y) {
+    calcRect(start, duration, level) {
         const w = (duration * this.zoom);
 
         return {
             x: this.timeToPosition(start),
-            y: y || (level * (this.nodeHeight + 1)) + this.headerHeight - this.positionY,
+            y: (level * (this.nodeHeight + 1)) + this.headerHeight - this.positionY,
             w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
         }
     }
@@ -489,21 +506,15 @@ export default class FlameChart extends EventEmitter {
             minTextWidth
         } = this;
 
-        const processNode = (node) => {
-            const { start, duration, level } = node;
-            const { x, y, w } = this.calcRect(start, duration, level);
-
-            this.addHitRegion('node', node, x, y, w, nodeHeight);
-        }
-
-        const processCluster = ({
-                                    start,
-                                    duration,
-                                    type,
-                                    level,
-                                    nodes,
-                                    color
-                                }) => {
+        const processCluster = (cluster) => {
+            const {
+                start,
+                duration,
+                type,
+                level,
+                nodes,
+                color
+            } = cluster;
             const { x, y, w } = this.calcRect(start, duration, level);
 
             if (x + w > 0
@@ -512,7 +523,7 @@ export default class FlameChart extends EventEmitter {
                 && y < height) {
 
                 if ((hasChanges && this.mouse.y >= y && this.mouse.y <= y + nodeHeight) || recalcRegions) {
-                    nodes.forEach(processNode);
+                    this.addHitRegion('cluster', cluster, x, y, w, nodeHeight);
                 }
 
                 if (w >= 0.25) {

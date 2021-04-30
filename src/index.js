@@ -18,7 +18,7 @@ const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890
 
 const defaultSettings = {
     performance: true,
-    font: `12px`,
+    font: `14px sans-serif`,
     nodeHeight: 16,
     timeUnits: 'ms'
 }
@@ -660,7 +660,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     renderLines(start, height) {
-        this.setCtxColor('rgb(126, 126, 126, 0.5)');
+        this.setCtxColor(this.userColors.gridlines || 'rgb(126, 126, 126, 0.5)');
 
         this.forEachTime((pixelPosition) => {
             this.ctx.fillRect(pixelPosition, start, 1, height);
@@ -670,9 +670,10 @@ export default class FlameChart extends EventEmitter {
     renderTimes() {
         this.clear(this.width, this.charHeight);
 
-        this.setCtxColor('black');
+        this.setCtxColor(this.userColors.time || 'black');
 
         this.forEachTime((pixelPosition, timePosition) => {
+            this.ctx.font = this.font;
             this.ctx.fillText(
                 timePosition.toFixed(this.timelineAccuracy) + this.timeUnits,
                 pixelPosition + this.blockPadding,
@@ -680,7 +681,7 @@ export default class FlameChart extends EventEmitter {
             );
         });
 
-        this.setCtxColor('rgb(126, 126, 126, 0.5)');
+        this.setCtxColor(this.userColors.gridlines || 'rgba(126, 126, 126, 0.5)');
 
         this.forEachTime((pixelPosition) => {
             this.ctx.fillRect(pixelPosition, 0, 1, this.charHeight);
@@ -733,7 +734,7 @@ export default class FlameChart extends EventEmitter {
     }
 
     resolveTextRenderQueue() {
-        this.setCtxColor('black');
+        this.setCtxColor(this.userColors.Text || 'black');
 
         this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
@@ -843,7 +844,7 @@ export default class FlameChart extends EventEmitter {
 
     clear(w, h, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
-        this.setCtxColor('white');
+        this.setCtxColor(this.userColors.background || "white");
         this.ctx.fillRect(x, y, w, h);
     }
 

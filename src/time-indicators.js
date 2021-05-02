@@ -1,37 +1,30 @@
 export class TimeIndicators {
-    constructor(renderEngine, interactionsEngine) {
+    constructor(renderEngine) {
         this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
 
+        this.timeUnits = this.renderEngine.getTimeUnits();
         this.start = 0;
         this.end = 0;
         this.accuracy = 0;
         this.delta = 0;
     }
 
-    init() {
-        this.interactionsEngine.on('change-position', ({ x }) => this.positionX = x);
-        this.renderEngine.on('change-size', ({ width }) => this.width = width);
-    }
-
     setMinMax(min, max) {
         this.min = min;
         this.max = max;
-
-        this.calcTimeline();
     }
 
     calcTimeline() {
         const timeWidth = this.max - this.min;
         const minPixelDelta = 90;
-        const initialLinesCount = this.width / minPixelDelta;
+        const initialLinesCount = this.renderEngine.width / minPixelDelta;
         const initialTimeLineDelta = timeWidth / initialLinesCount;
 
         const realView = this.renderEngine.getRealView();
         const proportion = realView / (timeWidth || 1);
 
         this.delta = initialTimeLineDelta / Math.pow(2, Math.floor(Math.log2(1 / proportion)));
-        this.start = Math.floor((this.positionX - this.min) / this.delta);
+        this.start = Math.floor((this.renderEngine.positionX - this.min) / this.delta);
         this.end = Math.ceil(realView / this.delta) + this.start;
 
         this.accuracy = this.calcNumberFix();
@@ -62,31 +55,23 @@ export class TimeIndicators {
         }
     }
 
-    renderLines(start, height) {
-        this.renderEngine.setCtxColor('rgb(126, 126, 126, 0.5)');
+    renderLines(start, height, renderEngine = this.renderEngine) {
+        renderEngine.setCtxColor('rgb(126, 126, 126, 0.5)');
 
         this.forEachTime((pixelPosition) => {
-            this.renderEngine.fillRect(pixelPosition, start, 1, height);
+            renderEngine.fillRect(pixelPosition, start, 1, height);
         });
     }
 
-    renderTimes() {
-        this.renderEngine.clear(this.renderEngine.width, this.renderEngine.charHeight);
-
-        this.renderEngine.setCtxColor('black');
+    renderTimes(renderEngine) {
+        renderEngine.setCtxColor('black');
 
         this.forEachTime((pixelPosition, timePosition) => {
-            this.renderEngine.fillText(
-                timePosition.toFixed(this.accuracy) + this.renderEngine.timeUnits,
+            renderEngine.fillText(
+                timePosition.toFixed(this.accuracy) + this.timeUnits,
                 pixelPosition + this.renderEngine.blockPadding,
                 this.renderEngine.charHeight
             );
-        });
-
-        this.renderEngine.setCtxColor('rgb(126, 126, 126, 0.5)');
-
-        this.forEachTime((pixelPosition) => {
-            this.renderEngine.fillRect(pixelPosition, 0, 1, this.renderEngine.charHeight);
         });
     }
 }

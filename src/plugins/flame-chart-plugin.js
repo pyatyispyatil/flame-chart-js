@@ -43,7 +43,6 @@ export class FlameChartPlugin extends EventEmitter {
         this.lastRandomColor = DEFAULT_COLOR;
 
         this.positionY = 0;
-        this.currentAccuracy = 0;
         this.userColors = {};
         this.selectedRegion = null;
     }
@@ -72,12 +71,13 @@ export class FlameChartPlugin extends EventEmitter {
     renderTooltip(mouse) {
         if (this.hoveredRegion) {
             const { data: { start, duration, children, name } } = this.hoveredRegion;
+            const timeUnits = this.renderEngine.getTimeUnits();
 
             const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
-            const nodeAccuracy = this.currentAccuracy + 2;
+            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
             const header = `${name}`;
-            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${this.renderEngine.timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${this.renderEngine.timeUnits})` : ''}`;
+            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
             const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
             this.renderEngine.renderTooltipFromData(header, [dur, st], mouse);
@@ -122,10 +122,6 @@ export class FlameChartPlugin extends EventEmitter {
                 };
             }
         }
-    }
-
-    handleAccuracyChange(accuracy) {
-        this.currentAccuracy = accuracy;
     }
 
     getColor(type, defaultColor) {

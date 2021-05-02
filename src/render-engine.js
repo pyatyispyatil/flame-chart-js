@@ -1,14 +1,19 @@
 import { getPixelRatio } from './utils.js';
 import { EventEmitter } from 'events';
+import { TimeIndicators } from './time-indicators.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
 
 export class RenderEngine extends EventEmitter {
-    constructor(canvas) {
+    constructor(canvas, settings) {
         super();
 
-        this.nodeHeight = 16;
+        this.settings = settings;
+
+        this.nodeHeight = settings.nodeHeight;
+        this.font = settings.font;
+        this.timeUnits = settings.timeUnits;
 
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d', { alpha: false });
@@ -35,13 +40,18 @@ export class RenderEngine extends EventEmitter {
 
         this.offscreenRenderEgnines = [];
 
+        this.init();
         this.reset();
     }
 
-    makeInstance(height) {
+    init() {
+        this.timeIndicators = new TimeIndicators(this);
+    }
+
+    makeInstance(getHeight) {
         const offscreenRenderEngine = new OffscreenRenderEngine({
             width: this.width,
-            height: height,
+            height: getHeight(),
             parentHeight: this.height,
             parentWidth: this.width,
             parent: this
@@ -50,9 +60,26 @@ export class RenderEngine extends EventEmitter {
         offscreenRenderEngine.setMinMax(this.min, this.max);
         offscreenRenderEngine.initView();
 
-        this.offscreenRenderEgnines.push({ height, renderEngine: offscreenRenderEngine });
+        this.offscreenRenderEgnines.push({ getHeight, renderEngine: offscreenRenderEngine });
 
         return offscreenRenderEngine;
+    }
+
+    calcOffscreenRenderCanvasesSizes() {
+        const heights = this.getOffscreenCanvasesHeights();
+
+        this.offscreenRenderEgnines.forEach((item, index) => {
+            item.renderEngine.resize(0, heights[index]);
+        });
+    }
+
+    getOffscreenCanvasesHeights() {
+        const heights = this.offscreenRenderEgnines.map(({ getHeight }) => getHeight());
+        const heightlessCount = heights.filter((height) => !height).length;
+        const freeHeight = heights.reduce((acc, height) => acc - (height || 0), this.height);
+        const freeHeightPart = freeHeight / heightlessCount;
+
+        return heights.map((height) => height || freeHeightPart);
     }
 
     reset() {
@@ -66,6 +93,10 @@ export class RenderEngine extends EventEmitter {
     setMinMax(min, max) {
         this.min = min;
         this.max = max;
+
+        if (this.timeIndicators) {
+            this.timeIndicators.setMinMax(min, max);
+        }
 
         this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setMinMax(min, max));
     }
@@ -107,6 +138,10 @@ export class RenderEngine extends EventEmitter {
         return time * this.zoom - this.positionX * this.zoom
     }
 
+    getTimeUnits() {
+        return this.timeUnits;
+    }
+
     tryToChangePosition(positionDelta) {
         const realView = this.getRealView();
 
@@ -129,6 +164,10 @@ export class RenderEngine extends EventEmitter {
 
     getRealView() {
         return this.width / this.zoom;
+    }
+
+    getAccuracy() {
+        return this.timeIndicators.accuracy;
     }
 
     initView() {
@@ -163,7 +202,6 @@ export class RenderEngine extends EventEmitter {
 
     update() {
         this.calcInitialZoom();
-        this.render(true);
     }
 
     setZoom(zoom) {
@@ -182,6 +220,7 @@ export class RenderEngine extends EventEmitter {
     setPositionX(x) {
         this.positionX = x;
         this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setPositionX(x));
+        this.emit('change-position', this.positionX);
     }
 
     addRectToRenderQueue(color, x, y, w) {
@@ -305,24 +344,27 @@ export class RenderEngine extends EventEmitter {
     shallowRender() {
         this.clear();
 
-        this.offscreenRenderEgnines.reduce((acc, { height, renderEngine }) => {
-            this.ctx.drawImage(renderEngine.canvas, acc, 0);
+        const heights = this.getOffscreenCanvasesHeights();
 
-            return acc + height;
+        this.offscreenRenderEgnines.reduce((acc, { renderEngine }, index) => {
+            this.ctx.drawImage(renderEngine.canvas, 0, acc - index);
+
+            return acc + heights[index];
         }, 0);
     }
 
-    offscreenRender() {
-        this.offscreenRenderEgnines.forEach(({ renderEngine }) => {
-            renderEngine.render();
-        });
-    }
-
-    render(prerender) {
+    render(plugins) {
         this.renderFrame(() => {
-            prerender();
+            this.timeIndicators.calcTimeline();
 
-            this.offscreenRender();
+            plugins.forEach((plugin, index) => { // ToDo remove index relations
+                const isFullRendered = plugin.render();
+
+                if (!isFullRendered) {
+                    this.offscreenRenderEgnines[index].renderEngine.render()
+                }
+            });
+
             this.shallowRender();
         });
     }
@@ -335,19 +377,27 @@ export class RenderEngine extends EventEmitter {
 }
 
 class OffscreenRenderEngine extends RenderEngine {
-    constructor({ width, height, parentHeight, parentWidth, parent }) {
+    constructor({
+                    width,
+                    height,
+                    parent
+                }) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
         canvas.height = height;
 
-        super(canvas);
+        super(canvas, parent.settings);
 
         this.parent = parent;
     }
 
+    init() {
+    }
+
     render() {
         this.clear();
+        this.parent.timeIndicators.renderLines(0, this.height, this);
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
         this.resolveStrokeRenderQueue();
@@ -371,5 +421,13 @@ class OffscreenRenderEngine extends RenderEngine {
             this.parent.shallowRender();
             this.parent.renderTooltipFromData(...args);
         });
+    }
+
+    getTimeUnits() {
+        return this.parent.getTimeUnits();
+    }
+
+    getAccuracy() {
+        return this.parent.timeIndicators.accuracy;
     }
 }

@@ -9,9 +9,7 @@ plugins interface
 --fns
 handleHover
 handleSelect
-handleAccuracyChange
 render
-renderTooltip
 getMinMax
 init
 
@@ -30,11 +28,12 @@ const defaultSettings = {
 }
 
 export class FlameChart extends EventEmitter {
-    constructor({ canvas, plugins }) {
+    constructor({ canvas, plugins, settings }) {
         super();
 
-        this.renderEngine = new RenderEngine(canvas);
-        this.timeIndicators = new TimeIndicators(this.renderEngine);
+        this.setSettings(settings);
+
+        this.renderEngine = new RenderEngine(canvas, this.settings);
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
 
@@ -42,31 +41,27 @@ export class FlameChart extends EventEmitter {
         this.renderEngine.initView();
 
         this.plugins.forEach((plugin) => plugin.init(
-            this.renderEngine.makeInstance(plugin.height || this.renderEngine.height),
+            this.renderEngine.makeInstance(() => plugin.height),
             this.interactionsEngine
         ));
 
+        this.renderEngine.calcOffscreenRenderCanvasesSizes();
+
         this.interactionsEngine.on('hover', (region, mouse) => {
             this.execOnPlugins('handleHover', region, mouse);
-
         });
 
         this.interactionsEngine.on('select', (region, mouse) => {
             this.execOnPlugins('handleSelect', region, mouse);
         });
 
-        this.renderEngine.on('change-zoom', () => {
-            this.timeIndicators.calcTimeline();
-            this.plugins.forEach((plugin) => plugin.handleAccuracyChange(this.timeIndicators.accuracy));
-        });
-
-        this.renderEngine.on('render', () => this.render())
+        this.renderEngine.on('render', () => this.render());
 
         this.render();
     }
 
     render() {
-        this.renderEngine.render(() => this.plugins.forEach((p) => p.render()));
+        this.renderEngine.render(this.plugins);
     }
 
     execOnPlugins(fnName, ...args) {
@@ -88,30 +83,24 @@ export class FlameChart extends EventEmitter {
     }
 
     calcMinMax() {
-        const { min, max } = this.plugins.map((plugin) => plugin.getMinMax()).reduce((acc, { min, max }) => ({
-            min: Math.min(acc.min, min),
-            max: Math.max(acc.max, max),
-        }));
+        const { min, max } = this.plugins
+            .filter((plugin) => plugin.getMinMax)
+            .map((plugin) => plugin.getMinMax())
+            .reduce((acc, { min, max }) => ({
+                min: Math.min(acc.min, min),
+                max: Math.max(acc.max, max),
+            }));
 
         this.min = min;
         this.max = max;
 
-        this.timeIndicators.setMinMax(this.min, this.max);
         this.renderEngine.setMinMax(this.min, this.max);
     }
 
-    setSettings(settings) {
-        const fullSettings = {
+    setSettings(settings = {}) {
+        this.settings = {
             ...defaultSettings,
             ...settings
-        }
-
-        this.font = fullSettings.font;
-        this.nodeHeight = fullSettings.nodeHeight;
-        this.timeUnits = fullSettings.timeUnits;
-
-        if (update) {
-            this.update();
         }
     }
 }

@@ -16,7 +16,6 @@ getMinMax
 init
 
 --args
-getCurrentAccuracy
 
 --events
 
@@ -48,15 +47,12 @@ export class FlameChart extends EventEmitter {
         ));
 
         this.interactionsEngine.on('hover', (region, mouse) => {
-            if (region) {
-                this.execOnPlugins('handleHover', region, mouse);
-            }
+            this.execOnPlugins('handleHover', region, mouse);
+
         });
 
         this.interactionsEngine.on('select', (region, mouse) => {
-            if (region) {
-                this.execOnPlugins('handleSelect', region, mouse);
-            }
+            this.execOnPlugins('handleSelect', region, mouse);
         });
 
         this.renderEngine.on('change-zoom', () => {
@@ -70,8 +66,7 @@ export class FlameChart extends EventEmitter {
     }
 
     render() {
-        this.plugins.forEach((p) => p.render());
-        this.renderEngine.render();
+        this.renderEngine.render(() => this.plugins.forEach((p) => p.render()));
     }
 
     execOnPlugins(fnName, ...args) {
@@ -111,7 +106,6 @@ export class FlameChart extends EventEmitter {
             ...settings
         }
 
-        this.isPerformanceMode = fullSettings.performance;
         this.font = fullSettings.font;
         this.nodeHeight = fullSettings.nodeHeight;
         this.timeUnits = fullSettings.timeUnits;

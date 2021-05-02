@@ -9,11 +9,14 @@ export default class FlameChartBasic extends FlameChart {
                     colors,
                     settings
                 }) {
+        const flameChartPlugin = new FlameChartPlugin({ data, colors });
+        flameChartPlugin.on('select', (node) => this.emit('select', node));
+
         super({
             canvas,
             settings,
             plugins: [
-                new FlameChartPlugin({ data, colors })
+                flameChartPlugin
             ]
         });
     }

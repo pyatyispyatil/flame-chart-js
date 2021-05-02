@@ -1,14 +1,16 @@
 import { flatTree } from '../utils.js';
 import { clusterizeFlatTree, metaClusterizeFlatTree, reclusterizeClusteredFlatTree } from '../tree-clusters.js';
 import Color from 'color';
+import { EventEmitter } from 'events';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
-export class FlameChartPlugin {
+export class FlameChartPlugin extends EventEmitter {
     constructor({
                     data,
                     colors
                 }) {
+        super();
 
         this.data = data;
         this.userColors = colors;
@@ -43,6 +45,7 @@ export class FlameChartPlugin {
         this.positionY = 0;
         this.currentAccuracy = 0;
         this.userColors = {};
+        this.selectedRegion = null;
     }
 
     getMinMax() {
@@ -66,7 +69,7 @@ export class FlameChartPlugin {
         return { min, max };
     }
 
-    renderTooltip() {
+    renderTooltip(mouse) {
         if (this.hoveredRegion) {
             const { data: { start, duration, children, name } } = this.hoveredRegion;
 
@@ -77,17 +80,34 @@ export class FlameChartPlugin {
             const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${this.renderEngine.timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${this.renderEngine.timeUnits})` : ''}`;
             const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
-            this.renderTooltipFromData(header, [dur, st]);
+            this.renderEngine.renderTooltipFromData(header, [dur, st], mouse);
         }
     }
 
-    handleSelect(region) {
-        if (region && region.type === 'node') {
-            this.handleNodeSelect(region && region.data);
+    handleSelect(region, mouse) {
+        const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
+
+        if (this.selectedRegion !== selectedRegion) {
+            this.selectedRegion = selectedRegion;
+
+            this.render();
+            this.renderEngine.requestRender();
+
+            this.emit('select', this.selectedRegion && this.selectedRegion.data);
         }
     }
 
     handleHover(region, mouse) {
+        if (region) {
+            this.hoveredRegion = this.findNodeInCluster(region, mouse);
+            this.renderTooltip(mouse);
+        } else if (this.hoveredRegion && !region) {
+            this.hoveredRegion = null;
+            this.renderEngine.requestShallowRender();
+        }
+    }
+
+    findNodeInCluster(region, mouse) {
         if (region && region.type === 'cluster') {
             const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
@@ -157,34 +177,22 @@ export class FlameChartPlugin {
         );
     }
 
-    render(hasChanges) {
+    render() {
         const {
             width,
             nodeHeight,
             height,
-            selectedRegion,
             minTextWidth
         } = this.renderEngine;
         this.lastUsedColor = null;
-        let recalcRegions = false;
-
-        clearTimeout(this.renderTimeout);
 
         this.reclusterizeClusteredFlatTree();
 
-        if (this.needFullRegionsRecalc) {
-            recalcRegions = true;
-            this.needFullRegionsRecalc = false;
-        }
-
-        const processCluster = (cluster) => {
+        const processCluster = (cb) => (cluster) => {
             const {
                 start,
                 duration,
-                type,
                 level,
-                nodes,
-                color
             } = cluster;
             const { x, y, w } = this.calcRect(start, duration, level);
 
@@ -192,27 +200,39 @@ export class FlameChartPlugin {
                 && x < width
                 && y + nodeHeight > 0
                 && y < height) {
-
-                if ((this.interactionsEngine.mouse.y >= y && this.interactionsEngine.mouse.y <= y + nodeHeight) || recalcRegions) {
-                    this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, nodeHeight);
-                }
-
-                if (w >= 0.25) {
-                    this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
-                }
-
-                if (w >= minTextWidth && nodes.length === 1) {
-                    this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
-                }
+                cb(cluster, x, y, w);
             }
         };
 
+        const renderCluster = (cluster, x, y, w) => {
+            const {
+                type,
+                nodes,
+                color
+            } = cluster;
+
+            if (this.interactionsEngine.mouse.y >= y && this.interactionsEngine.mouse.y <= y + nodeHeight) {
+                addHitRegion(cluster, x, y, w);
+            }
+
+            if (w >= 0.25) {
+                this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+            }
+
+            if (w >= minTextWidth && nodes.length === 1) {
+                this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
+            }
+        }
+
+        const addHitRegion = (cluster, x, y, w) => {
+            this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, nodeHeight);
+        }
+
         this.interactionsEngine.clearHitRegions();
+        this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));
 
-        this.actualClusterizedFlatTree.forEach(processCluster);
-
-        if (selectedRegion && selectedRegion.type === 'node') {
-            const { start, duration, level } = selectedRegion.data;
+        if (this.selectedRegion && this.selectedRegion.type === 'node') {
+            const { start, duration, level } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
             this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.nodeHeight);
@@ -220,10 +240,10 @@ export class FlameChartPlugin {
 
         clearTimeout(this.renderChartTimeout);
 
-        if (hasChanges) {
-            this.needFullRegionsRecalc = true;
-            this.renderChartTimeout = setTimeout(() => this.renderEngine.requestRender(), 16)
-        }
+        this.renderChartTimeout = setTimeout(() => {
+            this.interactionsEngine.clearHitRegions();
+            this.actualClusterizedFlatTree.forEach(processCluster(addHitRegion));
+        }, 16);
     }
 
     calcRect(start, duration, level) {

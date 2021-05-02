@@ -81,9 +81,9 @@ export class InteractionsEngine extends EventEmitter {
 
         this.checkRegionHover();
 
-        this.renderEngine.requestRender({
-            hasChanges: startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom
-        });
+        if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
+            this.renderEngine.requestRender();
+        }
     }
 
     handleMouseDown() {
@@ -110,7 +110,7 @@ export class InteractionsEngine extends EventEmitter {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
 
-            this.tryToChangePosition(mouseDeltaX)
+            this.renderEngine.tryToChangePosition(mouseDeltaX)
 
             if (this.positionY + mouseDeltaY >= 0) {
                 this.positionY += mouseDeltaY;
@@ -132,9 +132,11 @@ export class InteractionsEngine extends EventEmitter {
         this.checkRegionHover();
 
         if (this.moveActive || this.hoveredRegion || (prevHoveredRegion && !this.hoveredRegion)) {
-            this.renderEngine.requestRender({
-                hasChanges: startPositionX !== this.renderEngine.positionX || startPositionY !== this.positionY
-            });
+            //this.renderEngine.requestShallowRender();
+        }
+
+        if (startPositionX !== this.renderEngine.positionX || startPositionY !== this.positionY) {
+            this.renderEngine.requestRender();
         }
     }
 
@@ -155,16 +157,19 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     checkRegionHover() {
-        this.hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
 
-        if (this.hoveredRegion) {
-            this.emit('hover', this.hoveredRegion, this.mouse);
+        if (hoveredRegion) {
+            this.hoveredRegion = hoveredRegion;
+            this.emit('hover', hoveredRegion, this.mouse);
+        } else if (this.hoveredRegion && !hoveredRegion) {
+            this.emit('hover', null, this.mouse);
         }
     }
 
-    getHoveredRegion(mouseX, mouseY) {
+    getHoveredRegion() {
         return this.hitRegions.find(({ x, y, w, h }) => (
-            mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h
+            this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h
         ));
     }
 }

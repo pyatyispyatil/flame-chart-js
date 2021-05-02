@@ -43,7 +43,8 @@ export class RenderEngine extends EventEmitter {
             width: this.width,
             height: height,
             parentHeight: this.height,
-            parentWidth: this.width
+            parentWidth: this.width,
+            parent: this
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
@@ -88,9 +89,11 @@ export class RenderEngine extends EventEmitter {
         this.ctx.fillRect(x, y, w, this.nodeHeight);
     }
 
-    renderStroke(x, y, w, h) {
+    renderStroke(color, x, y, w, h) {
+        this.setCtxColor(color);
+
         this.ctx.setLineDash([]);
-        this.ctx.strokeStyle = 'green';
+        this.ctx.strokeStyle = color;
         this.ctx.strokeRect(x, y, w, h);
     }
 
@@ -167,7 +170,7 @@ export class RenderEngine extends EventEmitter {
         if (0 < MAX_ACCURACY || zoom <= this.zoom) { //ToDo threshold
             this.zoom = zoom;
 
-            this.offscreenRenderEgnines.forEach(({renderEngine}) => renderEngine.setZoom(zoom));
+            this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setZoom(zoom));
             this.emit('change-zoom', this.zoom);
 
             return true;
@@ -178,7 +181,7 @@ export class RenderEngine extends EventEmitter {
 
     setPositionX(x) {
         this.positionX = x;
-        this.offscreenRenderEgnines.forEach(({renderEngine}) => renderEngine.setPositionX(x));
+        this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setPositionX(x));
     }
 
     addRectToRenderQueue(color, x, y, w) {
@@ -241,17 +244,15 @@ export class RenderEngine extends EventEmitter {
 
     resolveStrokeRenderQueue() {
         this.strokeRenderQueue.forEach(({ color, x, y, w, h }) => {
-            this.setCtxColor(color);
-
-            this.renderRect(color, x, y, w, h);
+            this.renderStroke(color, x, y, w, h);
         });
 
         this.strokeRenderQueue = [];
     }
 
-    renderTooltipFromData(header, body) {
-        const mouseX = this.mouse.x + 10;
-        const mouseY = this.mouse.y + 10;
+    renderTooltipFromData(header, body, mouse) {
+        const mouseX = mouse.x + 10;
+        const mouseY = mouse.y + 10;
 
         const maxWidth = [header, ...body]
             .map((text) => this.ctx.measureText(text))
@@ -295,31 +296,80 @@ export class RenderEngine extends EventEmitter {
         this.emit('render');
     }
 
-    render() {
+    requestShallowRender() {
+        this.renderFrame(() => {
+            this.shallowRender();
+        });
+    }
+
+    shallowRender() {
+        this.clear();
+
+        this.offscreenRenderEgnines.reduce((acc, { height, renderEngine }) => {
+            this.ctx.drawImage(renderEngine.canvas, acc, 0);
+
+            return acc + height;
+        }, 0);
+    }
+
+    offscreenRender() {
+        this.offscreenRenderEgnines.forEach(({ renderEngine }) => {
+            renderEngine.render();
+        });
+    }
+
+    render(prerender) {
+        this.renderFrame(() => {
+            prerender();
+
+            this.offscreenRender();
+            this.shallowRender();
+        });
+    }
+
+    renderFrame(body) {
         cancelAnimationFrame(this.lastAnimationFrame);
 
-        this.lastAnimationFrame = requestAnimationFrame(() => {
-            this.offscreenRenderEgnines.reduce((acc, { height, renderEngine }) => {
-                renderEngine.clear();
-                renderEngine.resolveRectRenderQueue();
-                renderEngine.resolveTextRenderQueue();
-                renderEngine.resolveStrokeRenderQueue();
-
-                this.ctx.drawImage(renderEngine.canvas, acc, 0);
-
-                return acc + height;
-            }, 0);
-        });
+        this.lastAnimationFrame = requestAnimationFrame(body);
     }
 }
 
 class OffscreenRenderEngine extends RenderEngine {
-    constructor({ width, height, parentHeight, parentWidth }) {
+    constructor({ width, height, parentHeight, parentWidth, parent }) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
         canvas.height = height;
 
         super(canvas);
+
+        this.parent = parent;
+    }
+
+    render() {
+        this.clear();
+        this.resolveRectRenderQueue();
+        this.resolveTextRenderQueue();
+        this.resolveStrokeRenderQueue();
+    }
+
+    requestRender() {
+        this.renderFrame(() => {
+            this.render();
+            this.parent.shallowRender();
+        });
+    }
+
+    requestShallowRender() {
+        this.renderFrame(() => {
+            this.parent.shallowRender();
+        });
+    }
+
+    renderTooltipFromData(...args) {
+        this.renderFrame(() => {
+            this.parent.shallowRender();
+            this.parent.renderTooltipFromData(...args);
+        });
     }
 }

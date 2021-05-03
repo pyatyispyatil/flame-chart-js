@@ -12,15 +12,10 @@ export class TemplatePlugin {
         }
     }
 
-    handleSelect(region, mouse) {
-
-    }
-
-    handleHover(region, mouse) {
-
-    }
-
     render() {
 
+    }
+
+    renderTooltip() {
     }
 }

@@ -2,17 +2,9 @@ export class TimeMarksPlugin {
     constructor() {
     }
 
-    init(renderEngine, interactionsEngine) {
+    init(renderEngine) {
         this.renderEngine = renderEngine;
         this.height = this.renderEngine.charHeight + this.renderEngine.blockPadding * 2;
-    }
-
-    handleSelect(region, mouse) {
-
-    }
-
-    handleHover(region, mouse) {
-
     }
 
     render() {

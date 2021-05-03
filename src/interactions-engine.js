@@ -90,7 +90,7 @@ export class InteractionsEngine extends EventEmitter {
         this.checkRegionHover();
 
         if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
-            this.renderEngine.requestRender();
+            this.renderEngine.render();
         }
     }
 
@@ -128,17 +128,11 @@ export class InteractionsEngine extends EventEmitter {
         this.mouse.x = e.offsetX;
         this.mouse.y = e.offsetY;
 
-        const prevHoveredRegion = this.hoveredRegion;
+        if (startPositionX !== this.renderEngine.positionX || startPositionY !== this.positionY) {
+            this.renderEngine.render();
+        }
 
         this.checkRegionHover();
-
-        if (this.moveActive || this.hoveredRegion || (prevHoveredRegion && !this.hoveredRegion)) {
-            //this.renderEngine.requestShallowRender();
-        }
-
-        if (startPositionX !== this.renderEngine.positionX || startPositionY !== this.positionY) {
-            this.renderEngine.requestRender();
-        }
     }
 
     handleRegionHit() {
@@ -153,8 +147,11 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion) {
             this.hoveredRegion = hoveredRegion;
             this.emit('hover', hoveredRegion, this.mouse);
+            this.renderEngine.shallowRender();
         } else if (this.hoveredRegion && !hoveredRegion) {
+            this.hoveredRegion = null;
             this.emit('hover', null, this.mouse);
+            this.renderEngine.shallowRender();
         }
     }
 
@@ -196,6 +193,10 @@ class SeparatedInteractionsEngine extends EventEmitter {
             x,
             y: y - this.renderEngine.position
         };
+    }
+
+    getGlobalMouse() {
+        return this.parent.mouse;
     }
 
     clearHitRegions() {

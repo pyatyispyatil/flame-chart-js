@@ -23,7 +23,7 @@ export class FlameChartPlugin extends EventEmitter {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
-        this.interactionsEngine.on('change-position-y', this.handlePositionChange);
+        this.interactionsEngine.on('change-position-y', this.handlePositionChange.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
 
@@ -40,7 +40,7 @@ export class FlameChartPlugin extends EventEmitter {
         }
 
         if (startPositionY !== this.positionY) {
-            this.renderEngine.requestRender();
+            this.renderEngine.render();
         }
     }
 
@@ -74,22 +74,6 @@ export class FlameChartPlugin extends EventEmitter {
         return { min, max };
     }
 
-    renderTooltip(mouse) {
-        if (this.hoveredRegion) {
-            const { data: { start, duration, children, name } } = this.hoveredRegion;
-            const timeUnits = this.renderEngine.getTimeUnits();
-
-            const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
-
-            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
-            const header = `${name}`;
-            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
-            const st = `start: ${start.toFixed(nodeAccuracy)}`;
-
-            this.renderEngine.renderTooltipFromData(header, [dur, st], mouse);
-        }
-    }
-
     handleSelect(region) {
         const mouse = this.interactionsEngine.getMouse();
         const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
@@ -97,21 +81,14 @@ export class FlameChartPlugin extends EventEmitter {
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;
 
-            this.render();
-            this.renderEngine.requestRender();
+            this.renderEngine.render();
 
             this.emit('select', this.selectedRegion && this.selectedRegion.data);
         }
     }
 
-    handleHover(region, mouse) {
-        if (region) {
-            this.hoveredRegion = this.findNodeInCluster(region);
-            this.renderTooltip(mouse);
-        } else if (this.hoveredRegion && !region) {
-            this.hoveredRegion = null;
-            this.renderEngine.requestShallowRender();
-        }
+    handleHover(region) {
+        this.hoveredRegion = this.findNodeInCluster(region);
     }
 
     findNodeInCluster(region) {
@@ -182,6 +159,34 @@ export class FlameChartPlugin extends EventEmitter {
         );
     }
 
+    calcRect(start, duration, level) {
+        const w = (duration * this.renderEngine.zoom);
+
+        return {
+            x: this.renderEngine.timeToPosition(start),
+            y: (level * (this.renderEngine.nodeHeight + 1)) - this.positionY,
+            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
+        }
+    }
+
+    renderTooltip() {
+        if (this.hoveredRegion) {
+            const { data: { start, duration, children, name } } = this.hoveredRegion;
+            const timeUnits = this.renderEngine.getTimeUnits();
+
+            const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
+
+            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
+            const header = `${name}`;
+            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
+            const st = `start: ${start.toFixed(nodeAccuracy)}`;
+
+            this.renderEngine.renderTooltipFromData(header, [dur, st], this.interactionsEngine.getGlobalMouse());
+
+            return true;
+        }
+    }
+
     render() {
         const {
             width,
@@ -250,15 +255,5 @@ export class FlameChartPlugin extends EventEmitter {
             this.interactionsEngine.clearHitRegions();
             this.actualClusterizedFlatTree.forEach(processCluster(addHitRegion));
         }, 16);
-    }
-
-    calcRect(start, duration, level) {
-        const w = (duration * this.renderEngine.zoom);
-
-        return {
-            x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.nodeHeight + 1)) - this.positionY,
-            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
-        }
     }
 }

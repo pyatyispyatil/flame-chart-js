@@ -7,8 +7,6 @@ import { EventEmitter } from 'events';
 plugins interface
 
 --fns
-handleHover
-handleSelect
 render
 getMinMax
 init
@@ -40,20 +38,17 @@ export class FlameChart extends EventEmitter {
         this.calcMinMax();
         this.renderEngine.initView();
 
-        this.plugins.forEach((plugin) => plugin.init(
-            this.renderEngine.makeInstance(() => plugin.height),
-            this.interactionsEngine
-        ));
+        this.plugins.forEach((plugin) => {
+            const renderEngine = this.renderEngine.makeInstance(() => plugin.height);
+            const interactionsEngine = this.interactionsEngine.makeInstance(renderEngine);
 
-        this.renderEngine.calcOffscreenRenderCanvasesSizes();
-
-        this.interactionsEngine.on('hover', (region, mouse) => {
-            this.execOnPlugins('handleHover', region, mouse);
+            plugin.init(
+                renderEngine,
+                interactionsEngine
+            );
         });
 
-        this.interactionsEngine.on('select', (region, mouse) => {
-            this.execOnPlugins('handleSelect', region, mouse);
-        });
+        this.renderEngine.recalcChildrenSizes();
 
         this.renderEngine.on('render', () => this.render());
 

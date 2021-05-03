@@ -23,18 +23,24 @@ export class FlameChartPlugin extends EventEmitter {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
-        this.interactionsEngine.on('change-position', this.handlePositionChange);
+        this.interactionsEngine.on('change-position-y', this.handlePositionChange);
+        this.interactionsEngine.on('select', this.handleSelect.bind(this));
+        this.interactionsEngine.on('hover', this.handleHover.bind(this));
 
         this.initData();
     }
 
-    handlePositionChange({ deltaY }) {
+    handlePositionChange(mouseDeltaY) {
         const startPositionY = this.positionY;
 
-        if (this.positionY + deltaY >= 0) {
-            this.positionY += deltaY;
+        if (this.positionY + mouseDeltaY >= 0) {
+            this.positionY += mouseDeltaY;
         } else {
             this.positionY = 0;
+        }
+
+        if (startPositionY !== this.positionY) {
+            this.renderEngine.requestRender();
         }
     }
 
@@ -84,7 +90,8 @@ export class FlameChartPlugin extends EventEmitter {
         }
     }
 
-    handleSelect(region, mouse) {
+    handleSelect(region) {
+        const mouse = this.interactionsEngine.getMouse();
         const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
 
         if (this.selectedRegion !== selectedRegion) {
@@ -99,7 +106,7 @@ export class FlameChartPlugin extends EventEmitter {
 
     handleHover(region, mouse) {
         if (region) {
-            this.hoveredRegion = this.findNodeInCluster(region, mouse);
+            this.hoveredRegion = this.findNodeInCluster(region);
             this.renderTooltip(mouse);
         } else if (this.hoveredRegion && !region) {
             this.hoveredRegion = null;
@@ -107,7 +114,9 @@ export class FlameChartPlugin extends EventEmitter {
         }
     }
 
-    findNodeInCluster(region, mouse) {
+    findNodeInCluster(region) {
+        const mouse = this.interactionsEngine.getMouse();
+
         if (region && region.type === 'cluster') {
             const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
@@ -206,8 +215,9 @@ export class FlameChartPlugin extends EventEmitter {
                 nodes,
                 color
             } = cluster;
+            const mouse = this.interactionsEngine.getMouse();
 
-            if (this.interactionsEngine.mouse.y >= y && this.interactionsEngine.mouse.y <= y + nodeHeight) {
+            if (mouse.y >= y && mouse.y <= y + nodeHeight) {
                 addHitRegion(cluster, x, y, w);
             }
 

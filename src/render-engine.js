@@ -38,7 +38,7 @@ export class RenderEngine extends EventEmitter {
 
         this.ctx.font = this.font;
 
-        this.offscreenRenderEgnines = [];
+        this.childEngines = [];
 
         this.init();
         this.reset();
@@ -60,26 +60,35 @@ export class RenderEngine extends EventEmitter {
         offscreenRenderEngine.setMinMax(this.min, this.max);
         offscreenRenderEngine.initView();
 
-        this.offscreenRenderEgnines.push({ getHeight, renderEngine: offscreenRenderEngine });
+        this.childEngines.push({ getHeight, renderEngine: offscreenRenderEngine });
 
         return offscreenRenderEngine;
     }
 
-    calcOffscreenRenderCanvasesSizes() {
-        const heights = this.getOffscreenCanvasesHeights();
+    recalcChildrenSizes() {
+        const childrenSizes = this.getChildrenSizes();
 
-        this.offscreenRenderEgnines.forEach((item, index) => {
-            item.renderEngine.resize(0, heights[index]);
+        this.childEngines.forEach((item, index) => {
+            item.renderEngine.resize(childrenSizes[index]);
         });
     }
 
-    getOffscreenCanvasesHeights() {
-        const heights = this.offscreenRenderEgnines.map(({ getHeight }) => getHeight());
+    getChildrenSizes() {
+        const heights = this.childEngines.map(({ getHeight }) => getHeight());
         const heightlessCount = heights.filter((height) => !height).length;
         const freeHeight = heights.reduce((acc, height) => acc - (height || 0), this.height);
         const freeHeightPart = freeHeight / heightlessCount;
+        const preparedHeights = heights.map((height) => Math.ceil(height || freeHeightPart));
 
-        return heights.map((height) => Math.ceil(height || freeHeightPart));
+        const heightPositions = preparedHeights.reduce((acc, height) => ({
+            position: acc.position + height,
+            result: acc.result.concat(acc.position)
+        }), { position: 0, result: [] }).result;
+
+        return preparedHeights.map((height, index) => ({
+            height,
+            position: heightPositions[index]
+        }));
     }
 
     reset() {
@@ -98,7 +107,7 @@ export class RenderEngine extends EventEmitter {
             this.timeIndicators.setMinMax(min, max);
         }
 
-        this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setMinMax(min, max));
+        this.childEngines.forEach(({ renderEngine }) => renderEngine.setMinMax(min, max));
     }
 
     setCtxColor(color) {
@@ -208,7 +217,7 @@ export class RenderEngine extends EventEmitter {
         if (0 < MAX_ACCURACY || zoom <= this.zoom) { //ToDo threshold
             this.zoom = zoom;
 
-            this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setZoom(zoom));
+            this.childEngines.forEach(({ renderEngine }) => renderEngine.setZoom(zoom));
             this.emit('change-zoom', this.zoom);
 
             return true;
@@ -219,7 +228,7 @@ export class RenderEngine extends EventEmitter {
 
     setPositionX(x) {
         this.positionX = x;
-        this.offscreenRenderEgnines.forEach(({ renderEngine }) => renderEngine.setPositionX(x));
+        this.childEngines.forEach(({ renderEngine }) => renderEngine.setPositionX(x));
         this.emit('change-position', this.positionX);
     }
 
@@ -344,24 +353,22 @@ export class RenderEngine extends EventEmitter {
     shallowRender() {
         this.clear();
 
-        const heights = this.getOffscreenCanvasesHeights();
-
-        this.offscreenRenderEgnines.reduce((acc, { renderEngine }, index) => {
-            this.ctx.drawImage(renderEngine.canvas, 0, acc - index);
-
-            return acc + heights[index];
-        }, 0);
+        this.childEngines.forEach(({ renderEngine }) => {
+            this.ctx.drawImage(renderEngine.canvas, 0, renderEngine.position);
+        });
     }
 
     render(plugins) {
         this.renderFrame(() => {
             this.timeIndicators.calcTimeline();
 
-            plugins.forEach((plugin, index) => { // ToDo remove index relations
+            plugins.forEach((plugin, index) => {
+                this.childEngines[index].renderEngine.clear();
+
                 const isFullRendered = plugin.render();
 
                 if (!isFullRendered) {
-                    this.offscreenRenderEgnines[index].renderEngine.render()
+                    this.childEngines[index].renderEngine.render()
                 }
             });
 
@@ -395,8 +402,19 @@ class OffscreenRenderEngine extends RenderEngine {
     init() {
     }
 
+    resize({ width, height, position }) {
+        if (typeof width === 'number' && this.width !== width || typeof height === 'number' && this.height !== height) {
+            super.resize(width, height);
+
+            this.parent.recalcChildrenSizes();
+        }
+
+        if (typeof position === 'number') {
+            this.position = position;
+        }
+    }
+
     render() {
-        this.clear();
         this.parent.timeIndicators.renderLines(0, this.height, this);
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
@@ -405,6 +423,7 @@ class OffscreenRenderEngine extends RenderEngine {
 
     requestRender() {
         this.renderFrame(() => {
+            this.clear();
             this.render();
             this.parent.shallowRender();
         });

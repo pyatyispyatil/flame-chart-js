@@ -147,11 +147,11 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion) {
             this.hoveredRegion = hoveredRegion;
             this.emit('hover', hoveredRegion, this.mouse);
-            this.renderEngine.shallowRender();
+            this.renderEngine.partialRender();
         } else if (this.hoveredRegion && !hoveredRegion) {
             this.hoveredRegion = null;
             this.emit('hover', null, this.mouse);
-            this.renderEngine.shallowRender();
+            this.renderEngine.partialRender();
         }
     }
 

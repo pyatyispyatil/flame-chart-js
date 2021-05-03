@@ -355,39 +355,30 @@ export class RenderEngine extends BasicRenderEngine {
         return res;
     }
 
-    renderFrame(body) {
-        if (!this.lastAnimationFrame) {
-            this.lastAnimationFrame = requestAnimationFrame(() => {
-                body();
-                this.lastAnimationFrame = null;
+    partialRender(id) {
+        if (typeof id === 'number') {
+            this.requestedRenders.push(id);
+        }
+
+        if (!this.lastPartialAnimationFrame) {
+            this.lastPartialAnimationFrame = requestAnimationFrame(() => {
+                this.requestedRenders.forEach((index) => {
+                    this.childEngines[index].clear();
+
+                    const isFullRendered = this.plugins[index].render();
+
+                    if (!isFullRendered) {
+                        this.childEngines[index].clearRender();
+                    }
+                });
+
+                this.shallowRender();
+
+                this.requestedRenders = [];
+
+                this.lastPartialAnimationFrame = null;
             });
         }
-    }
-
-    requestRender(id) {
-        this.requestedRenders.push(id);
-
-        if (!this.lastAnimationFrame) {
-            this.partialRender();
-        }
-    }
-
-    partialRender() {
-        this.renderFrame(() => {
-            this.requestedRenders.forEach((index) => {
-                this.childEngines[index].clear();
-
-                const isFullRendered = this.plugins[index].render();
-
-                if (!isFullRendered) {
-                    this.childEngines[index].clearRender();
-                }
-            });
-
-            this.shallowRender();
-
-            this.requestedRenders = [];
-        })
     }
 
     shallowRender() {
@@ -401,21 +392,25 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     render() {
-        this.renderFrame(() => {
-            this.timeIndicators.calcTimeline();
+        if (!this.lastGlobalAnimationFrame) {
+            this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
+                this.timeIndicators.calcTimeline();
 
-            this.plugins.forEach((plugin, index) => {
-                this.childEngines[index].clear();
+                this.plugins.forEach((plugin, index) => {
+                    this.childEngines[index].clear();
 
-                const isFullRendered = plugin.render();
+                    const isFullRendered = plugin.render();
 
-                if (!isFullRendered) {
-                    this.childEngines[index].clearRender();
-                }
+                    if (!isFullRendered) {
+                        this.childEngines[index].clearRender();
+                    }
+                });
+
+                this.shallowRender();
+
+                this.lastGlobalAnimationFrame = null;
             });
-
-            this.shallowRender();
-        });
+        }
     }
 }
 
@@ -472,6 +467,6 @@ class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     render() {
-        this.parent.requestRender(this.id);
+        this.parent.partialRender(this.id);
     }
 }

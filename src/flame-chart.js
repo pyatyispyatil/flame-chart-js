@@ -1,22 +1,6 @@
 import { RenderEngine } from './render-engine.js';
-import { TimeIndicators } from './time-indicators.js';
 import { InteractionsEngine } from './interactions-engine.js';
 import { EventEmitter } from 'events';
-
-/*
-plugins interface
-
---fns
-render
-getMinMax
-init
-
---args
-
---events
-
- */
-
 
 const defaultSettings = {
     performance: true,
@@ -31,7 +15,7 @@ export class FlameChart extends EventEmitter {
 
         this.setSettings(settings);
 
-        this.renderEngine = new RenderEngine(canvas, this.settings);
+        this.renderEngine = new RenderEngine(canvas, this.settings, plugins);
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
 
@@ -39,7 +23,7 @@ export class FlameChart extends EventEmitter {
         this.renderEngine.initView();
 
         this.plugins.forEach((plugin) => {
-            const renderEngine = this.renderEngine.makeInstance(() => plugin.height);
+            const renderEngine = this.renderEngine.makeInstance();
             const interactionsEngine = this.interactionsEngine.makeInstance(renderEngine);
 
             plugin.init(
@@ -50,13 +34,11 @@ export class FlameChart extends EventEmitter {
 
         this.renderEngine.recalcChildrenSizes();
 
-        this.renderEngine.on('render', () => this.render());
-
         this.render();
     }
 
     render() {
-        this.renderEngine.render(this.plugins);
+        this.renderEngine.render();
     }
 
     execOnPlugins(fnName, ...args) {

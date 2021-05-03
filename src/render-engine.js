@@ -5,22 +5,21 @@ import { TimeIndicators } from './time-indicators.js';
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
 
-export class RenderEngine extends EventEmitter {
+class BasicRenderEngine extends EventEmitter {
     constructor(canvas, settings) {
         super();
 
-        this.settings = settings;
-
-        this.nodeHeight = settings.nodeHeight;
-        this.font = settings.font;
-        this.timeUnits = settings.timeUnits;
+        this.width = canvas.width;
+        this.height = canvas.height;
 
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d', { alpha: false });
         this.pixelRatio = getPixelRatio(this.ctx);
 
-        this.width = canvas.width;
-        this.height = canvas.height;
+        this.settings = settings;
+        this.nodeHeight = settings.nodeHeight;
+        this.font = settings.font;
+        this.timeUnits = settings.timeUnits;
 
         const {
             actualBoundingBoxAscent: fontAscent,
@@ -38,57 +37,7 @@ export class RenderEngine extends EventEmitter {
 
         this.ctx.font = this.font;
 
-        this.childEngines = [];
-
-        this.init();
         this.reset();
-    }
-
-    init() {
-        this.timeIndicators = new TimeIndicators(this);
-    }
-
-    makeInstance(getHeight) {
-        const offscreenRenderEngine = new OffscreenRenderEngine({
-            width: this.width,
-            height: getHeight(),
-            parentHeight: this.height,
-            parentWidth: this.width,
-            parent: this
-        });
-
-        offscreenRenderEngine.setMinMax(this.min, this.max);
-        offscreenRenderEngine.initView();
-
-        this.childEngines.push({ getHeight, renderEngine: offscreenRenderEngine });
-
-        return offscreenRenderEngine;
-    }
-
-    recalcChildrenSizes() {
-        const childrenSizes = this.getChildrenSizes();
-
-        this.childEngines.forEach((item, index) => {
-            item.renderEngine.resize(childrenSizes[index]);
-        });
-    }
-
-    getChildrenSizes() {
-        const heights = this.childEngines.map(({ getHeight }) => getHeight());
-        const heightlessCount = heights.filter((height) => !height).length;
-        const freeHeight = heights.reduce((acc, height) => acc - (height || 0), this.height);
-        const freeHeightPart = freeHeight / heightlessCount;
-        const preparedHeights = heights.map((height) => Math.ceil(height || freeHeightPart));
-
-        const heightPositions = preparedHeights.reduce((acc, height) => ({
-            position: acc.position + height,
-            result: acc.result.concat(acc.position)
-        }), { position: 0, result: [] }).result;
-
-        return preparedHeights.map((height, index) => ({
-            height,
-            position: heightPositions[index]
-        }));
     }
 
     reset() {
@@ -97,17 +46,6 @@ export class RenderEngine extends EventEmitter {
         this.rectRenderQueue = {};
         this.lastAnimationFrame = null;
         this.lastUsedColor = null;
-    }
-
-    setMinMax(min, max) {
-        this.min = min;
-        this.max = max;
-
-        if (this.timeIndicators) {
-            this.timeIndicators.setMinMax(min, max);
-        }
-
-        this.childEngines.forEach(({ renderEngine }) => renderEngine.setMinMax(min, max));
     }
 
     setCtxColor(color) {
@@ -147,77 +85,10 @@ export class RenderEngine extends EventEmitter {
         return time * this.zoom - this.positionX * this.zoom
     }
 
-    getTimeUnits() {
-        return this.timeUnits;
-    }
-
-    tryToChangePosition(positionDelta) {
-        const realView = this.getRealView();
-
-        if (this.positionX + positionDelta + realView <= this.max && this.positionX + positionDelta >= this.min) {
-            this.setPositionX(this.positionX + positionDelta);
-        } else if (this.positionX + positionDelta <= this.min) {
-            this.setPositionX(this.min);
-        } else if (this.positionX + positionDelta + realView >= this.max) {
-            this.setPositionX(this.max - realView);
-        }
-    }
-
-    calcInitialZoom() {
-        if (this.max - this.min > 0) {
-            this.initialZoom = this.width / (this.max - this.min);
-        } else {
-            this.initialZoom = 1;
-        }
-    }
-
-    getRealView() {
-        return this.width / this.zoom;
-    }
-
-    getAccuracy() {
-        return this.timeIndicators.accuracy;
-    }
-
-    initView() {
-        this.calcInitialZoom();
-        this.resetView();
-    }
-
-    resetView() {
-        this.setZoom(this.initialZoom);
-        this.setPositionX(this.min);
-    }
-
-    resize(width, height) {
-        this.width = width || this.width;
-        this.height = height || this.height;
-
-        this.emit('resize', { width: this.width, height: this.height });
-
-        this.fixBlurryFont();
-        this.update();
-    }
-
-    fixBlurryFont() {
-        this.canvas.style.backgroundColor = 'white';
-        this.canvas.style.overflow = 'hidden';
-        this.canvas.style.width = this.width + 'px';
-        this.canvas.style.height = this.height + 'px';
-        this.canvas.width = this.width * this.pixelRatio;
-        this.canvas.height = this.height * this.pixelRatio;
-        this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-    }
-
-    update() {
-        this.calcInitialZoom();
-    }
-
     setZoom(zoom) {
         if (0 < MAX_ACCURACY || zoom <= this.zoom) { //ToDo threshold
             this.zoom = zoom;
 
-            this.childEngines.forEach(({ renderEngine }) => renderEngine.setZoom(zoom));
             this.emit('change-zoom', this.zoom);
 
             return true;
@@ -228,7 +99,7 @@ export class RenderEngine extends EventEmitter {
 
     setPositionX(x) {
         this.positionX = x;
-        this.childEngines.forEach(({ renderEngine }) => renderEngine.setPositionX(x));
+
         this.emit('change-position', this.positionX);
     }
 
@@ -298,6 +169,68 @@ export class RenderEngine extends EventEmitter {
         this.strokeRenderQueue = [];
     }
 
+    setMinMax(min, max) {
+        this.min = min;
+        this.max = max;
+    }
+
+    getTimeUnits() {
+        return this.timeUnits;
+    }
+
+    tryToChangePosition(positionDelta) {
+        const realView = this.getRealView();
+
+        if (this.positionX + positionDelta + realView <= this.max && this.positionX + positionDelta >= this.min) {
+            this.setPositionX(this.positionX + positionDelta);
+        } else if (this.positionX + positionDelta <= this.min) {
+            this.setPositionX(this.min);
+        } else if (this.positionX + positionDelta + realView >= this.max) {
+            this.setPositionX(this.max - realView);
+        }
+    }
+
+    calcInitialZoom() {
+        if (this.max - this.min > 0) {
+            this.initialZoom = this.width / (this.max - this.min);
+        } else {
+            this.initialZoom = 1;
+        }
+    }
+
+    getRealView() {
+        return this.width / this.zoom;
+    }
+
+    initView() {
+        this.calcInitialZoom();
+        this.resetView();
+    }
+
+    resetView() {
+        this.setZoom(this.initialZoom);
+        this.setPositionX(this.min);
+    }
+
+    resize(width, height) {
+        this.width = width || this.width;
+        this.height = height || this.height;
+
+        this.emit('resize', { width: this.width, height: this.height });
+
+        this.fixBlurryFont();
+    }
+
+    fixBlurryFont() {
+        this.canvas.style.backgroundColor = 'white';
+        this.canvas.style.overflow = 'hidden';
+        this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
+        this.canvas.width = this.width * this.pixelRatio;
+        this.canvas.height = this.height * this.pixelRatio;
+        this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+    }
+
     renderTooltipFromData(header, body, mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
@@ -339,55 +272,159 @@ export class RenderEngine extends EventEmitter {
             );
         })
     }
+}
 
-    requestRender() {
-        this.emit('render');
+export class RenderEngine extends BasicRenderEngine {
+    constructor(canvas, settings, plugins) {
+        super(canvas, settings);
+
+        this.plugins = plugins;
+
+        this.childEngines = [];
+        this.requestedRenders = [];
+
+        this.timeIndicators = new TimeIndicators(this);
     }
 
-    requestShallowRender() {
-        this.renderFrame(() => {
-            this.shallowRender();
+    makeInstance() {
+        const offscreenRenderEngine = new OffscreenRenderEngine({
+            width: this.width,
+            height: 0,
+            id: this.childEngines.length,
+            parent: this
         });
+
+        offscreenRenderEngine.setMinMax(this.min, this.max);
+        offscreenRenderEngine.initView();
+
+        this.childEngines.push(offscreenRenderEngine);
+
+        return offscreenRenderEngine;
+    }
+
+    recalcChildrenSizes() {
+        const childrenSizes = this.getChildrenSizes();
+
+        this.childEngines.forEach((engine, index) => {
+            engine.resize(childrenSizes[index]);
+        });
+    }
+
+    getChildrenSizes() {
+        const heights = this.childEngines.map((engine, index) => this.plugins[index].height);
+        const heightlessCount = heights.filter((height) => !height).length;
+        const freeHeight = heights.reduce((acc, height) => acc - (height || 0), this.height);
+        const freeHeightPart = freeHeight / heightlessCount;
+        const preparedHeights = heights.map((height) => Math.ceil(height || freeHeightPart));
+
+        const heightPositions = preparedHeights.reduce((acc, height) => ({
+            position: acc.position + height,
+            result: acc.result.concat(acc.position)
+        }), { position: 0, result: [] }).result;
+
+        return preparedHeights.map((height, index) => ({
+            height,
+            position: heightPositions[index]
+        }));
+    }
+
+    getAccuracy() {
+        return this.timeIndicators.accuracy;
+    }
+
+    setZoom(zoom) {
+        const res = super.setZoom(zoom);
+        this.childEngines.forEach((engine) => engine.setZoom(zoom));
+
+        return res;
+    }
+
+    setPositionX(x) {
+        const res = super.setPositionX(x);
+        this.childEngines.forEach((engine) => engine.setPositionX(x));
+
+        return res;
+    }
+
+    setMinMax(min, max) {
+        const res = super.setMinMax(min, max);
+
+        this.timeIndicators.setMinMax(min, max);
+        this.childEngines.forEach((engine) => engine.setMinMax(min, max));
+
+        return res;
+    }
+
+    renderFrame(body) {
+        if (!this.lastAnimationFrame) {
+            this.lastAnimationFrame = requestAnimationFrame(() => {
+                body();
+                this.lastAnimationFrame = null;
+            });
+        }
+    }
+
+    requestRender(id) {
+        this.requestedRenders.push(id);
+
+        if (!this.lastAnimationFrame) {
+            this.partialRender();
+        }
+    }
+
+    partialRender() {
+        this.renderFrame(() => {
+            this.requestedRenders.forEach((index) => {
+                this.childEngines[index].clear();
+
+                const isFullRendered = this.plugins[index].render();
+
+                if (!isFullRendered) {
+                    this.childEngines[index].clearRender();
+                }
+            });
+
+            this.shallowRender();
+
+            this.requestedRenders = [];
+        })
     }
 
     shallowRender() {
         this.clear();
 
-        this.childEngines.forEach(({ renderEngine }) => {
-            this.ctx.drawImage(renderEngine.canvas, 0, renderEngine.position);
+        this.childEngines.forEach((engine) => {
+            this.ctx.drawImage(engine.canvas, 0, engine.position);
         });
+
+        this.plugins.forEach((plugin) => plugin.renderTooltip && plugin.renderTooltip());
     }
 
-    render(plugins) {
+    render() {
         this.renderFrame(() => {
             this.timeIndicators.calcTimeline();
 
-            plugins.forEach((plugin, index) => {
-                this.childEngines[index].renderEngine.clear();
+            this.plugins.forEach((plugin, index) => {
+                this.childEngines[index].clear();
 
                 const isFullRendered = plugin.render();
 
                 if (!isFullRendered) {
-                    this.childEngines[index].renderEngine.render()
+                    this.childEngines[index].clearRender();
                 }
             });
 
             this.shallowRender();
         });
     }
-
-    renderFrame(body) {
-        cancelAnimationFrame(this.lastAnimationFrame);
-
-        this.lastAnimationFrame = requestAnimationFrame(body);
-    }
 }
 
-class OffscreenRenderEngine extends RenderEngine {
+class OffscreenRenderEngine extends BasicRenderEngine {
     constructor({
                     width,
                     height,
-                    parent
+                    parent,
+                    id
                 }) {
         const canvas = document.createElement('canvas');
 
@@ -397,9 +434,7 @@ class OffscreenRenderEngine extends RenderEngine {
         super(canvas, parent.settings);
 
         this.parent = parent;
-    }
-
-    init() {
+        this.id = id;
     }
 
     resize({ width, height, position }) {
@@ -414,39 +449,29 @@ class OffscreenRenderEngine extends RenderEngine {
         }
     }
 
-    render() {
-        this.parent.timeIndicators.renderLines(0, this.height, this);
-        this.resolveRectRenderQueue();
-        this.resolveTextRenderQueue();
-        this.resolveStrokeRenderQueue();
-    }
-
-    requestRender() {
-        this.renderFrame(() => {
-            this.clear();
-            this.render();
-            this.parent.shallowRender();
-        });
-    }
-
-    requestShallowRender() {
-        this.renderFrame(() => {
-            this.parent.shallowRender();
-        });
-    }
-
-    renderTooltipFromData(...args) {
-        this.renderFrame(() => {
-            this.parent.shallowRender();
-            this.parent.renderTooltipFromData(...args);
-        });
-    }
-
     getTimeUnits() {
         return this.parent.getTimeUnits();
     }
 
     getAccuracy() {
         return this.parent.timeIndicators.accuracy;
+    }
+
+    clearRender() {
+        this.clear();
+
+        this.parent.timeIndicators.renderLines(0, this.height, this);
+
+        this.resolveRectRenderQueue();
+        this.resolveTextRenderQueue();
+        this.resolveStrokeRenderQueue();
+    }
+
+    renderTooltipFromData(...args) {
+        this.parent.renderTooltipFromData(...args);
+    }
+
+    render() {
+        this.parent.requestRender(this.id);
     }
 }

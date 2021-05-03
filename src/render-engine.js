@@ -79,7 +79,7 @@ export class RenderEngine extends EventEmitter {
         const freeHeight = heights.reduce((acc, height) => acc - (height || 0), this.height);
         const freeHeightPart = freeHeight / heightlessCount;
 
-        return heights.map((height) => height || freeHeightPart);
+        return heights.map((height) => Math.ceil(height || freeHeightPart));
     }
 
     reset() {

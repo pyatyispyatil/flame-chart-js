@@ -7,6 +7,7 @@ export class InteractionsEngine extends EventEmitter {
         this.renderEngine = renderEngine;
         this.canvas = canvas;
 
+        this.instances = [];
         this.mouse = {
             x: 0,
             y: 0
@@ -23,10 +24,17 @@ export class InteractionsEngine extends EventEmitter {
         this.reset();
     }
 
+    makeInstance(renderEngine) {
+        const separatedInteractionsEngine = new SeparatedInteractionsEngine(this, renderEngine);
+
+        this.instances.push(separatedInteractionsEngine);
+
+        return separatedInteractionsEngine;
+    }
+
     reset() {
         this.selectedRegion = null;
         this.hoveredRegion = null;
-        this.hitRegions = [];
     }
 
     destroy() {
@@ -112,16 +120,9 @@ export class InteractionsEngine extends EventEmitter {
 
             this.renderEngine.tryToChangePosition(mouseDeltaX)
 
-            if (this.positionY + mouseDeltaY >= 0) {
-                this.positionY += mouseDeltaY;
-            } else {
-                this.positionY = 0;
+            if (mouseDeltaY) {
+                this.emit('change-position-y', mouseDeltaY);
             }
-
-            this.emit('change-position', {
-                deltaX: mouseDeltaX,
-                deltaY: mouseDeltaY
-            });
         }
 
         this.mouse.x = e.offsetX;
@@ -146,16 +147,6 @@ export class InteractionsEngine extends EventEmitter {
         this.emit('select', this.selectedRegion, this.mouse);
     }
 
-    clearHitRegions() {
-        this.hitRegions = [];
-    }
-
-    addHitRegion(type, data, x, y, w, h) {
-        this.hitRegions.push({
-            type, data, x, y, w, h
-        })
-    }
-
     checkRegionHover() {
         const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
 
@@ -168,8 +159,52 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     getHoveredRegion() {
-        return this.hitRegions.find(({ x, y, w, h }) => (
-            this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h
+        const hoveredInstance = this.instances.find(({ renderEngine }) => (
+            renderEngine.position <= this.mouse.y
+        ) && (
+            renderEngine.height + renderEngine.position >= this.mouse.y
         ));
+
+        if (hoveredInstance) {
+            const offsetTop = hoveredInstance.renderEngine.position;
+
+            return hoveredInstance.hitRegions.find(({ x, y, w, h }) => (
+                this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y + offsetTop && this.mouse.y <= y + h + offsetTop
+            ));
+        }
+    }
+}
+
+class SeparatedInteractionsEngine extends EventEmitter {
+    constructor(parent, renderEngine) {
+        super();
+
+        this.parent = parent;
+        this.renderEngine = renderEngine;
+
+        parent.on('select', (...args) => this.emit('select', ...args));
+        parent.on('hover', (...args) => this.emit('hover', ...args));
+        parent.on('change-position-y', (...args) => this.emit('change-position-y', ...args));
+
+        this.clearHitRegions();
+    }
+
+    getMouse() {
+        const { x, y } = this.parent.mouse;
+
+        return {
+            x,
+            y: y - this.renderEngine.position
+        };
+    }
+
+    clearHitRegions() {
+        this.hitRegions = [];
+    }
+
+    addHitRegion(type, data, x, y, w, h) {
+        this.hitRegions.push({
+            type, data, x, y, w, h
+        });
     }
 }

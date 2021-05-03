@@ -16,7 +16,6 @@ export class TimeMarksPlugin {
     }
 
     render() {
-        this.renderEngine.clear();
         this.renderEngine.parent.timeIndicators.renderTimes(this.renderEngine);
         this.renderEngine.parent.timeIndicators.renderLines(0, this.renderEngine.height, this.renderEngine);
 

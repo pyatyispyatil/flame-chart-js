@@ -1,5 +1,5 @@
-import { RenderEngine } from './render-engine.js';
-import { InteractionsEngine } from './interactions-engine.js';
+import { RenderEngine } from './engines/render-engine.js';
+import { InteractionsEngine } from './engines/interactions-engine.js';
 import { EventEmitter } from 'events';
 
 const defaultSettings = {
@@ -9,7 +9,18 @@ const defaultSettings = {
     timeUnits: 'ms'
 }
 
-export class FlameChart extends EventEmitter {
+/*
+* ToDo:
+* data updating in plugins
+* naming
+* collapsing
+* public interface
+*
+* timeframe selector
+* network
+* */
+
+export default class FlameChartContainer extends EventEmitter {
     constructor({ canvas, plugins, settings }) {
         super();
 
@@ -41,6 +52,11 @@ export class FlameChart extends EventEmitter {
         this.renderEngine.render();
     }
 
+    resize(width, height) {
+        this.renderEngine.resize(width, height);
+        this.renderEngine.render();
+    }
+
     execOnPlugins(fnName, ...args) {
         let handled = false;
         let index = 0;
@@ -50,12 +66,6 @@ export class FlameChart extends EventEmitter {
                 this.plugins[index][fnName](...args);
                 index++;
             }
-        }
-    }
-
-    renderTooltip() {
-        if (this.hoveredRegion) {
-            this.execOnPlugins('renderTooltip', this.hoveredRegion);
         }
     }
 

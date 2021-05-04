@@ -1,11 +1,15 @@
-import { flatTree } from '../utils.js';
-import { clusterizeFlatTree, metaClusterizeFlatTree, reclusterizeClusteredFlatTree } from '../tree-clusters.js';
+import {
+    flatTree,
+    clusterizeFlatTree,
+    metaClusterizeFlatTree,
+    reclusterizeClusteredFlatTree
+} from './tree-clusters.js';
 import Color from 'color';
 import { EventEmitter } from 'events';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
-export class FlameChartPlugin extends EventEmitter {
+export default class FlameChartPlugin extends EventEmitter {
     constructor({
                     data,
                     colors

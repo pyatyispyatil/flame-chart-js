@@ -23,7 +23,7 @@ const treeConfig = [
     { name: 'colorsCount', value: 10 },
 ];
 
-const timestamps = [
+const marks = [
     {
         shortName: 'DCL',
         fullName: 'DOMContentLoaded',
@@ -62,7 +62,7 @@ canvas.height = height;
 const flameChart = new FlameChart({
     canvas,
     data: currentData,
-    timestamps,
+    marks,
     colors,
     settings: {
         performance

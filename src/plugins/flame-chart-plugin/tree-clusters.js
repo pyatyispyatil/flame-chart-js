@@ -2,6 +2,38 @@ const MIN_BLOCK_SIZE = 1;
 const STICK_DISTANCE = 0.25;
 const MIN_CLUSTER_SIZE = MIN_BLOCK_SIZE * 2 + STICK_DISTANCE;
 
+export const walk = (treeList, cb, parent = null, level = 0) => {
+    treeList.forEach((child) => {
+        const res = cb(child, parent, level);
+
+        if (child.children) {
+            walk(child.children, cb, res || child, level + 1);
+        }
+    });
+}
+
+export const flatTree = (treeList) => {
+    const result = [];
+    let index = 0;
+
+    walk(treeList, (node, parent, level) => {
+        const newNode = {
+            ...node,
+            end: node.start + node.duration,
+            parent,
+            level,
+            index: index++
+        };
+
+        result.push(newNode);
+
+        return newNode;
+    });
+
+    return result;
+}
+
+
 const calcClusterDuration = (nodes) => {
     const firstNode = nodes[0];
     const lastNode = nodes[nodes.length - 1];

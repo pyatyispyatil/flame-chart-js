@@ -1,26 +1,33 @@
-import { FlameChart } from './flame-chart.js';
-import { FlameChartPlugin } from './plugins/flame-chart-plugin.js';
-import { TimeMarksPlugin } from './plugins/time-marks-plugin.js';
+import FlameChartContainer from './flame-chart-container.js';
+import FlameChartPlugin from './plugins/flame-chart-plugin';
+import TimeIndicatorsPlugin from './plugins/time-indicators-plugin.js';
+import MarksPlugin from './plugins/marks-plugin.js';
 
-export default class FlameChartBasic extends FlameChart {
+export default class FlameChartBasic extends FlameChartContainer {
     constructor({
                     canvas,
                     data,
-                    timestamps,
+                    marks,
                     colors,
-                    settings
+                    settings,
+                    plugins = []
                 }) {
         const flameChartPlugin = new FlameChartPlugin({ data, colors });
+
         flameChartPlugin.on('select', (node) => this.emit('select', node));
 
-        const timeMarksPlugin = new TimeMarksPlugin();
+        const marksPlugin = new MarksPlugin(marks);
+
+        const timeIndicatorsPlugin = new TimeIndicatorsPlugin();
 
         super({
             canvas,
             settings,
             plugins: [
-                timeMarksPlugin,
-                flameChartPlugin
+                timeIndicatorsPlugin,
+                marksPlugin,
+                flameChartPlugin,
+                ...plugins
             ]
         });
     }

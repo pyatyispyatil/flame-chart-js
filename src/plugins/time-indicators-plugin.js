@@ -1,4 +1,4 @@
-export class TimeMarksPlugin {
+export default class TimeIndicatorsPlugin {
     constructor() {
     }
 

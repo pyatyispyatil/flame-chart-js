@@ -66,6 +66,7 @@ export class InteractionsEngine extends EventEmitter {
         e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
+        const initialZoom = this.renderEngine.getInitialZoom();
         const startPosition = this.renderEngine.positionX;
         const startZoom = this.renderEngine.zoom;
         const positionScrollDelta = deltaX / this.renderEngine.zoom;
@@ -73,7 +74,7 @@ export class InteractionsEngine extends EventEmitter {
 
         this.renderEngine.tryToChangePosition(positionScrollDelta);
 
-        zoomDelta = this.renderEngine.zoom - zoomDelta >= this.renderEngine.initialZoom ? zoomDelta : this.renderEngine.zoom - this.renderEngine.initialZoom
+        zoomDelta = this.renderEngine.zoom - zoomDelta >= initialZoom ? zoomDelta : this.renderEngine.zoom - initialZoom
 
         if (zoomDelta !== 0) {
             const zoomed = this.renderEngine.setZoom(this.renderEngine.zoom - zoomDelta);

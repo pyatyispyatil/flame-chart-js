@@ -1,9 +1,19 @@
-import { getPixelRatio } from './utils.js';
 import { EventEmitter } from 'events';
 import { TimeIndicators } from './time-indicators.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
+
+const getPixelRatio = (ctx) => {
+    const dpr = window.devicePixelRatio || 1;
+    const bsr = ctx.webkitBackingStorePixelRatio ||
+        ctx.mozBackingStorePixelRatio ||
+        ctx.msBackingStorePixelRatio ||
+        ctx.oBackingStorePixelRatio ||
+        ctx.backingStorePixelRatio || 1;
+
+    return dpr / bsr;
+}
 
 class BasicRenderEngine extends EventEmitter {
     constructor(canvas, settings) {
@@ -63,7 +73,8 @@ class BasicRenderEngine extends EventEmitter {
         this.ctx.fillText(text, x, y);
     }
 
-    renderRect(color, x, y, w) {
+    renderBlock(color, x, y, w) {
+        this.setCtxColor(color);
         this.ctx.fillRect(x, y, w, this.nodeHeight);
     }
 
@@ -83,6 +94,10 @@ class BasicRenderEngine extends EventEmitter {
 
     timeToPosition(time) {
         return time * this.zoom - this.positionX * this.zoom
+    }
+
+    pixelToTime(width) {
+        return width / this.zoom;
     }
 
     setZoom(zoom) {
@@ -129,7 +144,7 @@ class BasicRenderEngine extends EventEmitter {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
 
-            items.forEach(({ x, y, w }) => this.renderRect(color, x, y, w));
+            items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
         });
 
         this.rectRenderQueue = {};
@@ -190,11 +205,11 @@ class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    calcInitialZoom() {
+    getInitialZoom() {
         if (this.max - this.min > 0) {
-            this.initialZoom = this.width / (this.max - this.min);
+            return this.width / (this.max - this.min);
         } else {
-            this.initialZoom = 1;
+            return 1;
         }
     }
 
@@ -203,12 +218,11 @@ class BasicRenderEngine extends EventEmitter {
     }
 
     initView() {
-        this.calcInitialZoom();
         this.resetView();
     }
 
     resetView() {
-        this.setZoom(this.initialZoom);
+        this.setZoom(this.getInitialZoom());
         this.setPositionX(this.min);
     }
 
@@ -302,6 +316,19 @@ export class RenderEngine extends BasicRenderEngine {
         return offscreenRenderEngine;
     }
 
+    resize(width, height) {
+        const currentWidth = this.width;
+
+        super.resize(width, height);
+        this.recalcChildrenSizes();
+
+        if (this.getInitialZoom() > this.zoom) {
+            this.resetView();
+        } else if (this.positionX > this.min) {
+            this.tryToChangePosition(-this.pixelToTime((width - currentWidth) / 2));
+        }
+    }
+
     recalcChildrenSizes() {
         const childrenSizes = this.getChildrenSizes();
 
@@ -323,6 +350,7 @@ export class RenderEngine extends BasicRenderEngine {
         }), { position: 0, result: [] }).result;
 
         return preparedHeights.map((height, index) => ({
+            width: this.width,
             height,
             position: heightPositions[index]
         }));
@@ -388,10 +416,22 @@ export class RenderEngine extends BasicRenderEngine {
             this.ctx.drawImage(engine.canvas, 0, engine.position);
         });
 
-        this.plugins.forEach((plugin) => plugin.renderTooltip && plugin.renderTooltip());
+        this.plugins.forEach((plugin) => {
+            if (plugin.postRender) {
+                plugin.postRender();
+            }
+
+            if (plugin.renderTooltip) {
+                plugin.renderTooltip();
+            }
+        });
     }
 
     render() {
+        cancelAnimationFrame(this.lastPartialAnimationFrame);
+        this.requestedRenders = [];
+        this.lastPartialAnimationFrame = null;
+
         if (!this.lastGlobalAnimationFrame) {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
                 this.timeIndicators.calcTimeline();

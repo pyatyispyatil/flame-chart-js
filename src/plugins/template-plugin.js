@@ -1,8 +1,12 @@
-export class TemplatePlugin {
+export default class TemplatePlugin {
     constructor() {
     }
 
     init(renderEngine, interactionsEngine) {
+        this.renderEngine = renderEngine;
+        this.interactionsEngine = interactionsEngine;
+
+        this.height = 0;
     }
 
     getMinMax() {
@@ -17,5 +21,10 @@ export class TemplatePlugin {
     }
 
     renderTooltip() {
+
+    }
+
+    postRender() {
+
     }
 }

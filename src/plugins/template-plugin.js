@@ -7,13 +7,8 @@ export default class TemplatePlugin {
         this.interactionsEngine = interactionsEngine;
 
         this.height = 0;
-    }
-
-    getMinMax() {
-        return {
-            min: 0,
-            max: 0
-        }
+        this.min = 0;
+        this.max = 1000;
     }
 
     render() {

@@ -19,7 +19,7 @@ export default class FlameChartPlugin extends EventEmitter {
         this.data = data;
         this.userColors = colors;
 
-        this.setData(this.data);
+        this.parseData(this.data);
         this.reset();
     }
 
@@ -57,7 +57,7 @@ export default class FlameChartPlugin extends EventEmitter {
         this.selectedRegion = null;
     }
 
-    getMinMax() {
+    calcMinMax() {
         const { flatTree } = this;
 
         let isFirst = true;
@@ -75,7 +75,8 @@ export default class FlameChartPlugin extends EventEmitter {
             }
         });
 
-        return { min, max };
+        this.min = min;
+        this.max = max;
     }
 
     handleSelect(region) {
@@ -136,10 +137,20 @@ export default class FlameChartPlugin extends EventEmitter {
     setData(data) {
         this.data = data;
 
-        this.flatTree = flatTree(data)
-            .sort((a, b) => (a.level - b.level) || a.start - b.start);
+        this.parseData();
+        this.initData();
 
         this.reset();
+
+        this.renderEngine.recalcMinMax();
+        this.renderEngine.resetParentView();
+    }
+
+    parseData() {
+        this.flatTree = flatTree(this.data)
+            .sort((a, b) => (a.level - b.level) || a.start - b.start);
+
+        this.calcMinMax();
     }
 
     initData() {
@@ -147,8 +158,8 @@ export default class FlameChartPlugin extends EventEmitter {
         this.initialClusterizedFlatTree = clusterizeFlatTree(
             this.metaClusterizedFlatTree,
             this.renderEngine.zoom,
-            this.renderEngine.min,
-            this.renderEngine.max
+            this.min,
+            this.max
         );
 
         this.reclusterizeClusteredFlatTree();

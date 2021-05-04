@@ -9,17 +9,6 @@ const defaultSettings = {
     timeUnits: 'ms'
 }
 
-/*
-* ToDo:
-* data updating in plugins
-* naming
-* collapsing
-* public interface
-*
-* timeframe selector
-* network
-* */
-
 export default class FlameChartContainer extends EventEmitter {
     constructor({ canvas, plugins, settings }) {
         super();
@@ -29,9 +18,6 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine = new RenderEngine(canvas, this.settings, plugins);
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
-
-        this.calcMinMax();
-        this.renderEngine.initView();
 
         this.plugins.forEach((plugin) => {
             const renderEngine = this.renderEngine.makeInstance();
@@ -43,12 +29,9 @@ export default class FlameChartContainer extends EventEmitter {
             );
         });
 
+        this.renderEngine.calcMinMax();
+        this.renderEngine.resetView();
         this.renderEngine.recalcChildrenSizes();
-
-        this.render();
-    }
-
-    render() {
         this.renderEngine.render();
     }
 
@@ -67,21 +50,6 @@ export default class FlameChartContainer extends EventEmitter {
                 index++;
             }
         }
-    }
-
-    calcMinMax() {
-        const { min, max } = this.plugins
-            .filter((plugin) => plugin.getMinMax)
-            .map((plugin) => plugin.getMinMax())
-            .reduce((acc, { min, max }) => ({
-                min: Math.min(acc.min, min),
-                max: Math.max(acc.max, max),
-            }));
-
-        this.min = min;
-        this.max = max;
-
-        this.renderEngine.setMinMax(this.min, this.max);
     }
 
     setSettings(settings = {}) {

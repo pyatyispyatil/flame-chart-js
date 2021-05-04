@@ -3,15 +3,15 @@ import Color from 'color';
 export default class MarksPlugin {
     constructor(marks) {
         this.marks = this.prepareMarks(marks);
+
+        this.calcMinMax();
     }
 
-    getMinMax() {
+    calcMinMax() {
         const { marks } = this;
 
-        const min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
-        const max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
-
-        return { min, max };
+        this.min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
+        this.max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
     }
 
     init(renderEngine, interactionsEngine) {
@@ -34,9 +34,11 @@ export default class MarksPlugin {
             .sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    set(marks) {
+    setMarks(marks) {
         this.marks = this.prepareMarks(marks);
-        this.renderEngine.render();
+
+        this.renderEngine.recalcMinMax();
+        this.renderEngine.resetParentView();
     }
 
     calcMarksBlockPosition(position, prevEnding) {

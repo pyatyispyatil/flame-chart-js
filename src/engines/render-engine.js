@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { TimeIndicators } from './time-indicators.js';
+import { isNumber } from 'rollup-plugin-node-builtins/src/es6/util.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
@@ -54,7 +55,6 @@ class BasicRenderEngine extends EventEmitter {
         this.textRenderQueue = [];
         this.strokeRenderQueue = [];
         this.rectRenderQueue = {};
-        this.lastAnimationFrame = null;
         this.lastUsedColor = null;
     }
 
@@ -101,15 +101,9 @@ class BasicRenderEngine extends EventEmitter {
     }
 
     setZoom(zoom) {
-        if (0 < MAX_ACCURACY || zoom <= this.zoom) { //ToDo threshold
-            this.zoom = zoom;
+        this.zoom = zoom;
 
-            this.emit('change-zoom', this.zoom);
-
-            return true;
-        }
-
-        return false;
+        this.emit('change-zoom', this.zoom);
     }
 
     setPositionX(x) {
@@ -217,10 +211,6 @@ class BasicRenderEngine extends EventEmitter {
         return this.width / this.zoom;
     }
 
-    initView() {
-        this.resetView();
-    }
-
     resetView() {
         this.setZoom(this.getInitialZoom());
         this.setPositionX(this.min);
@@ -309,11 +299,32 @@ export class RenderEngine extends BasicRenderEngine {
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
-        offscreenRenderEngine.initView();
+        offscreenRenderEngine.resetView();
 
         this.childEngines.push(offscreenRenderEngine);
 
         return offscreenRenderEngine;
+    }
+
+    calcMinMax() {
+        const min = this.plugins
+            .map(({ min }) => min)
+            .filter(isNumber)
+            .reduce((acc, min) => Math.min(acc, min));
+
+        const max = this.plugins
+            .map(({ max }) => max)
+            .filter(isNumber)
+            .reduce((acc, max) => Math.max(acc, max));
+
+        this.setMinMax(min, max);
+    }
+
+    setMinMax(min, max) {
+        super.setMinMax(min, max);
+
+        this.timeIndicators.setMinMax(min, max);
+        this.childEngines.forEach((engine) => engine.setMinMax(min, max));
     }
 
     resize(width, height) {
@@ -361,24 +372,19 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     setZoom(zoom) {
-        const res = super.setZoom(zoom);
-        this.childEngines.forEach((engine) => engine.setZoom(zoom));
+        if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
+            super.setZoom(zoom);
+            this.childEngines.forEach((engine) => engine.setZoom(zoom));
 
-        return res;
+            return true;
+        }
+
+        return false;
     }
 
     setPositionX(x) {
         const res = super.setPositionX(x);
         this.childEngines.forEach((engine) => engine.setPositionX(x));
-
-        return res;
-    }
-
-    setMinMax(min, max) {
-        const res = super.setMinMax(min, max);
-
-        this.timeIndicators.setMinMax(min, max);
-        this.childEngines.forEach((engine) => engine.setMinMax(min, max));
 
         return res;
     }
@@ -484,6 +490,10 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         }
     }
 
+    recalcMinMax() {
+        this.parent.calcMinMax();
+    }
+
     getTimeUnits() {
         return this.parent.getTimeUnits();
     }
@@ -504,6 +514,11 @@ class OffscreenRenderEngine extends BasicRenderEngine {
 
     renderTooltipFromData(...args) {
         this.parent.renderTooltipFromData(...args);
+    }
+
+    resetParentView() {
+        this.parent.resetView();
+        this.parent.render();
     }
 
     render() {

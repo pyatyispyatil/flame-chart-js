@@ -1,3 +1,5 @@
+const MIN_PIXEL_DELTA = 85;
+
 export class TimeIndicators {
     constructor(renderEngine) {
         this.renderEngine = renderEngine;
@@ -16,8 +18,7 @@ export class TimeIndicators {
 
     calcTimeline() {
         const timeWidth = this.max - this.min;
-        const minPixelDelta = 90;
-        const initialLinesCount = this.renderEngine.width / minPixelDelta;
+        const initialLinesCount = this.renderEngine.width / MIN_PIXEL_DELTA;
         const initialTimeLineDelta = timeWidth / initialLinesCount;
 
         const realView = this.renderEngine.getRealView();

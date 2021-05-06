@@ -1,14 +1,31 @@
+import { deepMerge } from '../utils.js';
+
 const MIN_PIXEL_DELTA = 85;
 
-export class TimeIndicators {
-    constructor(renderEngine) {
-        this.renderEngine = renderEngine;
+export const defaultTimeGridSettings = {
+    styles: {
+        timeGrid: {
+            color: 'rgb(126, 126, 126, 0.5)'
+        }
+    }
+};
 
-        this.timeUnits = this.renderEngine.getTimeUnits();
+export class TimeGrid {
+    constructor(renderEngine, settings) {
+        this.renderEngine = renderEngine;
         this.start = 0;
         this.end = 0;
         this.accuracy = 0;
         this.delta = 0;
+
+        this.setSettings(settings);
+    }
+
+    setSettings(data) {
+        const settings = deepMerge(defaultTimeGridSettings, data);
+
+        this.styles = settings.styles.timeGrid;
+        this.timeUnits = this.renderEngine.getTimeUnits();
     }
 
     setMinMax(min, max) {
@@ -57,7 +74,7 @@ export class TimeIndicators {
     }
 
     renderLines(start, height, renderEngine = this.renderEngine) {
-        renderEngine.setCtxColor('rgb(126, 126, 126, 0.5)');
+        renderEngine.setCtxColor(this.styles.color);
 
         this.forEachTime((pixelPosition) => {
             renderEngine.fillRect(pixelPosition, start, 1, height);
@@ -65,13 +82,14 @@ export class TimeIndicators {
     }
 
     renderTimes(renderEngine) {
-        renderEngine.setCtxColor('black');
+        renderEngine.setCtxColor(renderEngine.styles.fontColor);
+        renderEngine.setCtxFont(renderEngine.styles.font);
 
         this.forEachTime((pixelPosition, timePosition) => {
             renderEngine.fillText(
                 timePosition.toFixed(this.accuracy) + this.timeUnits,
-                pixelPosition + this.renderEngine.blockPadding,
-                this.renderEngine.charHeight
+                pixelPosition + renderEngine.blockPaddingLeftRight,
+                renderEngine.charHeight
             );
         });
     }

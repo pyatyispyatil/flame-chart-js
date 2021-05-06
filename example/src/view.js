@@ -2,14 +2,23 @@ const wrapper = document.getElementById('wrapper');
 const canvas = document.getElementById('canvas');
 
 const nodeView = document.getElementById('selected-node');
-const inputsContainer = document.getElementById('inputs');
+const dataInputsContainer = document.getElementById('data-inputs');
+const stylesInputsContainer = document.getElementById('styles-inputs');
 
+const updateStylesButton = document.getElementById('update-styles-button');
 const updateButton = document.getElementById('update-button');
 const exportButton = document.getElementById('export-button');
 const importButton = document.getElementById('import-button');
 const importInput = document.getElementById('import-input');
 
-const addInputs = (inputsDict) => inputsDict.map(({ name, value, units }, index) => {
+const customStyles = {};
+
+const createInput = ({
+                         name,
+                         units,
+                         value,
+                         type = 'number'
+                     }) => {
     const input = document.createElement('input');
     const label = document.createElement('label');
     const div = document.createElement('div');
@@ -23,18 +32,64 @@ const addInputs = (inputsDict) => inputsDict.map(({ name, value, units }, index)
     input.id = name;
     input.value = value;
     input.classList.add('input');
-    input.setAttribute('type', 'number');
-    input.addEventListener('change', (e) => inputsDict[index].value = parseInt(e.target.value));
+    input.setAttribute('type', type);
 
     div.appendChild(label);
     div.appendChild(input);
 
-    inputsContainer.appendChild(div);
-});
+    return {
+        div, input, label
+    }
+}
 
-const performanceInput = document.getElementById('performance');
-let performance = true;
-performanceInput.checked = performance;
+const addInputs = (inputsContainer, inputsDict) => {
+    const fragment = document.createDocumentFragment();
+
+    inputsDict.forEach((item, index) => {
+        const { div, input } = createInput(item);
+
+        input.addEventListener('change', (e) => inputsDict[index].value = parseInt(e.target.value));
+
+        fragment.appendChild(div);
+    });
+
+    inputsContainer.appendChild(fragment);
+}
+
+const addStylesInputs = (inputsContainer, styles) => {
+    const fragment = document.createDocumentFragment();
+
+    Object.entries(styles).forEach(([key, value]) => {
+        customStyles[key] = {
+            ...value
+        };
+    });
+
+    Object.entries(styles).forEach(([component, stylesBlock]) => {
+        const title = document.createElement('div');
+        title.innerHTML = component;
+        title.classList.add('inputsTitle');
+
+        fragment.appendChild(title);
+
+        Object.entries(stylesBlock).forEach(([styleName, value]) => {
+            const isNumber = typeof value === 'number';
+            const { input, div } = createInput({
+                name: styleName,
+                value,
+                type: isNumber ? 'number' : 'text'
+            });
+
+            input.addEventListener('change', (e) => {
+                customStyles[component][styleName] = isNumber ? parseInt(e.target.value) : e.target.value;
+            });
+
+            fragment.appendChild(div);
+        });
+    });
+
+    inputsContainer.appendChild(fragment);
+}
 
 importButton.addEventListener('click', () => {
     importInput.click();
@@ -42,8 +97,8 @@ importButton.addEventListener('click', () => {
 
 
 const download = (content, fileName, contentType) => {
-    const a = document.createElement("a");
-    const file = new Blob([content], {type: contentType});
+    const a = document.createElement('a');
+    const file = new Blob([content], { type: contentType });
 
     a.href = URL.createObjectURL(file);
     a.download = fileName;
@@ -51,25 +106,24 @@ const download = (content, fileName, contentType) => {
     a.click();
 }
 
-export const initView = (flameChart, config) => {
-    performanceInput.addEventListener('change', (e) => {
-        performance = e.target.checked;
-
-        flameChart.setSettings({
-            performance
-        });
-    });
-
-    addInputs(config);
+export const initView = (flameChart, config, styles) => {
+    addInputs(dataInputsContainer, config);
+    addStylesInputs(stylesInputsContainer, styles);
 }
 
-export const getInputValues = (config) => config.reduce((acc, {name, value}) => {
+export const getInputValues = (config) => config.reduce((acc, { name, value }) => {
     acc[name] = value;
     return acc;
 }, {});
 
 export const setNodeView = (text) => {
     nodeView.innerHTML = text;
+}
+
+export const onApplyStyles = (cb) => {
+    updateStylesButton.addEventListener('click', () => {
+        cb(customStyles);
+    });
 }
 
 export const onUpdate = (cb) => {
@@ -104,7 +158,7 @@ export const getWrapperWH = () => {
 
     return [
         parseInt(style.getPropertyValue('width')),
-        parseInt(style.getPropertyValue('height')) - 4
+        parseInt(style.getPropertyValue('height')) - 3
     ];
 }
 

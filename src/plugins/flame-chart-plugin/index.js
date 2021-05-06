@@ -103,7 +103,7 @@ export default class FlameChartPlugin extends EventEmitter {
             const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
 
-                return mouse.x >= x && mouse.x <= x + w && mouse.y >= y && mouse.y <= y + this.renderEngine.nodeHeight;
+                return mouse.x >= x && mouse.x <= x + w && mouse.y >= y && mouse.y <= y + this.renderEngine.blockHeight;
             });
 
             if (hoveredNode) {
@@ -179,7 +179,7 @@ export default class FlameChartPlugin extends EventEmitter {
 
         return {
             x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.nodeHeight + 1)) - this.positionY,
+            y: (level * (this.renderEngine.blockHeight + 1)) - this.positionY,
             w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
         }
     }
@@ -205,7 +205,7 @@ export default class FlameChartPlugin extends EventEmitter {
     render() {
         const {
             width,
-            nodeHeight,
+            blockHeight,
             height,
             minTextWidth
         } = this.renderEngine;
@@ -223,7 +223,7 @@ export default class FlameChartPlugin extends EventEmitter {
 
             if (x + w > 0
                 && x < width
-                && y + nodeHeight > 0
+                && y + blockHeight > 0
                 && y < height) {
                 cb(cluster, x, y, w);
             }
@@ -237,7 +237,7 @@ export default class FlameChartPlugin extends EventEmitter {
             } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
-            if (mouse.y >= y && mouse.y <= y + nodeHeight) {
+            if (mouse.y >= y && mouse.y <= y + blockHeight) {
                 addHitRegion(cluster, x, y, w);
             }
 
@@ -251,7 +251,7 @@ export default class FlameChartPlugin extends EventEmitter {
         }
 
         const addHitRegion = (cluster, x, y, w) => {
-            this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, nodeHeight);
+            this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
         }
 
         this.interactionsEngine.clearHitRegions();
@@ -261,7 +261,7 @@ export default class FlameChartPlugin extends EventEmitter {
             const { start, duration, level } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.nodeHeight);
+            this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
         }
 
         clearTimeout(this.renderChartTimeout);

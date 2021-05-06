@@ -1,10 +1,14 @@
 import FlameChart from './../../src/index.js';
+import { defaultTimeGridSettings } from '../../src/engines/time-grid.js';
+import { defaultRenderSettings } from '../../src/engines/render-engine.js';
+import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {
     initView,
     getInputValues,
     setNodeView,
+    onApplyStyles,
     onUpdate,
     onExport,
     onImport,
@@ -82,6 +86,12 @@ window.addEventListener('resize', () => {
     flameChart.resize(...getWrapperWH());
 });
 
+onApplyStyles((styles) => {
+    flameChart.setSettings({
+        styles
+    });
+})
+
 onUpdate(() => {
     currentData = generateData();
 
@@ -99,4 +109,8 @@ onExport(() => {
 })
 
 initQuery(flameChart);
-initView(flameChart, treeConfig);
+initView(flameChart, treeConfig, {
+    ...defaultRenderSettings.styles,
+    ...defaultTimeGridSettings.styles,
+    ...defaultTimeGridPluginSettings.styles
+});

@@ -15,6 +15,10 @@ export default class TemplatePlugin {
 
     }
 
+    setSettings() {
+
+    }
+
     renderTooltip() {
 
     }

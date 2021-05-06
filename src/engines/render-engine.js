@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { TimeIndicators } from './time-indicators.js';
-import { isNumber } from 'rollup-plugin-node-builtins/src/es6/util.js';
+import { TimeGrid } from './time-grid.js';
+import { deepMerge, isNumber } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
@@ -16,6 +16,22 @@ const getPixelRatio = (ctx) => {
     return dpr / bsr;
 }
 
+export const defaultRenderSettings = {
+    timeUnits: 'ms',
+    styles: {
+        main: {
+            blockHeight: 16,
+            blockPaddingLeftRight: 4,
+            backgroundColor: 'white',
+            font: `10px sans-serif`,
+            fontColor: 'black',
+            tooltipHeaderFontColor: 'black',
+            tooltipBodyFontColor: '#688f45',
+            tooltipBackgroundColor: 'white'
+        }
+    }
+};
+
 class BasicRenderEngine extends EventEmitter {
     constructor(canvas, settings) {
         super();
@@ -27,10 +43,19 @@ class BasicRenderEngine extends EventEmitter {
         this.ctx = canvas.getContext('2d', { alpha: false });
         this.pixelRatio = getPixelRatio(this.ctx);
 
-        this.settings = settings;
-        this.nodeHeight = settings.nodeHeight;
-        this.font = settings.font;
+        this.setSettings(settings);
+
+        this.reset();
+    }
+
+    setSettings(data) {
+        const settings = deepMerge(defaultRenderSettings, data);
+
         this.timeUnits = settings.timeUnits;
+        this.styles = settings.styles.main;
+
+        this.blockHeight = this.styles.blockHeight;
+        this.ctx.font = this.styles.font;
 
         const {
             actualBoundingBoxAscent: fontAscent,
@@ -40,15 +65,12 @@ class BasicRenderEngine extends EventEmitter {
         const { width: placeholderWidth } = this.ctx.measureText('…');
         const fontHeight = fontAscent + fontDescent;
 
-        this.blockPadding = Math.ceil((this.nodeHeight - (fontHeight)) / 2);
+        this.blockPaddingLeftRight = this.styles.blockPaddingLeftRight;
+        this.blockPaddingTopBottom = Math.ceil((this.blockHeight - (fontHeight)) / 2);
         this.charHeight = fontHeight + 1;
         this.placeholderWidth = placeholderWidth;
         this.avgCharWidth = allCharsWidth / allChars.length;
         this.minTextWidth = this.avgCharWidth + this.placeholderWidth;
-
-        this.ctx.font = this.font;
-
-        this.reset();
     }
 
     reset() {
@@ -65,17 +87,23 @@ class BasicRenderEngine extends EventEmitter {
         }
     }
 
+    setCtxFont(font) {
+        if (font && this.ctx.font !== font) {
+            this.ctx.font = font;
+        }
+    }
+
     fillRect(x, y, w, h) {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    fillText(text, x, y,) {
+    fillText(text, x, y) {
         this.ctx.fillText(text, x, y);
     }
 
     renderBlock(color, x, y, w) {
         this.setCtxColor(color);
-        this.ctx.fillRect(x, y, w, this.nodeHeight);
+        this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
     renderStroke(color, x, y, w, h) {
@@ -88,7 +116,7 @@ class BasicRenderEngine extends EventEmitter {
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
-        this.setCtxColor('white');
+        this.setCtxColor(this.styles.backgroundColor);
         this.ctx.fillRect(x, y, w, h);
     }
 
@@ -122,7 +150,7 @@ class BasicRenderEngine extends EventEmitter {
 
     addTextToRenderQueue(text, x, y, w) {
         if (text) {
-            const textMaxWidth = w - (this.blockPadding * 2 - (x < 0 ? x : 0));
+            const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
                 this.textRenderQueue.push({ text, x, y, w, textMaxWidth });
@@ -145,7 +173,7 @@ class BasicRenderEngine extends EventEmitter {
     }
 
     resolveTextRenderQueue() {
-        this.setCtxColor('black');
+        this.setCtxColor(this.styles.fontColor);
 
         this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
@@ -163,7 +191,7 @@ class BasicRenderEngine extends EventEmitter {
             }
 
             if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPadding, y + this.nodeHeight - this.blockPadding);
+                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
             }
         });
 
@@ -222,10 +250,10 @@ class BasicRenderEngine extends EventEmitter {
 
         this.emit('resize', { width: this.width, height: this.height });
 
-        this.fixBlurryFont();
+        this.applyCanvasSize();
     }
 
-    fixBlurryFont() {
+    applyCanvasSize() {
         this.canvas.style.backgroundColor = 'white';
         this.canvas.style.overflow = 'hidden';
         this.canvas.style.width = this.width + 'px';
@@ -233,6 +261,7 @@ class BasicRenderEngine extends EventEmitter {
         this.canvas.width = this.width * this.pixelRatio;
         this.canvas.height = this.height * this.pixelRatio;
         this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+        this.ctx.font = this.styles.font;
     }
 
     renderTooltipFromData(header, body, mouse) {
@@ -242,37 +271,37 @@ class BasicRenderEngine extends EventEmitter {
         const maxWidth = [header, ...body]
             .map((text) => this.ctx.measureText(text))
             .reduce((acc, { width }) => Math.max(acc, width), 0);
-        const fullWidth = maxWidth + this.blockPadding * 2;
+        const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;
 
         this.ctx.shadowColor = 'black';
         this.ctx.shadowBlur = 5;
 
-        this.setCtxColor('white');
+        this.setCtxColor(this.styles.tooltipBackgroundColor);
         this.ctx.fillRect(
             mouseX,
             mouseY,
-            fullWidth + this.blockPadding * 2,
-            (this.charHeight + 2) * (body.length + 1) + this.blockPadding * 2
+            fullWidth + this.blockPaddingLeftRight * 2,
+            (this.charHeight + 2) * (body.length + 1) + this.blockPaddingLeftRight * 2
         );
 
         this.ctx.shadowColor = null;
         this.ctx.shadowBlur = null;
 
-        this.setCtxColor('black');
+        this.setCtxColor(this.styles.tooltipHeaderFontColor);
         this.ctx.fillText(
             header,
-            mouseX + this.blockPadding,
-            mouseY + this.nodeHeight - this.blockPadding
+            mouseX + this.blockPaddingLeftRight,
+            mouseY + this.blockHeight - this.blockPaddingTopBottom
         );
 
-        this.setCtxColor('#688f45');
+        this.setCtxColor(this.styles.tooltipBodyFontColor);
         body.forEach((text, index) => {
             const count = index + 1;
 
             this.ctx.fillText(
                 text,
-                mouseX + this.blockPadding,
-                mouseY + this.nodeHeight - this.blockPadding + (this.charHeight + 2) * count
+                mouseX + this.blockPaddingLeftRight,
+                mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * count
             );
         })
     }
@@ -287,7 +316,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.childEngines = [];
         this.requestedRenders = [];
 
-        this.timeIndicators = new TimeIndicators(this);
+        this.timeGrid = new TimeGrid(this, settings);
     }
 
     makeInstance() {
@@ -295,7 +324,8 @@ export class RenderEngine extends BasicRenderEngine {
             width: this.width,
             height: 0,
             id: this.childEngines.length,
-            parent: this
+            parent: this,
+            settings: this.settings
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
@@ -323,8 +353,24 @@ export class RenderEngine extends BasicRenderEngine {
     setMinMax(min, max) {
         super.setMinMax(min, max);
 
-        this.timeIndicators.setMinMax(min, max);
+        this.timeGrid.setMinMax(min, max);
         this.childEngines.forEach((engine) => engine.setMinMax(min, max));
+    }
+
+    setSettings(data) {
+        super.setSettings(data);
+
+        this.settings = data;
+
+        if (this.timeGrid) {
+            this.timeGrid.setSettings(data);
+        }
+
+        if (this.childEngines) {
+            this.childEngines.forEach((engine) => engine.setSettings(data));
+            this.plugins.forEach((plugin) => plugin.setSettings && plugin.setSettings(data));
+            this.recalcChildrenSizes();
+        }
     }
 
     resize(width, height) {
@@ -368,7 +414,7 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     getAccuracy() {
-        return this.timeIndicators.accuracy;
+        return this.timeGrid.accuracy;
     }
 
     setZoom(zoom) {
@@ -440,7 +486,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (!this.lastGlobalAnimationFrame) {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
-                this.timeIndicators.calcTimeline();
+                this.timeGrid.calcTimeline();
 
                 this.plugins.forEach((plugin, index) => {
                     this.childEngines[index].clear();
@@ -478,6 +524,10 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         this.id = id;
     }
 
+    setSettingsOverrides(settings) {
+        this.setSettings(deepMerge(this.parent.settings, settings));
+    }
+
     resize({ width, height, position }) {
         if (typeof width === 'number' && this.width !== width || typeof height === 'number' && this.height !== height) {
             super.resize(width, height);
@@ -499,13 +549,13 @@ class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     getAccuracy() {
-        return this.parent.timeIndicators.accuracy;
+        return this.parent.timeGrid.accuracy;
     }
 
     clearRender() {
         this.clear();
 
-        this.parent.timeIndicators.renderLines(0, this.height, this);
+        this.parent.timeGrid.renderLines(0, this.height, this);
 
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();

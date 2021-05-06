@@ -21,8 +21,10 @@ export default class MarksPlugin {
         this.interactionsEngine.on('hover', (region) => {
             this.hoveredRegion = region;
         });
+    }
 
-        this.height = this.renderEngine.nodeHeight + 1;
+    get height() {
+        return this.renderEngine.blockHeight + 1;
     }
 
     prepareMarks(marks) {
@@ -57,14 +59,14 @@ export default class MarksPlugin {
         this.marks.reduce((prevEnding, node) => {
             const { timestamp, color, shortName } = node;
             const { width } = this.renderEngine.ctx.measureText(shortName);
-            const fullWidth = width + this.renderEngine.blockPadding * 2;
+            const fullWidth = width + this.renderEngine.blockPaddingLeftRight * 2;
             const position = this.renderEngine.timeToPosition(timestamp);
             const blockPosition = this.calcMarksBlockPosition(position, prevEnding, width);
 
             this.renderEngine.addRectToRenderQueue(color, blockPosition, 0, fullWidth);
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);
 
-            this.interactionsEngine.addHitRegion('timestamp', node, blockPosition, 0, fullWidth, this.renderEngine.nodeHeight);
+            this.interactionsEngine.addHitRegion('timestamp', node, blockPosition, 0, fullWidth, this.renderEngine.blockHeight);
 
             return blockPosition + fullWidth;
         }, 0);

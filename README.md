@@ -43,7 +43,7 @@ const flameChart = new FlameChart({
             ]
         }
     ],
-    timestamps: [
+    marks: [
         {
             shortName: 'DCL',
             fullName: 'DOMContentLoaded',
@@ -55,17 +55,33 @@ const flameChart = new FlameChart({
         'sub-task': '#000000'
     },
     settings: {
-        performance: true
+        styles:
+            {
+                "main": {
+                    "blockHeight": 16,
+                    "blockPaddingLeftRight": 4,
+                    "backgroundColor": "white",
+                    "font": "10px sans-serif",
+                    "fontColor": "black",
+                    "tooltipHeaderFontColor": "black",
+                    "tooltipBodyFontColor": "#688f45",
+                    "tooltipBackgroundColor": "white"
+                },
+                "timeGrid": {
+                    "color": "rgb(126, 126, 126, 0.5)"
+                },
+                "timeGridPlugin": {
+                    "font": "10px sans-serif", 
+                    "fontColor": "black" 
+                }
+            }
     }
 });
 
-flameChart.on('select', (node) => {/*...*/});
+flameChart.on('select', (node) => {
+    /*...*/
+});
 ```
-
-#### Settings
-
-`performance: boolean (default: true)` - turn on brief visualization when nearby blocks are sticking together.
-This greatly improves performance, but sometimes reduces detail.
 
 #### Data format
 
@@ -86,7 +102,7 @@ type Data = Array<Node>;
 
 ```js
 flameChart.setData(newData);
-flameChart.setTimestamps(newTimestamps);
+flameChart.setMarks(newMarks);
 ```
 
 #### Scaling

@@ -18,18 +18,20 @@ const createInput = ({
                          units,
                          value,
                          type = 'number'
-                     }) => {
+                     }, prefix) => {
     const input = document.createElement('input');
     const label = document.createElement('label');
     const div = document.createElement('div');
 
+    const id = (prefix ? prefix + '-' : '') + name;
+
     div.classList.add('inputWrapper');
 
     label.classList.add('inputLabel');
-    label.setAttribute('for', name);
+    label.setAttribute('for', id);
     label.innerHTML = `${name}${units ? `(${units})` : ''}:`;
 
-    input.id = name;
+    input.id = id;
     input.value = value;
     input.classList.add('input');
     input.setAttribute('type', type);
@@ -78,7 +80,7 @@ const addStylesInputs = (inputsContainer, styles) => {
                 name: styleName,
                 value,
                 type: isNumber ? 'number' : 'text'
-            });
+            }, component);
 
             input.addEventListener('change', (e) => {
                 customStyles[component][styleName] = isNumber ? parseInt(e.target.value) : e.target.value;

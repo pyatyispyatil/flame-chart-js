@@ -11,6 +11,10 @@ export default class TemplatePlugin {
         this.max = 1000;
     }
 
+    postInit() {
+
+    }
+
     render() {
 
     }

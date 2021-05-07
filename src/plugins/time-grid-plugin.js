@@ -10,7 +10,7 @@ export const defaultTimeGridPluginSettings = {
 };
 
 export default class TimeGridPlugin {
-    constructor(settings) {
+    constructor(settings = {}) {
         this.setSettings(settings);
     }
 

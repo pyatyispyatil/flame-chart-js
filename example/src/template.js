@@ -98,9 +98,6 @@ export const template = ({ bundle }) => (
             border: 1px solid black;
             padding: 4px;
             margin-right: 16px;
-            display: flex;
-            justify-content: space-between;
-            flex-direction: column;
         }
         
         .footerSectionTitle{

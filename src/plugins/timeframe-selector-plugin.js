@@ -26,7 +26,8 @@ export const defaultTimeframeSelectorPluginSettings = {
             overlayColor: 'rgba(112,112,112,0.5)',
             knobColor: 'rgb(131,131,131)',
             knobSize: 6,
-            height: 60
+            height: 60,
+            backgroundColor: 'white'
         }
     }
 }
@@ -62,6 +63,12 @@ export default class TimeframeSelectorPlugin {
         this.interactionsEngine.on('up', (region, mouse, isClick) => {
             let isDoubleClick = false;
 
+            if (this.timeout) {
+                isDoubleClick = true;
+            }
+
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => this.timeout = null, 300);
             this.leftKnobMoving = false;
             this.rightKnobMoving = false;
             this.interactionsEngine.clearCursor();
@@ -71,13 +78,6 @@ export default class TimeframeSelectorPlugin {
             }
 
             this.selectingActive = false;
-
-            if (this.timeout) {
-                isDoubleClick = true;
-            }
-
-            clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => this.timeout = null, 300);
 
             if (isClick && !isDoubleClick) {
                 const rightKnobPosition = this.getRightKnobPosition();
@@ -176,7 +176,6 @@ export default class TimeframeSelectorPlugin {
         return (this.renderEngine.positionX - this.renderEngine.min + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
     }
 
-
     applyChanges() {
         this.renderEngine.parent.setPositionX(this.renderEngine.positionX);
         this.renderEngine.parent.setZoom(this.renderEngine.zoom);
@@ -191,7 +190,7 @@ export default class TimeframeSelectorPlugin {
 
         if (this.offscreenRenderEngine) {
             this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-            this.timeGrid.setSettings(this.settings);
+            this.timeGrid.setSettings(settings);
         }
 
         this.shouldRender = true;
@@ -201,9 +200,10 @@ export default class TimeframeSelectorPlugin {
         this.data = data;
 
         const dots = [];
-        let maxLevel = 0;
         const tree = flatTree(this.data);
         const { min, max } = getFlatTreeMinMax(tree);
+
+        let maxLevel = 0;
 
         this.min = min;
         this.max = max;

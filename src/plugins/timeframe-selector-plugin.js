@@ -332,7 +332,7 @@ export default class TimeframeSelectorPlugin {
 
         this.renderEngine.setCtxColor(this.styles.overlayColor);
         this.renderEngine.fillRect(currentLeftPosition - 1, 0, 1, this.renderEngine.height);
-        this.renderEngine.fillRect(currentRightPosition, 0, 1, this.renderEngine.height);
+        this.renderEngine.fillRect(currentRightPosition + 1, 0, 1, this.renderEngine.height);
 
         this.renderEngine.setCtxColor(this.styles.knobColor);
         this.renderEngine.fillRect(currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);

@@ -60,6 +60,8 @@ export default class TimeframeSelectorPlugin {
         });
 
         this.interactionsEngine.on('up', (region, mouse, isClick) => {
+            let isDoubleClick = false;
+
             this.leftKnobMoving = false;
             this.rightKnobMoving = false;
             this.interactionsEngine.clearCursor();
@@ -70,7 +72,14 @@ export default class TimeframeSelectorPlugin {
 
             this.selectingActive = false;
 
-            if (isClick) {
+            if (this.timeout) {
+                isDoubleClick = true;
+            }
+
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => this.timeout = null, 300);
+
+            if (isClick && !isDoubleClick) {
                 const rightKnobPosition = this.getRightKnobPosition();
                 const leftKnobPosition = this.getLeftKnobPosition();
 
@@ -87,6 +96,12 @@ export default class TimeframeSelectorPlugin {
                 }
 
                 this.applyChanges();
+            }
+
+            if (isDoubleClick) {
+                this.renderEngine.parent.setZoom(this.renderEngine.getInitialZoom());
+                this.renderEngine.parent.setPositionX(this.renderEngine.min);
+                this.renderEngine.parent.render();
             }
         });
 

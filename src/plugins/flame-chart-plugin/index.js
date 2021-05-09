@@ -144,7 +144,7 @@ export default class FlameChartPlugin extends EventEmitter {
     }
 
     initData() {
-        this.metaClusterizedFlatTree = metaClusterizeFlatTree(this.flatTree, () => true);
+        this.metaClusterizedFlatTree = metaClusterizeFlatTree(this.flatTree);
         this.initialClusterizedFlatTree = clusterizeFlatTree(
             this.metaClusterizedFlatTree,
             this.renderEngine.zoom,

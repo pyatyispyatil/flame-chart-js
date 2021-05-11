@@ -4,7 +4,7 @@ import {
     clusterizeFlatTree,
     getFlatTreeMinMax,
     reclusterizeClusteredFlatTree
-} from './flame-chart-plugin/tree-clusters.js';
+} from './utils/tree-clusters.js';
 import { deepMerge } from '../utils.js';
 import { TimeGrid } from '../engines/time-grid.js';
 

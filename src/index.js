@@ -3,12 +3,14 @@ import FlameChartPlugin from './plugins/flame-chart-plugin.js';
 import TimeGridPlugin from './plugins/time-grid-plugin.js';
 import MarksPlugin from './plugins/marks-plugin.js';
 import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin.js';
+import WaterfallPlugin from './plugins/waterfall-plugin.js';
 
 export { default as FlameChartContainer } from './flame-chart-container.js';
 export { default as FlameChartPlugin } from './plugins/flame-chart-plugin.js';
 export { default as TimeGridPlugin } from './plugins/time-grid-plugin.js';
 export { default as MarksPlugin } from './plugins/marks-plugin.js';
 export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin.js';
+export { default as WaterfallPlugin } from './plugins/waterfall-plugin.js';
 
 export default class FlameChart extends FlameChartContainer {
     constructor({
@@ -23,6 +25,7 @@ export default class FlameChart extends FlameChartContainer {
         const marksPlugin = new MarksPlugin(marks);
         const timeGridPlugin = new TimeGridPlugin(settings);
         const timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);
+        const waterfallPlugin = new WaterfallPlugin();
 
         flameChartPlugin.on('select', (node) => this.emit('select', node));
 
@@ -33,6 +36,7 @@ export default class FlameChart extends FlameChartContainer {
                 timeframeSelectorPlugin,
                 timeGridPlugin,
                 marksPlugin,
+                waterfallPlugin,
                 flameChartPlugin,
                 ...plugins
             ]

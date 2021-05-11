@@ -311,6 +311,9 @@ export default class TimeframeSelectorPlugin {
 
         this.offscreenRenderEngine.ctx.stroke();
         this.offscreenRenderEngine.ctx.fill();
+
+        this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
+        this.offscreenRenderEngine.ctx.strokeRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
     }
 
     castLevelToHeight(level, levelHeight) {

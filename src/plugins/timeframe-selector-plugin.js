@@ -353,7 +353,7 @@ export default class TimeframeSelectorPlugin {
             this.offscreenRender();
         }
 
-        this.renderEngine.ctx.drawImage(this.offscreenRenderEngine.canvas, 0, 0);
+        this.renderEngine.copy(this.offscreenRenderEngine);
         this.renderTimeframe();
 
         return true;

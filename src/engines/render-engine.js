@@ -45,6 +45,7 @@ class BasicRenderEngine extends EventEmitter {
 
         this.setSettings(settings);
 
+        this.applyCanvasSize();
         this.reset();
     }
 
@@ -266,6 +267,20 @@ class BasicRenderEngine extends EventEmitter {
         this.lastUsedColor = null;
     }
 
+    copy(engine) {
+        this.ctx.drawImage(
+            engine.canvas,
+            0,
+            0,
+            engine.canvas.width * engine.pixelRatio,
+            engine.canvas.height * engine.pixelRatio,
+            0,
+            engine.position || 0,
+            engine.width * engine.pixelRatio,
+            engine.height * engine.pixelRatio
+        );
+    }
+
     renderTooltipFromData(header, body, mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
@@ -470,7 +485,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.clear();
 
         this.childEngines.forEach((engine) => {
-            this.ctx.drawImage(engine.canvas, 0, engine.position);
+            this.copy(engine);
         });
 
         this.plugins.forEach((plugin) => {
@@ -525,9 +540,13 @@ class OffscreenRenderEngine extends BasicRenderEngine {
 
         super(canvas, parent.settings);
 
+        this.width = width;
+        this.height = height;
+
         this.parent = parent;
         this.id = id;
         this.children = [];
+        this.applyCanvasSize();
     }
 
     makeChild() {

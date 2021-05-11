@@ -4,7 +4,7 @@ import {
     metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
     getFlatTreeMinMax
-} from './tree-clusters.js';
+} from './utils/tree-clusters.js';
 import Color from 'color';
 import { EventEmitter } from 'events';
 
@@ -40,9 +40,9 @@ export default class FlameChartPlugin extends EventEmitter {
         const startPositionX = this.renderEngine.parent.positionX;
 
         if (this.positionY + deltaY >= 0) {
-            this.positionY += deltaY;
+            this.setPositionY(this.positionY + deltaY);
         } else {
-            this.positionY = 0;
+            this.setPositionY(0);
         }
 
         this.renderEngine.tryToChangePosition(deltaX)
@@ -50,6 +50,10 @@ export default class FlameChartPlugin extends EventEmitter {
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
         }
+    }
+
+    setPositionY(y) {
+        this.positionY = y;
     }
 
     reset() {

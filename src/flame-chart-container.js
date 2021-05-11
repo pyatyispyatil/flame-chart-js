@@ -35,6 +35,10 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.render();
     }
 
+    render() {
+        this.renderEngine.render();
+    }
+
     resize(width, height) {
         this.renderEngine.resize(width, height);
         this.renderEngine.render();

@@ -23,8 +23,11 @@ export const defaultTimeframeSelectorPluginSettings = {
         timeframeSelectorPlugin: {
             font: '9px sans-serif',
             fontColor: 'black',
-            overlayColor: 'rgba(112,112,112,0.5)',
-            knobColor: 'rgb(131,131,131)',
+            overlayColor: 'rgba(112, 112, 112, 0.5)',
+            graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
+            graphFillColor: 'rgb(0, 0, 0, 0.25)',
+            bottomLineColor: 'rgb(0, 0, 0, 0.25)',
+            knobColor: 'rgb(131, 131, 131)',
             knobSize: 6,
             height: 60,
             backgroundColor: 'white'
@@ -291,8 +294,8 @@ export default class TimeframeSelectorPlugin {
         this.timeGrid.renderLines(0, this.offscreenRenderEngine.height);
         this.timeGrid.renderTimes();
 
-        this.offscreenRenderEngine.ctx.strokeStyle = `rgb(0, 0, 0, 0.2)`;
-        this.offscreenRenderEngine.setCtxColor(`rgb(0, 0, 0, 0.25)`);
+        this.offscreenRenderEngine.setStrokeColor(this.styles.graphStrokeColor);
+        this.offscreenRenderEngine.setCtxColor(this.styles.graphFillColor);
         this.offscreenRenderEngine.ctx.beginPath();
 
         const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
@@ -312,8 +315,8 @@ export default class TimeframeSelectorPlugin {
         this.offscreenRenderEngine.ctx.stroke();
         this.offscreenRenderEngine.ctx.fill();
 
+        this.offscreenRenderEngine.setCtxColor(this.styles.bottomLineColor);
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
-        this.offscreenRenderEngine.ctx.strokeRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
     }
 
     castLevelToHeight(level, levelHeight) {

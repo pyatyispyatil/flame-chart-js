@@ -1,8 +1,19 @@
+import { deepMerge } from '../utils.js';
+
+export const defaultWaterfallPluginSettings = {
+    styles: {
+        waterfallPlugin: {
+            lineHeight: 5
+        }
+    }
+}
+
 export default class WaterfallPlugin {
-    constructor(data, intervals) {
+    constructor({ items, intervals }, settings = {}) {
         this.positionY = 0;
 
-        this.setData(data, intervals);
+        this.setData(items, intervals);
+        this.setSettings(settings);
     }
 
     init(renderEngine, interactionsEngine) {
@@ -10,6 +21,11 @@ export default class WaterfallPlugin {
         this.interactionsEngine = interactionsEngine;
 
         this.height = 200;
+    }
+
+    setSettings(data) {
+        this.settings = deepMerge(defaultWaterfallPluginSettings, data);
+        this.styles = this.settings.styles.waterfallPlugin;
     }
 
     setData(data, commonIntervals) {
@@ -59,6 +75,7 @@ export default class WaterfallPlugin {
     render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
+
         let stack = [];
         const viewedData = this.data
             .filter(({ min, max }) => !(
@@ -84,10 +101,12 @@ export default class WaterfallPlugin {
                 return result;
             });
 
-        viewedData.forEach(({ name, intervals, textBlock, level }) => {
+        this.interactionsEngine.clearHitRegions();
+
+        viewedData.forEach(({ name, intervals, textBlock, level }, index) => {
             const textStart = this.renderEngine.timeToPosition(textBlock.min);
             const textEnd = this.renderEngine.timeToPosition(textBlock.max);
-            const y = (level * (this.renderEngine.blockHeight + 1)) - this.positionY;
+            const y = (level * (this.renderEngine.blockHeight + 1) - this.positionY);
 
             this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
@@ -99,7 +118,9 @@ export default class WaterfallPlugin {
                 } else if (type === 'line') {
 
                 }
+
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.styles.lineHeight);
             });
-        });
+        }, 0);
     }
 }

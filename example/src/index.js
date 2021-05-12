@@ -1,6 +1,6 @@
 import FlameChart from './../../src/index.js';
 import { defaultTimeGridSettings } from '../../src/engines/time-grid.js';
-import { defaultRenderSettings } from '../../src/engines/render-engine.js';
+import { defaultRenderSettings } from '../../src/engines/basic-render-engine.js';
 import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
 import { defaultTimeframeSelectorPluginSettings } from './../../src/plugins/timeframe-selector-plugin.js';
 import { generateRandomTree } from './test-data.js';
@@ -64,14 +64,90 @@ const canvas = getCanvas();
 canvas.width = width;
 canvas.height = height;
 
+const testItems = [
+    {
+        name: 'foo',
+        intervals: 'default',
+        timing: {
+            requestStart: 50,
+            responseStart: 500,
+            responseEnd: 600
+        }
+    },
+    {
+        name: 'bar',
+        intervals: 'default',
+        timing: {
+            requestStart: 120,
+            responseStart: 180,
+            responseEnd: 300
+        }
+    },
+    {
+        name: 'bar2',
+        intervals: 'default',
+        timing: {
+            requestStart: 120,
+            responseStart: 180,
+            responseEnd: 300
+        }
+    },
+    {
+        name: 'bar3',
+        intervals: 'default',
+        timing: {
+            requestStart: 130,
+            responseStart: 180,
+            responseEnd: 320
+        }
+    },
+    {
+        name: 'bar4',
+        intervals: 'default',
+        timing: {
+            requestStart: 300,
+            responseStart: 350,
+            responseEnd: 400
+        }
+    },
+    {
+        name: 'bar5',
+        intervals: 'default',
+        timing: {
+            requestStart: 500,
+            responseStart: 520,
+            responseEnd: 550
+        }
+    }
+];
+const testIntervals = {
+    default: [
+        {
+            name: 'waiting',
+            color: 'rgb(207,196,152)',
+            type: 'block',
+            start: 'requestStart',
+            end: 'responseStart'
+        },
+        {
+            name: 'downloading',
+            color: 'rgb(207,180,81)',
+            type: 'block',
+            start: 'responseStart',
+            end: 'responseEnd'
+        }
+    ]
+};
+
 const flameChart = new FlameChart({
     canvas,
     data: currentData,
     marks,
-    colors,
-    settings: {
-        performance
-    }
+    waterfall: {
+        items: testItems,
+        intervals: testIntervals
+    },
+    colors
 });
 
 flameChart.on('select', (node) => {

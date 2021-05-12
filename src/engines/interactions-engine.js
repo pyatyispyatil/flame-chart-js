@@ -16,7 +16,6 @@ export class InteractionsEngine extends EventEmitter {
         this.handleMouseWheel = this.handleMouseWheel.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
 
         this.initListeners();
@@ -101,55 +100,65 @@ export class InteractionsEngine extends EventEmitter {
             x: this.mouse.x,
             y: this.mouse.y
         };
+
+        this.emit('down', this.hoveredRegion, this.mouse);
     }
 
     handleMouseUp() {
         this.moveActive = false;
 
-        if (this.mouseClickStartPosition && this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y) {
+        const isClick = this.mouseClickStartPosition && this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y;
+
+        if (isClick) {
             this.handleRegionHit(this.mouse.x, this.mouse.y);
         }
+
+        this.emit('up', this.hoveredRegion, this.mouse, isClick);
     }
 
     handleMouseMove(e) {
-        const startPositionX = this.renderEngine.positionX;
-        const startPositionY = this.positionY;
-
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
 
-            this.renderEngine.tryToChangePosition(mouseDeltaX)
-
-            if (mouseDeltaY) {
-                this.emit('change-position-y', mouseDeltaY);
+            if (mouseDeltaY || mouseDeltaX) {
+                this.emit('change-position', {
+                    deltaX: mouseDeltaX,
+                    deltaY: mouseDeltaY,
+                });
             }
         }
 
         this.mouse.x = e.offsetX;
         this.mouse.y = e.offsetY;
 
-        if (startPositionX !== this.renderEngine.positionX || startPositionY !== this.positionY) {
-            this.renderEngine.render();
-        }
-
         this.checkRegionHover();
+
+        this.emit('move', this.hoveredRegion, this.mouse);
     }
 
     handleRegionHit() {
-        this.selectedRegion = this.getHoveredRegion();
+        const selectedRegion = this.getHoveredRegion();
 
-        this.emit('select', this.selectedRegion, this.mouse);
+        this.emit('select', selectedRegion, this.mouse);
     }
 
     checkRegionHover() {
         const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
 
         if (hoveredRegion) {
+            if (!this.currentCursor && hoveredRegion.cursor) {
+                this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
+            }
+
             this.hoveredRegion = hoveredRegion;
             this.emit('hover', hoveredRegion, this.mouse);
             this.renderEngine.partialRender();
         } else if (this.hoveredRegion && !hoveredRegion) {
+            if (!this.currentCursor) {
+                this.clearCursor();
+            }
+
             this.hoveredRegion = null;
             this.emit('hover', null, this.mouse);
             this.renderEngine.partialRender();
@@ -171,6 +180,22 @@ export class InteractionsEngine extends EventEmitter {
             ));
         }
     }
+
+    setCursor(cursor) {
+        this.renderEngine.canvas.style.cursor = cursor;
+        this.currentCursor = cursor;
+    }
+
+    clearCursor() {
+        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        this.currentCursor = null;
+
+        if (hoveredRegion && hoveredRegion.cursor) {
+            this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
+        } else {
+            this.renderEngine.canvas.style.cursor = null;
+        }
+    }
 }
 
 class SeparatedInteractionsEngine extends EventEmitter {
@@ -180,11 +205,29 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.parent = parent;
         this.renderEngine = renderEngine;
 
-        parent.on('select', (...args) => this.emit('select', ...args));
-        parent.on('hover', (...args) => this.emit('hover', ...args));
-        parent.on('change-position-y', (...args) => this.emit('change-position-y', ...args));
+        [
+            'down',
+            'up',
+            'move',
+            'change-position'
+        ].forEach((eventName) => parent.on(eventName, (...args) => this.resend(eventName, ...args)));
+
+        [
+            'select',
+            'hover'
+        ].forEach((eventName) => parent.on(eventName, (...args) => this.emit(eventName, ...args)));
 
         this.clearHitRegions();
+    }
+
+    resend(...args) {
+        if ((
+            this.renderEngine.position <= this.parent.mouse.y
+        ) && (
+            this.renderEngine.height + this.renderEngine.position >= this.parent.mouse.y
+        )) {
+            this.emit(...args);
+        }
     }
 
     getMouse() {
@@ -204,9 +247,18 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h) {
+    addHitRegion(type, data, x, y, w, h, cursor) {
         this.hitRegions.push({
-            type, data, x, y, w, h
+            type, data, x, y, w, h,
+            cursor
         });
+    }
+
+    setCursor(cursor) {
+        this.parent.setCursor(cursor);
+    }
+
+    clearCursor() {
+        this.parent.clearCursor();
     }
 }

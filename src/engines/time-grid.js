@@ -28,13 +28,8 @@ export class TimeGrid {
         this.timeUnits = this.renderEngine.getTimeUnits();
     }
 
-    setMinMax(min, max) {
-        this.min = min;
-        this.max = max;
-    }
-
-    calcTimeline() {
-        const timeWidth = this.max - this.min;
+    recalc() {
+        const timeWidth = this.renderEngine.max - this.renderEngine.min;
         const initialLinesCount = this.renderEngine.width / MIN_PIXEL_DELTA;
         const initialTimeLineDelta = timeWidth / initialLinesCount;
 
@@ -42,7 +37,7 @@ export class TimeGrid {
         const proportion = realView / (timeWidth || 1);
 
         this.delta = initialTimeLineDelta / Math.pow(2, Math.floor(Math.log2(1 / proportion)));
-        this.start = Math.floor((this.renderEngine.positionX - this.min) / this.delta);
+        this.start = Math.floor((this.renderEngine.positionX - this.renderEngine.min) / this.delta);
         this.end = Math.ceil(realView / this.delta) + this.start;
 
         this.accuracy = this.calcNumberFix();
@@ -66,7 +61,7 @@ export class TimeGrid {
 
     forEachTime(cb) {
         for (let i = this.start; i <= this.end; i++) {
-            const timePosition = i * this.delta + this.min;
+            const timePosition = i * this.delta + this.renderEngine.min;
             const pixelPosition = this.renderEngine.timeToPosition(timePosition.toFixed(this.accuracy));
 
             cb(pixelPosition, timePosition);
@@ -81,7 +76,7 @@ export class TimeGrid {
         });
     }
 
-    renderTimes(renderEngine) {
+    renderTimes(renderEngine = this.renderEngine) {
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 

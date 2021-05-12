@@ -28,6 +28,14 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.calcMinMax();
         this.renderEngine.resetView();
         this.renderEngine.recalcChildrenSizes();
+        this.renderEngine.calcTimeGrid();
+
+        this.plugins.forEach((plugin) => plugin.postInit && plugin.postInit());
+
+        this.renderEngine.render();
+    }
+
+    render() {
         this.renderEngine.render();
     }
 

@@ -45,11 +45,14 @@ class BasicRenderEngine extends EventEmitter {
 
         this.setSettings(settings);
 
+        this.applyCanvasSize();
         this.reset();
     }
 
     setSettings(data) {
         const settings = deepMerge(defaultRenderSettings, data);
+
+        this.settings = settings;
 
         this.timeUnits = settings.timeUnits;
         this.styles = settings.styles.main;
@@ -77,7 +80,6 @@ class BasicRenderEngine extends EventEmitter {
         this.textRenderQueue = [];
         this.strokeRenderQueue = [];
         this.rectRenderQueue = {};
-        this.lastUsedColor = null;
     }
 
     setCtxColor(color) {
@@ -130,14 +132,14 @@ class BasicRenderEngine extends EventEmitter {
 
     setZoom(zoom) {
         this.zoom = zoom;
-
-        this.emit('change-zoom', this.zoom);
     }
 
     setPositionX(x) {
+        const currentPos = this.positionX;
+
         this.positionX = x;
 
-        this.emit('change-position', this.positionX);
+        return x - currentPos;
     }
 
     addRectToRenderQueue(color, x, y, w) {
@@ -248,9 +250,9 @@ class BasicRenderEngine extends EventEmitter {
         this.width = width || this.width;
         this.height = height || this.height;
 
-        this.emit('resize', { width: this.width, height: this.height });
-
         this.applyCanvasSize();
+
+        this.emit('resize', { width: this.width, height: this.height });
     }
 
     applyCanvasSize() {
@@ -262,6 +264,21 @@ class BasicRenderEngine extends EventEmitter {
         this.canvas.height = this.height * this.pixelRatio;
         this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
         this.ctx.font = this.styles.font;
+        this.lastUsedColor = null;
+    }
+
+    copy(engine) {
+        this.ctx.drawImage(
+            engine.canvas,
+            0,
+            0,
+            engine.canvas.width * engine.pixelRatio,
+            engine.canvas.height * engine.pixelRatio,
+            0,
+            engine.position || 0,
+            engine.width * engine.pixelRatio,
+            engine.height * engine.pixelRatio
+        );
     }
 
     renderTooltipFromData(header, body, mouse) {
@@ -350,10 +367,13 @@ export class RenderEngine extends BasicRenderEngine {
         this.setMinMax(min, max);
     }
 
+    calcTimeGrid() {
+        this.timeGrid.recalc();
+    }
+
     setMinMax(min, max) {
         super.setMinMax(min, max);
 
-        this.timeGrid.setMinMax(min, max);
         this.childEngines.forEach((engine) => engine.setMinMax(min, max));
     }
 
@@ -448,7 +468,7 @@ export class RenderEngine extends BasicRenderEngine {
                     const isFullRendered = this.plugins[index].render();
 
                     if (!isFullRendered) {
-                        this.childEngines[index].clearRender();
+                        this.childEngines[index].standardRender();
                     }
                 });
 
@@ -465,7 +485,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.clear();
 
         this.childEngines.forEach((engine) => {
-            this.ctx.drawImage(engine.canvas, 0, engine.position);
+            this.copy(engine);
         });
 
         this.plugins.forEach((plugin) => {
@@ -486,7 +506,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (!this.lastGlobalAnimationFrame) {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
-                this.timeGrid.calcTimeline();
+                this.timeGrid.recalc();
 
                 this.plugins.forEach((plugin, index) => {
                     this.childEngines[index].clear();
@@ -494,7 +514,7 @@ export class RenderEngine extends BasicRenderEngine {
                     const isFullRendered = plugin.render();
 
                     if (!isFullRendered) {
-                        this.childEngines[index].clearRender();
+                        this.childEngines[index].standardRender();
                     }
                 });
 
@@ -520,12 +540,33 @@ class OffscreenRenderEngine extends BasicRenderEngine {
 
         super(canvas, parent.settings);
 
+        this.width = width;
+        this.height = height;
+
         this.parent = parent;
         this.id = id;
+        this.children = [];
+        this.applyCanvasSize();
+    }
+
+    makeChild() {
+        const child = new OffscreenRenderEngine({
+            width: this.width,
+            height: this.height,
+            parent: this.parent
+        });
+
+        this.children.push(child);
+
+        child.setMinMax(this.min, this.max);
+        child.resetView();
+
+        return child;
     }
 
     setSettingsOverrides(settings) {
-        this.setSettings(deepMerge(this.parent.settings, settings));
+        this.setSettings(deepMerge(this.settings, settings));
+        this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
     resize({ width, height, position }) {
@@ -538,6 +579,25 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         if (typeof position === 'number') {
             this.position = position;
         }
+
+        this.children.forEach((child) => child.resize({ width, height, position }));
+    }
+
+    setMinMax(min, max) {
+        super.setMinMax(min, max);
+        this.children.forEach((child) => child.setMinMax(min, max));
+    }
+
+    setSettings(settings) {
+        super.setSettings(settings);
+
+        if (this.children) {
+            this.children.forEach((child) => child.setSettings(settings));
+        }
+    }
+
+    tryToChangePosition(positionDelta) {
+        this.parent.tryToChangePosition(positionDelta);
     }
 
     recalcMinMax() {
@@ -552,11 +612,16 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         return this.parent.timeGrid.accuracy;
     }
 
-    clearRender() {
-        this.clear();
-
+    renderTimeGrid() {
         this.parent.timeGrid.renderLines(0, this.height, this);
+    }
 
+    renderTimeGridTimes() {
+        this.parent.timeGrid.renderTimes(this);
+    }
+
+    standardRender() {
+        this.renderTimeGrid();
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
         this.resolveStrokeRenderQueue();

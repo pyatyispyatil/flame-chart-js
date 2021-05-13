@@ -1,11 +1,17 @@
 import { EventEmitter } from 'events';
 import { TimeGrid } from './time-grid.js';
-import { deepMerge, isNumber } from './../utils.js';
+import { deepMerge, isNumber } from '../utils.js';
+import {MainStyleSettings, Stroke, Text, Mouse, Plugins, Rect} from "../types";
+
+interface HeightPositions {
+    position: number;
+    result: number[];
+}
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const MAX_ACCURACY = 6;
 
-const getPixelRatio = (ctx) => {
+const getPixelRatio = (ctx: any) => {
     const dpr = window.devicePixelRatio || 1;
     const bsr = ctx.webkitBackingStorePixelRatio ||
         ctx.mozBackingStorePixelRatio ||
@@ -33,7 +39,33 @@ export const defaultRenderSettings = {
 };
 
 class BasicRenderEngine extends EventEmitter {
-    constructor(canvas, settings) {
+    min = 0;
+    max = 0;
+    positionX = 0;
+    charHeight = 0;
+    blockPaddingLeftRight = 4;
+
+    width: number;
+    height: number;
+    settings: any;
+    styles: MainStyleSettings | undefined;
+    zoom = 0;
+    blockHeight = 16;
+    timeUnits = "ms";
+
+    private canvas: HTMLCanvasElement;
+    private readonly ctx: CanvasRenderingContext2D | null;
+    private readonly pixelRatio: number;
+    private blockPaddingTopBottom = 4;
+    private placeholderWidth = 0;
+    private avgCharWidth = 0;
+    private minTextWidth = 0;
+    private textRenderQueue: Text[] = [];
+    private strokeRenderQueue: Stroke[] = [];
+    private rectRenderQueue: Record<string, Rect[]> = {};
+    private lastUsedColor: string | null = null;
+
+    constructor(canvas: HTMLCanvasElement, settings: any) {
         super();
 
         this.width = canvas.width;
@@ -49,25 +81,28 @@ class BasicRenderEngine extends EventEmitter {
         this.reset();
     }
 
-    setSettings(data) {
-        const settings = deepMerge(defaultRenderSettings, data);
+    setSettings(newSettings: Record<any, any>) {
+        const settings: Record<any, any> = deepMerge(defaultRenderSettings, newSettings);
 
         this.settings = settings;
 
         this.timeUnits = settings.timeUnits;
         this.styles = settings.styles.main;
 
+        // @ts-ignore TOD: fix this.styles default value
         this.blockHeight = this.styles.blockHeight;
-        this.ctx.font = this.styles.font;
+        //@ts-ignore TODO: fix this, the issue is that ctx can be undefined even though we assigned it in constructor
+        this.ctx!.font = this.styles.font;
 
         const {
             actualBoundingBoxAscent: fontAscent,
             actualBoundingBoxDescent: fontDescent,
             width: allCharsWidth
-        } = this.ctx.measureText(allChars);
-        const { width: placeholderWidth } = this.ctx.measureText('…');
+        } = this.ctx!.measureText(allChars);
+        const { width: placeholderWidth } = this.ctx!.measureText('…');
         const fontHeight = fontAscent + fontDescent;
 
+        // @ts-ignore TOD: fix this.styles default value
         this.blockPaddingLeftRight = this.styles.blockPaddingLeftRight;
         this.blockPaddingTopBottom = Math.ceil((this.blockHeight - (fontHeight)) / 2);
         this.charHeight = fontHeight + 1;
@@ -82,59 +117,60 @@ class BasicRenderEngine extends EventEmitter {
         this.rectRenderQueue = {};
     }
 
-    setCtxColor(color) {
+    setCtxColor(color: string) {
         if (color && this.lastUsedColor !== color) {
-            this.ctx.fillStyle = color;
+            this.ctx!.fillStyle = color;
             this.lastUsedColor = color;
         }
     }
 
-    setCtxFont(font) {
-        if (font && this.ctx.font !== font) {
-            this.ctx.font = font;
+    setCtxFont(font: string) {
+        if (font && this.ctx!.font !== font) {
+            this.ctx!.font = font;
         }
     }
 
-    fillRect(x, y, w, h) {
-        this.ctx.fillRect(x, y, w, h);
+    fillRect(x: number, y: number, w: number, h: number) {
+        this.ctx!.fillRect(x, y, w, h);
     }
 
-    fillText(text, x, y) {
-        this.ctx.fillText(text, x, y);
+    fillText(text: string, x: number, y: number) {
+        this.ctx!.fillText(text, x, y);
     }
 
-    renderBlock(color, x, y, w) {
+    renderBlock(color: string, x: number, y: number, w: number) {
         this.setCtxColor(color);
-        this.ctx.fillRect(x, y, w, this.blockHeight);
+        this.ctx!.fillRect(x, y, w, this.blockHeight);
     }
 
-    renderStroke(color, x, y, w, h) {
+    renderStroke(color:string, x: number, y: number, w: number, h: number) {
         this.setCtxColor(color);
 
-        this.ctx.setLineDash([]);
-        this.ctx.strokeStyle = color;
-        this.ctx.strokeRect(x, y, w, h);
+        this.ctx!.setLineDash([]);
+        this.ctx!.strokeStyle = color;
+        this.ctx!.strokeRect(x, y, w, h);
     }
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {
-        this.ctx.clearRect(x, y, w, h - 1);
+        this.ctx!.clearRect(x, y, w, h - 1);
+        // @ts-ignore this.styles can be undefined TODO: fix this
         this.setCtxColor(this.styles.backgroundColor);
-        this.ctx.fillRect(x, y, w, h);
+        this.ctx!.fillRect(x, y, w, h);
     }
 
-    timeToPosition(time) {
+    timeToPosition(time: number) {
         return time * this.zoom - this.positionX * this.zoom
     }
 
-    pixelToTime(width) {
+    pixelToTime(width: number) {
         return width / this.zoom;
     }
 
-    setZoom(zoom) {
+    setZoom(zoom: number) {
         this.zoom = zoom;
     }
 
-    setPositionX(x) {
+    setPositionX(x: number) {
         const currentPos = this.positionX;
 
         this.positionX = x;
@@ -142,7 +178,7 @@ class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x, y, w) {
+    addRectToRenderQueue(color: string, x: number, y: number, w: number) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
@@ -175,10 +211,11 @@ class BasicRenderEngine extends EventEmitter {
     }
 
     resolveTextRenderQueue() {
+        // @ts-ignore TODO: fix this as this.styles can be undefined
         this.setCtxColor(this.styles.fontColor);
 
         this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
-            const { width: textWidth } = this.ctx.measureText(text);
+            const { width: textWidth } = this.ctx!.measureText(text);
 
             if (textWidth > textMaxWidth) {
                 const avgCharWidth = textWidth / (text.length);
@@ -193,7 +230,7 @@ class BasicRenderEngine extends EventEmitter {
             }
 
             if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                this.ctx!.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
             }
         });
 
@@ -208,7 +245,7 @@ class BasicRenderEngine extends EventEmitter {
         this.strokeRenderQueue = [];
     }
 
-    setMinMax(min, max) {
+    setMinMax(min: number, max: number) {
         this.min = min;
         this.max = max;
     }
@@ -262,13 +299,14 @@ class BasicRenderEngine extends EventEmitter {
         this.canvas.style.height = this.height + 'px';
         this.canvas.width = this.width * this.pixelRatio;
         this.canvas.height = this.height * this.pixelRatio;
-        this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-        this.ctx.font = this.styles.font;
+        this.ctx!.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+        // @ts-ignore TODO: fix this as tyles and ctx can be undefined
+        this.ctx!.font = this.styles.font;
         this.lastUsedColor = null;
     }
 
     copy(engine) {
-        this.ctx.drawImage(
+        this.ctx!.drawImage(
             engine.canvas,
             0,
             0,
@@ -281,41 +319,46 @@ class BasicRenderEngine extends EventEmitter {
         );
     }
 
-    renderTooltipFromData(header, body, mouse) {
+    renderTooltipFromData(header: string, body: string[], mouse: Mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
         const maxWidth = [header, ...body]
-            .map((text) => this.ctx.measureText(text))
+            .map((text) => this.ctx!.measureText(text))
             .reduce((acc, { width }) => Math.max(acc, width), 0);
         const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;
 
-        this.ctx.shadowColor = 'black';
-        this.ctx.shadowBlur = 5;
+        this.ctx!.shadowColor = 'black';
+        this.ctx!.shadowBlur = 5;
 
+        // @ts-ignore Fix styles default value to not think it can be undefined all the time
         this.setCtxColor(this.styles.tooltipBackgroundColor);
-        this.ctx.fillRect(
+        this.ctx!.fillRect(
             mouseX,
             mouseY,
             fullWidth + this.blockPaddingLeftRight * 2,
             (this.charHeight + 2) * (body.length + 1) + this.blockPaddingLeftRight * 2
         );
 
-        this.ctx.shadowColor = null;
-        this.ctx.shadowBlur = null;
+        // @ts-ignore ctx can be undefined and it accepts only string for shadow color TODO: fix this
+        this.ctx!.shadowColor = null;
+        // @ts-ignore ctx can be undefined and it accepts only number for shadow blur TODO: fix this
+        this.ctx!.shadowBlur = null;
 
+        // @ts-ignore TODO: fix this.styles  default value
         this.setCtxColor(this.styles.tooltipHeaderFontColor);
-        this.ctx.fillText(
+        this.ctx!.fillText(
             header,
             mouseX + this.blockPaddingLeftRight,
             mouseY + this.blockHeight - this.blockPaddingTopBottom
         );
 
+        // @ts-ignore TODO: fix this.styles  default value
         this.setCtxColor(this.styles.tooltipBodyFontColor);
         body.forEach((text, index) => {
             const count = index + 1;
 
-            this.ctx.fillText(
+            this.ctx!.fillText(
                 text,
                 mouseX + this.blockPaddingLeftRight,
                 mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * count
@@ -325,7 +368,17 @@ class BasicRenderEngine extends EventEmitter {
 }
 
 export class RenderEngine extends BasicRenderEngine {
-    constructor(canvas, settings, plugins) {
+    public width = 0;
+
+    private plugins: Plugins;
+    private requestedRenders: any[];
+
+    private readonly childEngines: any[];
+    readonly timeGrid: TimeGrid;
+    private lastPartialAnimationFrame: number | null | undefined;
+    private lastGlobalAnimationFrame: number | null | undefined;
+
+    constructor(canvas: HTMLCanvasElement, settings: any, plugins: Plugins) {
         super(canvas, settings);
 
         this.plugins = plugins;
@@ -342,7 +395,6 @@ export class RenderEngine extends BasicRenderEngine {
             height: 0,
             id: this.childEngines.length,
             parent: this,
-            settings: this.settings
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
@@ -355,7 +407,8 @@ export class RenderEngine extends BasicRenderEngine {
 
     calcMinMax() {
         const min = this.plugins
-            .map(({ min }) => min)
+            // TODO: review this as min is not mandatory in all plugins as it seems
+            .map(({ min  = 0}) => min)
             .filter(isNumber)
             .reduce((acc, min) => Math.min(acc, min));
 
@@ -393,7 +446,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    resize(width, height) {
+    resize(width: number, height: number) {
         const currentWidth = this.width;
 
         super.resize(width, height);
@@ -410,7 +463,9 @@ export class RenderEngine extends BasicRenderEngine {
         const childrenSizes = this.getChildrenSizes();
 
         this.childEngines.forEach((engine, index) => {
-            engine.resize(childrenSizes[index]);
+            // TODO: was this a bug? it was expecting two params
+            const { width, height } = childrenSizes[index];
+            engine.resize(width, height);
         });
     }
 
@@ -421,7 +476,7 @@ export class RenderEngine extends BasicRenderEngine {
         const freeHeightPart = freeHeight / heightlessCount;
         const preparedHeights = heights.map((height) => Math.ceil(height || freeHeightPart));
 
-        const heightPositions = preparedHeights.reduce((acc, height) => ({
+        const heightPositions = preparedHeights.reduce((acc: HeightPositions, height) => ({
             position: acc.position + height,
             result: acc.result.concat(acc.position)
         }), { position: 0, result: [] }).result;
@@ -437,7 +492,7 @@ export class RenderEngine extends BasicRenderEngine {
         return this.timeGrid.accuracy;
     }
 
-    setZoom(zoom) {
+    setZoom(zoom: number) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
             this.childEngines.forEach((engine) => engine.setZoom(zoom));
@@ -455,7 +510,7 @@ export class RenderEngine extends BasicRenderEngine {
         return res;
     }
 
-    partialRender(id) {
+    partialRender(id: number | undefined) {
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }
@@ -500,7 +555,10 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     render() {
-        cancelAnimationFrame(this.lastPartialAnimationFrame);
+        if (typeof this.lastPartialAnimationFrame === "number") {
+            cancelAnimationFrame(this.lastPartialAnimationFrame);
+        }
+
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;
 
@@ -526,13 +584,24 @@ export class RenderEngine extends BasicRenderEngine {
     }
 }
 
-class OffscreenRenderEngine extends BasicRenderEngine {
+interface OffscreenRenderEngineCreationOptions {
+    width: number;
+    height: number;
+    parent: RenderEngine;
+    id?: number;
+}
+
+export class OffscreenRenderEngine extends BasicRenderEngine {
+    readonly parent: RenderEngine;
+    private readonly id: number | undefined;
+    private readonly children: OffscreenRenderEngine[];
+
     constructor({
                     width,
                     height,
                     parent,
                     id
-                }) {
+                }: OffscreenRenderEngineCreationOptions) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
@@ -569,7 +638,7 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
-    resize({ width, height, position }) {
+    resize({ width, height, position }: { width: number, height: number, position: number }) {
         if (typeof width === 'number' && this.width !== width || typeof height === 'number' && this.height !== height) {
             super.resize(width, height);
 
@@ -577,6 +646,7 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         }
 
         if (typeof position === 'number') {
+            // @ts-ignore TODO: not sure what to do here as it wants to change this to positionX
             this.position = position;
         }
 
@@ -596,7 +666,7 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         }
     }
 
-    tryToChangePosition(positionDelta) {
+    tryToChangePosition(positionDelta: number) {
         this.parent.tryToChangePosition(positionDelta);
     }
 
@@ -627,7 +697,7 @@ class OffscreenRenderEngine extends BasicRenderEngine {
         this.resolveStrokeRenderQueue();
     }
 
-    renderTooltipFromData(...args) {
+    renderTooltipFromData(...args: [header: string, body: string[], mouse: Mouse]) {
         this.parent.renderTooltipFromData(...args);
     }
 

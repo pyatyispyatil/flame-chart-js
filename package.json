@@ -2,8 +2,9 @@
   "name": "flame-chart-js",
   "version": "1.5.1",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "scripts": {
+    "tsc-watch": "tsc -w",
     "build": "rollup -c",
     "watch": "rollup -c -w -m",
     "test": "echo \"Error: no test specified\" && exit 1"

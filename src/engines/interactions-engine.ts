@@ -1,6 +1,18 @@
 import { EventEmitter } from 'events';
+import { Mouse } from "../types";
+import {RenderEngine} from "./render-engine";
 
 export class InteractionsEngine extends EventEmitter {
+    readonly mouse: Mouse;
+    private readonly canvas: HTMLCanvasElement;
+    private renderEngine;
+    private instances: SeparatedInteractionsEngine[];
+    private selectedRegion: null;
+    private hoveredRegion: null;
+    private moveActive: boolean = false;
+    private mouseClickStartPosition = { x: 0, y: 0 };
+    private currentCursor: any;
+
     constructor(canvas, renderEngine) {
         super();
 
@@ -110,7 +122,7 @@ export class InteractionsEngine extends EventEmitter {
         const isClick = this.mouseClickStartPosition && this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y;
 
         if (isClick) {
-            this.handleRegionHit(this.mouse.x, this.mouse.y);
+            this.handleRegionHit();
         }
 
         this.emit('up', this.hoveredRegion, this.mouse, isClick);
@@ -144,7 +156,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     checkRegionHover() {
-        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        const hoveredRegion = this.getHoveredRegion();
 
         if (hoveredRegion) {
             if (!this.currentCursor && hoveredRegion.cursor) {
@@ -167,12 +179,15 @@ export class InteractionsEngine extends EventEmitter {
 
     getHoveredRegion() {
         const hoveredInstance = this.instances.find(({ renderEngine }) => (
+            // @ts-ignore Complains about position field and asks to use positionX
             renderEngine.position <= this.mouse.y
         ) && (
+            // @ts-ignore Complains about position field and asks to use positionX
             renderEngine.height + renderEngine.position >= this.mouse.y
         ));
 
         if (hoveredInstance) {
+            // @ts-ignore Complains about position field and asks to use positionX
             const offsetTop = hoveredInstance.renderEngine.position;
 
             return hoveredInstance.hitRegions.find(({ x, y, w, h }) => (
@@ -187,7 +202,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     clearCursor() {
-        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        const hoveredRegion = this.getHoveredRegion();
         this.currentCursor = null;
 
         if (hoveredRegion && hoveredRegion.cursor) {
@@ -198,8 +213,12 @@ export class InteractionsEngine extends EventEmitter {
     }
 }
 
-class SeparatedInteractionsEngine extends EventEmitter {
-    constructor(parent, renderEngine) {
+export class SeparatedInteractionsEngine extends EventEmitter {
+    private parent: InteractionsEngine;
+    renderEngine: RenderEngine;
+    hitRegions: any[] = [];
+
+    constructor(parent: InteractionsEngine, renderEngine: RenderEngine) {
         super();
 
         this.parent = parent;
@@ -220,13 +239,15 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.clearHitRegions();
     }
 
-    resend(...args) {
+    resend(eventName: string, ...args: any[]) {
         if ((
+            // @ts-ignore Complains about position field and asks to use positionY
             this.renderEngine.position <= this.parent.mouse.y
         ) && (
+            // @ts-ignore Complains about position field and asks to use positionY
             this.renderEngine.height + this.renderEngine.position >= this.parent.mouse.y
         )) {
-            this.emit(...args);
+            this.emit(eventName, ...args);
         }
     }
 
@@ -235,6 +256,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
 
         return {
             x,
+            // @ts-ignore Complains about position field and asks to use positionX
             y: y - this.renderEngine.position
         };
     }
@@ -247,7 +269,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor) {
+    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor) {
         this.hitRegions.push({
             type, data, x, y, w, h,
             cursor

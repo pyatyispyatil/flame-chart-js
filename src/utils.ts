@@ -1,4 +1,4 @@
-export const deepMerge = (target, object) => {
+export const deepMerge = (target, object): Record<any, any> => {
     return Object.entries(target)
         .reduce((acc, [key, value]) => {
             const type = typeof value;

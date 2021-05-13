@@ -10,11 +10,15 @@ export const defaultTimeGridPluginSettings = {
 };
 
 export default class TimeGridPlugin {
-    constructor(settings = {}) {
+    private renderEngine: any;
+    private styles: { fontColor: string; font: string; } | undefined;
+    private height = 0;
+
+    constructor(settings: Record<any, any> = {}) {
         this.setSettings(settings);
     }
 
-    setSettings(settings) {
+    setSettings(settings: Record<any, any>) {
         this.styles = deepMerge(defaultTimeGridPluginSettings, settings).styles.timeGridPlugin;
 
         if (this.renderEngine) {

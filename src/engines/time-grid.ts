@@ -1,4 +1,5 @@
 import { deepMerge } from '../utils.js';
+import {RenderEngine, OffscreenRenderEngine} from "./render-engine";
 
 const MIN_PIXEL_DELTA = 85;
 
@@ -11,18 +12,23 @@ export const defaultTimeGridSettings = {
 };
 
 export class TimeGrid {
-    constructor(renderEngine, settings) {
+    accuracy = 0;
+    private renderEngine: OffscreenRenderEngine | RenderEngine;
+    private start = 0;
+    private end = 0;
+    private delta = 0;
+    private styles: any;
+    private timeUnits = "ms";
+
+    constructor(renderEngine: OffscreenRenderEngine | RenderEngine, settings: any) {
         this.renderEngine = renderEngine;
-        this.start = 0;
-        this.end = 0;
-        this.accuracy = 0;
-        this.delta = 0;
 
         this.setSettings(settings);
     }
 
     setSettings(data) {
-        const settings = deepMerge(defaultTimeGridSettings, data);
+        // TODO: fix this any
+        const settings: any = deepMerge(defaultTimeGridSettings, data);
 
         this.styles = settings.styles.timeGrid;
         this.timeUnits = this.renderEngine.getTimeUnits();
@@ -47,28 +53,31 @@ export class TimeGrid {
         const strTimelineDelta = (this.delta / 2).toString();
 
         if (strTimelineDelta.includes('e')) {
-            return strTimelineDelta.match(/\d+$/)[0];
-        } else {
-            const zeros = strTimelineDelta.match(/(0\.0*)/);
-
-            return zeros ? zeros[0].length - 1 : 0;
+            // TODO: complained about the type. accuracy is of type number and this function could have returned string and number
+            return Number(strTimelineDelta.match(/\d+$/)![0]);
         }
+
+        const zeros = strTimelineDelta.match(/(0\.0*)/);
+        return zeros ? zeros[0].length - 1 : 0;
     }
 
     getTimelineAccuracy() {
         return this.accuracy;
     }
 
-    forEachTime(cb) {
+    forEachTime(cb: (pixelPosition: number, timePosition: number) => void) {
         for (let i = this.start; i <= this.end; i++) {
             const timePosition = i * this.delta + this.renderEngine.min;
-            const pixelPosition = this.renderEngine.timeToPosition(timePosition.toFixed(this.accuracy));
+            const pixelPosition = this.renderEngine.timeToPosition(
+                // TODO: complained about the type string, and timeToPosition expects number
+                Number(timePosition.toFixed(this.accuracy))
+            );
 
             cb(pixelPosition, timePosition);
         }
     }
 
-    renderLines(start, height, renderEngine = this.renderEngine) {
+    renderLines(start: number, height: number, renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(this.styles.color);
 
         this.forEachTime((pixelPosition) => {
@@ -76,8 +85,10 @@ export class TimeGrid {
         });
     }
 
-    renderTimes(renderEngine = this.renderEngine) {
+    renderTimes(renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
+        // @ts-ignore TODO: its possibly undefined
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
+        // @ts-ignore TODO: its possibly undefined
         renderEngine.setCtxFont(renderEngine.styles.font);
 
         this.forEachTime((pixelPosition, timePosition) => {

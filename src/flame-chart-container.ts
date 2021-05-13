@@ -1,14 +1,26 @@
 import { RenderEngine } from './engines/render-engine.js';
 import { InteractionsEngine } from './engines/interactions-engine.js';
 import { EventEmitter } from 'events';
+import {Plugins} from "./types";
 
-const defaultSettings = {
-    performance: true,
-    timeUnits: 'ms'
+interface FlameChartContainerCreationOptions {
+    canvas: HTMLCanvasElement;
+    plugins: Plugins;
+    settings: any;
 }
 
+// TODO: unused?
+// const defaultSettings = {
+//     performance: true,
+//     timeUnits: 'ms'
+// }
+
 export default class FlameChartContainer extends EventEmitter {
-    constructor({ canvas, plugins, settings }) {
+    protected readonly renderEngine: RenderEngine;
+    private interactionsEngine: InteractionsEngine;
+    private readonly plugins: Plugins;
+
+    constructor({ canvas, plugins, settings }: FlameChartContainerCreationOptions) {
         super();
 
         this.renderEngine = new RenderEngine(canvas, settings, plugins);

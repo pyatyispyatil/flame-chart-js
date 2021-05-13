@@ -1,16 +1,23 @@
-import FlameChartContainer from './flame-chart-container.js';
-import FlameChartPlugin from './plugins/flame-chart-plugin.js';
-import TimeGridPlugin from './plugins/time-grid-plugin.js';
-import MarksPlugin from './plugins/marks-plugin.js';
-import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin.js';
+import type { FlameChartCreationOptions, Marks, Data } from "./types";
 
-export { default as FlameChartContainer } from './flame-chart-container.js';
-export { default as FlameChartPlugin } from './plugins/flame-chart-plugin.js';
-export { default as TimeGridPlugin } from './plugins/time-grid-plugin.js';
-export { default as MarksPlugin } from './plugins/marks-plugin.js';
-export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin.js';
+import FlameChartContainer from './flame-chart-container';
+import FlameChartPlugin from './plugins/flame-chart-plugin';
+import TimeGridPlugin from './plugins/time-grid-plugin';
+import MarksPlugin from './plugins/marks-plugin';
+import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin';
+
+export { default as FlameChartContainer } from './flame-chart-container';
+export { default as FlameChartPlugin } from './plugins/flame-chart-plugin';
+export { default as TimeGridPlugin } from './plugins/time-grid-plugin';
+export { default as MarksPlugin } from './plugins/marks-plugin';
+export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin';
 
 export default class FlameChart extends FlameChartContainer {
+    public setData: (data: Data) => void;
+    public setMarks: (marks: Marks) => void;
+    public setZoom: (start, end) => void;
+    public setFlameChartPosition: ({x, y}: { x: number; y: number }) => void;
+
     constructor({
                     canvas,
                     data,
@@ -18,7 +25,7 @@ export default class FlameChart extends FlameChartContainer {
                     colors,
                     settings,
                     plugins = []
-                }) {
+                }: FlameChartCreationOptions) {
         const flameChartPlugin = new FlameChartPlugin({ data, colors });
         const marksPlugin = new MarksPlugin(marks);
         const timeGridPlugin = new TimeGridPlugin(settings);
@@ -43,8 +50,8 @@ export default class FlameChart extends FlameChartContainer {
             timeframeSelectorPlugin.setData(data);
         };
 
-        this.setMarks = (data) => {
-            marksPlugin.setMarks(data);
+        this.setMarks = (marks) => {
+            marksPlugin.setMarks(marks);
         };
 
         this.setZoom = (start, end) => {

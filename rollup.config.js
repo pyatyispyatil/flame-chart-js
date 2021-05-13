@@ -26,6 +26,7 @@ export default {
         babel({
             exclude: 'node_modules/**'
         }),
+        uglify(),
         json(),
         html({
             template,

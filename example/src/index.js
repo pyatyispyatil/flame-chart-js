@@ -1,8 +1,10 @@
 import FlameChart from './../../src/index.js';
 import { defaultTimeGridSettings } from '../../src/engines/time-grid.js';
-import { defaultRenderSettings } from '../../src/engines/render-engine.js';
+import { defaultRenderSettings } from '../../src/engines/basic-render-engine.js';
 import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
 import { defaultTimeframeSelectorPluginSettings } from './../../src/plugins/timeframe-selector-plugin.js';
+import { defaultTogglePluginSettings } from '../../src/plugins/toggle-plugin.js';
+import { defaultWaterfallPluginSettings} from '../../src/plugins/waterfall-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {
@@ -64,14 +66,90 @@ const canvas = getCanvas();
 canvas.width = width;
 canvas.height = height;
 
+const testItems = [
+    {
+        name: 'foo',
+        intervals: 'default',
+        timing: {
+            requestStart: 2050,
+            responseStart: 2500,
+            responseEnd: 2600
+        }
+    },
+    {
+        name: 'bar',
+        intervals: 'default',
+        timing: {
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300
+        }
+    },
+    {
+        name: 'bar2',
+        intervals: 'default',
+        timing: {
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300
+        }
+    },
+    {
+        name: 'bar3',
+        intervals: 'default',
+        timing: {
+            requestStart: 2130,
+            responseStart: 2180,
+            responseEnd: 2320
+        }
+    },
+    {
+        name: 'bar4',
+        intervals: 'default',
+        timing: {
+            requestStart: 2300,
+            responseStart: 2350,
+            responseEnd: 2400
+        }
+    },
+    {
+        name: 'bar5',
+        intervals: 'default',
+        timing: {
+            requestStart: 2500,
+            responseStart: 2520,
+            responseEnd: 2550
+        }
+    }
+];
+const testIntervals = {
+    default: [
+        {
+            name: 'waiting',
+            color: 'rgb(207,196,152)',
+            type: 'block',
+            start: 'requestStart',
+            end: 'responseStart'
+        },
+        {
+            name: 'downloading',
+            color: 'rgb(207,180,81)',
+            type: 'block',
+            start: 'responseStart',
+            end: 'responseEnd'
+        }
+    ]
+};
+
 const flameChart = new FlameChart({
     canvas,
     data: currentData,
     marks,
-    colors,
-    settings: {
-        performance
-    }
+    waterfall: {
+        items: testItems,
+        intervals: testIntervals
+    },
+    colors
 });
 
 flameChart.on('select', (node) => {
@@ -114,5 +192,7 @@ initView(flameChart, treeConfig, {
     ...defaultRenderSettings.styles,
     ...defaultTimeGridSettings.styles,
     ...defaultTimeGridPluginSettings.styles,
-    ...defaultTimeframeSelectorPluginSettings.styles
+    ...defaultTimeframeSelectorPluginSettings.styles,
+    ...defaultWaterfallPluginSettings.styles,
+    ...defaultTogglePluginSettings.styles
 });

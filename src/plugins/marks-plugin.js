@@ -77,7 +77,7 @@ export default class MarksPlugin {
             const { timestamp, color } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
 
-            this.renderEngine.parent.ctx.strokeStyle = color;
+            this.renderEngine.parent.setStrokeColor(color);
             this.renderEngine.parent.ctx.beginPath();
             this.renderEngine.parent.ctx.setLineDash([8, 7]);
             this.renderEngine.parent.ctx.moveTo(position, this.renderEngine.position);
@@ -94,7 +94,10 @@ export default class MarksPlugin {
             const header = `${fullName}`;
             const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
 
-            this.renderEngine.renderTooltipFromData(header, [time], this.interactionsEngine.getGlobalMouse());
+            this.renderEngine.renderTooltipFromData(
+                [{ text: header }, { text: time }],
+                this.interactionsEngine.getGlobalMouse()
+            );
 
             return true;
         }

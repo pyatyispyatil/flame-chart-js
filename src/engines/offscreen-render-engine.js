@@ -45,6 +45,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
 
     collapse() {
         this.collapsed = true;
+        this.clear();
     }
 
     expand() {
@@ -57,8 +58,11 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     resize({ width, height, position }, isParentCall) {
-        if (typeof width === 'number' && this.width !== width || typeof height === 'number' && this.height !== height) {
-            super.resize(width, height);
+        const hasWidth = typeof width === 'number';
+        const hasHeight = typeof height === 'number';
+
+        if (hasWidth && this.width !== width || hasHeight && this.height !== height) {
+            super.resize(hasWidth ? width : this.width, hasHeight ? height : this.height);
 
             if (!isParentCall) {
                 this.parent.recalcChildrenSizes();

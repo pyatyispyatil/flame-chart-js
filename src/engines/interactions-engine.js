@@ -230,6 +230,8 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.parent = parent;
         this.renderEngine = renderEngine;
 
+        renderEngine.on('clear', () => this.clearHitRegions());
+
         [
             'down',
             'up',

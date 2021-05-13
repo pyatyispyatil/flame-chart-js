@@ -20,7 +20,30 @@ export default class WaterfallPlugin {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
+        this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
+
         this.height = 200;
+    }
+
+    handlePositionChange({ deltaX, deltaY }) {
+        const startPositionY = this.positionY;
+        const startPositionX = this.renderEngine.parent.positionX;
+
+        if (this.positionY + deltaY >= 0) {
+            this.setPositionY(this.positionY + deltaY);
+        } else {
+            this.setPositionY(0);
+        }
+
+        this.renderEngine.tryToChangePosition(deltaX)
+
+        if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
+            this.renderEngine.parent.render();
+        }
+    }
+
+    setPositionY(y) {
+        this.positionY = y;
     }
 
     setSettings(data) {
@@ -29,6 +52,8 @@ export default class WaterfallPlugin {
     }
 
     setData(data, commonIntervals) {
+        this.positionY = 0;
+
         if (data.length) {
             this.data = data.map(({ name, intervals, timing }) => {
                 const values = Object.values(timing);
@@ -101,8 +126,6 @@ export default class WaterfallPlugin {
                 return result;
             });
 
-        this.interactionsEngine.clearHitRegions();
-
         viewedData.forEach(({ name, intervals, textBlock, level }, index) => {
             const textStart = this.renderEngine.timeToPosition(textBlock.min);
             const textEnd = this.renderEngine.timeToPosition(textBlock.max);
@@ -119,7 +142,7 @@ export default class WaterfallPlugin {
 
                 }
 
-                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.styles.lineHeight);
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
             });
         }, 0);
     }

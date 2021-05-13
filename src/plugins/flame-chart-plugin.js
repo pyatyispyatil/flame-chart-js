@@ -248,7 +248,6 @@ export default class FlameChartPlugin extends EventEmitter {
             this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
         }
 
-        this.interactionsEngine.clearHitRegions();
         this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));
 
         if (this.selectedRegion && this.selectedRegion.type === 'node') {

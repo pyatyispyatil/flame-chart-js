@@ -94,7 +94,10 @@ export default class MarksPlugin {
             const header = `${fullName}`;
             const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
 
-            this.renderEngine.renderTooltipFromData(header, [time], this.interactionsEngine.getGlobalMouse());
+            this.renderEngine.renderTooltipFromData(
+                [{ text: header }, { text: time }],
+                this.interactionsEngine.getGlobalMouse()
+            );
 
             return true;
         }

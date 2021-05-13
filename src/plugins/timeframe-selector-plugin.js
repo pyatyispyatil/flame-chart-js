@@ -46,97 +46,102 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
-        this.interactionsEngine.on('down', (region, mouse) => {
-            if (region) {
-                if (region.type === 'timeframeKnob') {
-                    if (region.data === 'left') {
-                        this.leftKnobMoving = true;
-                    } else {
-                        this.rightKnobMoving = true;
-                    }
-
-                    this.interactionsEngine.setCursor('ew-resize');
-                } else if (region.type === 'timeframeArea') {
-                    this.selectingActive = true;
-                    this.startSelectingPosition = mouse.x;
-                }
-            }
-        });
-
-        this.interactionsEngine.on('up', (region, mouse, isClick) => {
-            let isDoubleClick = false;
-
-            if (this.timeout) {
-                isDoubleClick = true;
-            }
-
-            clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => this.timeout = null, 300);
-            this.leftKnobMoving = false;
-            this.rightKnobMoving = false;
-            this.interactionsEngine.clearCursor();
-
-            if (this.selectingActive && !isClick) {
-                this.applyChanges();
-            }
-
-            this.selectingActive = false;
-
-            if (isClick && !isDoubleClick) {
-                const rightKnobPosition = this.getRightKnobPosition();
-                const leftKnobPosition = this.getLeftKnobPosition();
-
-                if (mouse.x > rightKnobPosition) {
-                    this.setRightKnobPosition(mouse.x);
-                } else if (mouse.x > leftKnobPosition && mouse.x < rightKnobPosition) {
-                    if (mouse.x - leftKnobPosition > rightKnobPosition - mouse.x) {
-                        this.setRightKnobPosition(mouse.x);
-                    } else {
-                        this.setLeftKnobPosition(mouse.x);
-                    }
-                } else {
-                    this.setLeftKnobPosition(mouse.x);
-                }
-
-                this.applyChanges();
-            }
-
-            if (isDoubleClick) {
-                this.renderEngine.parent.setZoom(this.renderEngine.getInitialZoom());
-                this.renderEngine.parent.setPositionX(this.renderEngine.min);
-                this.renderEngine.parent.render();
-            }
-        });
-
-        this.interactionsEngine.on('move', (region, mouse) => {
-            if (this.leftKnobMoving) {
-                this.setLeftKnobPosition(mouse.x);
-                this.applyChanges();
-            }
-
-            if (this.rightKnobMoving) {
-                this.setRightKnobPosition(mouse.x);
-                this.applyChanges();
-            }
-
-            if (this.selectingActive) {
-                if (this.startSelectingPosition >= mouse.x) {
-                    this.setLeftKnobPosition(mouse.x);
-                    this.setRightKnobPosition(this.startSelectingPosition);
-                } else {
-                    this.setRightKnobPosition(mouse.x);
-                    this.setLeftKnobPosition(this.startSelectingPosition);
-                }
-
-                this.renderEngine.render();
-            }
-        });
+        this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
+        this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
+        this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
 
         this.setSettings(this.settings);
     }
 
+    handleMouseDown(region, mouse) {
+        if (region) {
+            if (region.type === 'timeframeKnob') {
+                if (region.data === 'left') {
+                    this.leftKnobMoving = true;
+                } else {
+                    this.rightKnobMoving = true;
+                }
+
+                this.interactionsEngine.setCursor('ew-resize');
+            } else if (region.type === 'timeframeArea') {
+                this.selectingActive = true;
+                this.startSelectingPosition = mouse.x;
+            }
+        }
+    }
+
+    handleMouseUp(region, mouse, isClick) {
+        let isDoubleClick = false;
+
+        if (this.timeout) {
+            isDoubleClick = true;
+        }
+
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => this.timeout = null, 300);
+        this.leftKnobMoving = false;
+        this.rightKnobMoving = false;
+        this.interactionsEngine.clearCursor();
+
+        if (this.selectingActive && !isClick) {
+            this.applyChanges();
+        }
+
+        this.selectingActive = false;
+
+        if (isClick && !isDoubleClick) {
+            const rightKnobPosition = this.getRightKnobPosition();
+            const leftKnobPosition = this.getLeftKnobPosition();
+
+            if (mouse.x > rightKnobPosition) {
+                this.setRightKnobPosition(mouse.x);
+            } else if (mouse.x > leftKnobPosition && mouse.x < rightKnobPosition) {
+                if (mouse.x - leftKnobPosition > rightKnobPosition - mouse.x) {
+                    this.setRightKnobPosition(mouse.x);
+                } else {
+                    this.setLeftKnobPosition(mouse.x);
+                }
+            } else {
+                this.setLeftKnobPosition(mouse.x);
+            }
+
+            this.applyChanges();
+        }
+
+        if (isDoubleClick) {
+            this.renderEngine.parent.setZoom(this.renderEngine.getInitialZoom());
+            this.renderEngine.parent.setPositionX(this.renderEngine.min);
+            this.renderEngine.parent.render();
+        }
+    }
+
+    handleMouseMove(region, mouse) {
+        if (this.leftKnobMoving) {
+            this.setLeftKnobPosition(mouse.x);
+            this.applyChanges();
+        }
+
+        if (this.rightKnobMoving) {
+            this.setRightKnobPosition(mouse.x);
+            this.applyChanges();
+        }
+
+        if (this.selectingActive) {
+            if (this.startSelectingPosition >= mouse.x) {
+                this.setLeftKnobPosition(mouse.x);
+                this.setRightKnobPosition(this.startSelectingPosition);
+            } else {
+                this.setRightKnobPosition(mouse.x);
+                this.setLeftKnobPosition(this.startSelectingPosition);
+            }
+
+            this.renderEngine.render();
+        }
+    }
+
     postInit() {
         this.offscreenRenderEngine = this.renderEngine.makeChild();
+        this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
         this.timeGrid = new TimeGrid(this.offscreenRenderEngine, this.settings);
 
         this.offscreenRenderEngine.on('resize', () => {
@@ -193,7 +198,7 @@ export default class TimeframeSelectorPlugin {
 
         if (this.offscreenRenderEngine) {
             this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-            this.timeGrid.setSettings(settings);
+            this.timeGrid.setSettings({ styles: { timeGrid: this.styles } });
         }
 
         this.shouldRender = true;

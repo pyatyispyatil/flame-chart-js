@@ -47,6 +47,7 @@ export default class FlameChart extends FlameChartContainer {
 
         if (waterfall) {
             waterfallPlugin = new WaterfallPlugin(waterfall, settings);
+            waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (data) {
                 activePlugins.push(new TogglePlugin(waterfallName, settings));
@@ -58,7 +59,7 @@ export default class FlameChart extends FlameChartContainer {
         if (data) {
             timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);
             flameChartPlugin = new FlameChartPlugin({ data, colors });
-            flameChartPlugin.on('select', (node) => this.emit('select', node));
+            flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (waterfall) {
                 activePlugins.push(new TogglePlugin(flameChartName, settings));

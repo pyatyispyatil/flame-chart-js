@@ -98,10 +98,11 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseDown() {
         this.moveActive = true;
-        this.mouseClickStartPosition = {
+        this.mouseDownPosition = {
             x: this.mouse.x,
             y: this.mouse.y
         };
+        this.mouseDownHoveredInstance = this.hoveredInstance;
 
         this.emit('down', this.hoveredRegion, this.mouse);
     }
@@ -109,7 +110,7 @@ export class InteractionsEngine extends EventEmitter {
     handleMouseUp() {
         this.moveActive = false;
 
-        const isClick = this.mouseClickStartPosition && this.mouseClickStartPosition.x === this.mouse.x && this.mouseClickStartPosition.y === this.mouse.y;
+        const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
 
         if (isClick) {
             this.handleRegionHit(this.mouse.x, this.mouse.y);
@@ -130,8 +131,8 @@ export class InteractionsEngine extends EventEmitter {
             if (mouseDeltaY || mouseDeltaX) {
                 this.emit('change-position', {
                     deltaX: mouseDeltaX,
-                    deltaY: mouseDeltaY,
-                });
+                    deltaY: mouseDeltaY
+                }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
             }
         }
 
@@ -155,6 +156,8 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion) {
             if (!this.currentCursor && hoveredRegion.cursor) {
                 this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
+            } else if (!this.currentCursor) {
+                this.clearCursor();
             }
 
             this.hoveredRegion = hoveredRegion;
@@ -184,6 +187,8 @@ export class InteractionsEngine extends EventEmitter {
             ) && (
                 renderEngine.height + renderEngine.position >= this.mouse.y
             ));
+
+            this.hoveredInstance = hoveredInstance;
 
             if (hoveredInstance) {
                 const offsetTop = hoveredInstance.renderEngine.position;
@@ -236,7 +241,6 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'down',
             'up',
             'move',
-            'change-position',
             'click'
         ].forEach((eventName) => parent.on(eventName, (...args) => this.resend(eventName, ...args)));
 
@@ -244,6 +248,12 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'select',
             'hover'
         ].forEach((eventName) => parent.on(eventName, (...args) => this.emit(eventName, ...args)));
+
+        parent.on('change-position', (data, startMouse, endMouse, instance) => {
+            if (instance === this) {
+                this.emit('change-position', data, startMouse, endMouse);
+            }
+        });
 
         this.clearHitRegions();
     }

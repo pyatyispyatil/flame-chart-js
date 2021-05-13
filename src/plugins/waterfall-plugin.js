@@ -1,17 +1,17 @@
 import { deepMerge } from '../utils.js';
+import EventEmitter from 'events';
 
 export const defaultWaterfallPluginSettings = {
     styles: {
         waterfallPlugin: {
-            lineHeight: 5
+            defaultHeight: 150
         }
     }
 }
 
-export default class WaterfallPlugin {
+export default class WaterfallPlugin extends EventEmitter {
     constructor({ items, intervals }, settings = {}) {
-        this.positionY = 0;
-
+        super();
         this.setData(items, intervals);
         this.setSettings(settings);
     }
@@ -21,8 +21,8 @@ export default class WaterfallPlugin {
         this.interactionsEngine = interactionsEngine;
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-
-        this.height = 200;
+        this.interactionsEngine.on('hover', this.handleHover.bind(this));
+        this.interactionsEngine.on('select', this.handleSelect.bind(this));
     }
 
     handlePositionChange({ deltaX, deltaY }) {
@@ -42,6 +42,16 @@ export default class WaterfallPlugin {
         }
     }
 
+    handleHover(region) {
+        this.hoveredRegion = region;
+    }
+
+    handleSelect(region) {
+        if (region && region.type === 'waterfall-node') {
+            this.emit(this.initialData[region.data], 'waterfall-node');
+        }
+    }
+
     setPositionY(y) {
         this.positionY = y;
     }
@@ -49,13 +59,17 @@ export default class WaterfallPlugin {
     setSettings(data) {
         this.settings = deepMerge(defaultWaterfallPluginSettings, data);
         this.styles = this.settings.styles.waterfallPlugin;
+
+        this.height = this.styles.defaultHeight;
+        this.positionY = 0;
     }
 
     setData(data, commonIntervals) {
         this.positionY = 0;
 
         if (data.length) {
-            this.data = data.map(({ name, intervals, timing }) => {
+            this.initialData = data;
+            this.data = data.map(({ name, intervals, timing }, index) => {
                 const values = Object.values(timing);
                 const min = values.reduce((acc, val) => Math.min(acc, val));
                 const max = values.reduce((acc, val) => Math.max(acc, val));
@@ -79,7 +93,8 @@ export default class WaterfallPlugin {
                     name,
                     timing,
                     min,
-                    max
+                    max,
+                    index
                 };
             });
 
@@ -94,6 +109,38 @@ export default class WaterfallPlugin {
         return {
             x: this.renderEngine.timeToPosition(start),
             w: isEnd ? w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3 : w
+        }
+    }
+
+    renderTooltip() {
+        if (this.hoveredRegion && this.hoveredRegion.type === 'waterfall-node') {
+            const { data: index } = this.hoveredRegion;
+            const { name, intervals, timing } = this.data[index];
+            const timeUnits = this.renderEngine.getTimeUnits();
+            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
+
+            const header = { text: `${name}` };
+            const intervalsHeader = { text: 'intervals', color: this.renderEngine.styles.tooltipHeaderFontColor };
+            const intervalsTexts = intervals.map(({ name, start, end }) => ({
+                text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`
+            }));
+            const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
+            const timingTexts = Object.entries(timing).map(([name, time]) => ({
+                text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
+            }));
+
+            this.renderEngine.renderTooltipFromData(
+                [
+                    header,
+                    intervalsHeader,
+                    ...intervalsTexts,
+                    timingHeader,
+                    ...timingTexts
+                ],
+                this.interactionsEngine.getGlobalMouse()
+            );
+
+            return true;
         }
     }
 
@@ -126,14 +173,14 @@ export default class WaterfallPlugin {
                 return result;
             });
 
-        viewedData.forEach(({ name, intervals, textBlock, level }, index) => {
+        viewedData.forEach(({ name, intervals, textBlock, level, index }) => {
             const textStart = this.renderEngine.timeToPosition(textBlock.min);
             const textEnd = this.renderEngine.timeToPosition(textBlock.max);
             const y = (level * (this.renderEngine.blockHeight + 1) - this.positionY);
 
             this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
-            intervals.forEach(({ color, start, end, type }, index) => {
+            const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
                 const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
                 if (type === 'block') {
@@ -142,8 +189,13 @@ export default class WaterfallPlugin {
 
                 }
 
-                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
-            });
+                return {
+                    x: acc.x === null ? x : acc.x,
+                    w: w + acc.w
+                };
+            }, { x: null, w: 0 });
+
+            this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
         }, 0);
     }
 }

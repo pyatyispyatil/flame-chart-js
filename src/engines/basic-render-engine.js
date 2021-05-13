@@ -291,11 +291,11 @@ export class BasicRenderEngine extends EventEmitter {
         );
     }
 
-    renderTooltipFromData(header, body, mouse) {
+    renderTooltipFromData(fields, mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
-        const maxWidth = [header, ...body]
+        const maxWidth = fields.map(({ text }) => text)
             .map((text) => this.ctx.measureText(text))
             .reduce((acc, { width }) => Math.max(acc, width), 0);
         const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;
@@ -308,29 +308,29 @@ export class BasicRenderEngine extends EventEmitter {
             mouseX,
             mouseY,
             fullWidth + this.blockPaddingLeftRight * 2,
-            (this.charHeight + 2) * (body.length + 1) + this.blockPaddingLeftRight * 2
+            (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2
         );
 
         this.ctx.shadowColor = null;
         this.ctx.shadowBlur = null;
 
-        this.setCtxColor(this.styles.tooltipHeaderFontColor);
-        this.ctx.fillText(
-            header,
-            mouseX + this.blockPaddingLeftRight,
-            mouseY + this.blockHeight - this.blockPaddingTopBottom
-        );
-
-        this.setCtxColor(this.styles.tooltipBodyFontColor);
-        body.forEach((text, index) => {
-            const count = index + 1;
+        fields.forEach(({ text, color }, index) => {
+            if (color) {
+                this.setCtxColor(color);
+            } else {
+                if (!index) {
+                    this.setCtxColor(this.styles.tooltipHeaderFontColor);
+                } else {
+                    this.setCtxColor(this.styles.tooltipBodyFontColor);
+                }
+            }
 
             this.ctx.fillText(
                 text,
                 mouseX + this.blockPaddingLeftRight,
-                mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * count
+                mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * index
             );
-        })
+        });
     }
 
     renderShape(color, dots, posX, posY) {
@@ -348,11 +348,11 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderTriangle(color, x, y, width, height, direction) {
-        const halfHeight = height/2;
-        const halfWidth = width/2;
+        const halfHeight = height / 2;
+        const halfWidth = width / 2;
         let dots;
 
-        switch(direction) {
+        switch (direction) {
             case 'top':
                 dots = [
                     { x: 0 - halfWidth, y: halfHeight },
@@ -370,7 +370,7 @@ export class BasicRenderEngine extends EventEmitter {
             case 'bottom':
                 dots = [
                     { x: 0 - halfWidth, y: 0 - halfHeight },
-                    { x: halfWidth, y: 0 - halfHeight},
+                    { x: halfWidth, y: 0 - halfHeight },
                     { x: 0, y: halfHeight },
                 ];
                 break;

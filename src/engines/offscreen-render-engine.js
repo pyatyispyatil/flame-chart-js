@@ -120,8 +120,8 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.resolveStrokeRenderQueue();
     }
 
-    renderTooltipFromData(...args) {
-        this.parent.renderTooltipFromData(...args);
+    renderTooltipFromData(fields, mouse) {
+        this.parent.renderTooltipFromData(fields, mouse);
     }
 
     resetParentView() {

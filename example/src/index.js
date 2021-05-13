@@ -4,6 +4,7 @@ import { defaultRenderSettings } from '../../src/engines/basic-render-engine.js'
 import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
 import { defaultTimeframeSelectorPluginSettings } from './../../src/plugins/timeframe-selector-plugin.js';
 import { defaultTogglePluginSettings } from '../../src/plugins/toggle-plugin.js';
+import { defaultWaterfallPluginSettings} from '../../src/plugins/waterfall-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {
@@ -70,54 +71,54 @@ const testItems = [
         name: 'foo',
         intervals: 'default',
         timing: {
-            requestStart: 50,
-            responseStart: 500,
-            responseEnd: 600
+            requestStart: 2050,
+            responseStart: 2500,
+            responseEnd: 2600
         }
     },
     {
         name: 'bar',
         intervals: 'default',
         timing: {
-            requestStart: 120,
-            responseStart: 180,
-            responseEnd: 300
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300
         }
     },
     {
         name: 'bar2',
         intervals: 'default',
         timing: {
-            requestStart: 120,
-            responseStart: 180,
-            responseEnd: 300
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300
         }
     },
     {
         name: 'bar3',
         intervals: 'default',
         timing: {
-            requestStart: 130,
-            responseStart: 180,
-            responseEnd: 320
+            requestStart: 2130,
+            responseStart: 2180,
+            responseEnd: 2320
         }
     },
     {
         name: 'bar4',
         intervals: 'default',
         timing: {
-            requestStart: 300,
-            responseStart: 350,
-            responseEnd: 400
+            requestStart: 2300,
+            responseStart: 2350,
+            responseEnd: 2400
         }
     },
     {
         name: 'bar5',
         intervals: 'default',
         timing: {
-            requestStart: 500,
-            responseStart: 520,
-            responseEnd: 550
+            requestStart: 2500,
+            responseStart: 2520,
+            responseEnd: 2550
         }
     }
 ];
@@ -192,5 +193,6 @@ initView(flameChart, treeConfig, {
     ...defaultTimeGridSettings.styles,
     ...defaultTimeGridPluginSettings.styles,
     ...defaultTimeframeSelectorPluginSettings.styles,
+    ...defaultWaterfallPluginSettings.styles,
     ...defaultTogglePluginSettings.styles
 });

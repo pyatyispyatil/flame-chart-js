@@ -83,7 +83,7 @@ export default class FlameChartPlugin extends EventEmitter {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion && this.selectedRegion.data);
+            this.emit('select', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
         }
     }
 
@@ -190,7 +190,10 @@ export default class FlameChartPlugin extends EventEmitter {
             const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
             const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
-            this.renderEngine.renderTooltipFromData(header, [dur, st], this.interactionsEngine.getGlobalMouse());
+            this.renderEngine.renderTooltipFromData(
+                [{ text: header }, { text: dur }, { text: st }],
+                this.interactionsEngine.getGlobalMouse()
+            );
 
             return true;
         }

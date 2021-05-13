@@ -16,7 +16,7 @@ export const defaultTogglePluginSettings = {
     }
 };
 
-export default class CommonPlugin {
+export default class TogglePlugin {
     constructor(title, settings) {
         this.setSettings(settings);
         this.title = title;

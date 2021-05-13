@@ -16,6 +16,9 @@ https://pyatyispyatil.github.io/flame-chart-js/example/dist/index.html
 
 #### Initialization
 
+
+You can ignore any of the marks, data, or waterfall arguments to initialize only the items you want. The flame chart will automatically adjust and hide unused plugins.
+
 ```js
 import FlameChart from 'flame-chart-js';
 
@@ -25,7 +28,7 @@ canvas.width = 800;
 canvas.height = 400;
 
 const flameChart = new FlameChart({
-    canvas,
+    canvas, // mandatory
     data: [
         {
             name: 'foo',
@@ -50,6 +53,7 @@ const flameChart = new FlameChart({
             timestamp: 500
         }
     ],
+    waterfall: { /* ... */ },
     colors: {
         'task': '#FFFFFF',
         'sub-task': '#000000'
@@ -59,7 +63,7 @@ const flameChart = new FlameChart({
     }
 });
 
-flameChart.on('select', (node) => {
+flameChart.on('select', (node, type) => {
     /*...*/
 });
 ```
@@ -71,7 +75,7 @@ flameChart.on('select', (node) => {
 setZoom = (start: number, end: number) => undefined;
 
 // set only position of the flame-chart
-setFlameChartPosition = ({ x: number, y: number }) => undefined;
+setFlameChartPosition = ({x: number, y: number}) => undefined;
 
 // render all when animationFrame fired
 render = () => undefined;
@@ -83,14 +87,16 @@ setData = (data: Data) => undefined;
 setMarks = (data: Marks) => undefined;
 
 // resize canvas
-resize = (width: number, height: number) => undefined; 
+resize = (width: number, height: number) => undefined;
 
 // apply new settings, which includes styles or something else
 setSettings = (settings: Object) => undefined
 ```
 
 #### Styles
+
 ##### Default styles
+
 ```json
 {
   "main": {
@@ -101,7 +107,11 @@ setSettings = (settings: Object) => undefined
     "fontColor": "black",
     "tooltipHeaderFontColor": "black",
     "tooltipBodyFontColor": "#688f45",
-    "tooltipBackgroundColor": "white"
+    "tooltipBackgroundColor": "white",
+    "headerHeight": 14,
+    "headerColor": "rgba(112, 112, 112, 0.25)",
+    "headerStrokeColor": "rgba(112, 112, 112, 0.5)",
+    "headerTitleLeftPadding": 16
   },
   "timeGrid": {
     "color": "rgb(126, 126, 126, 0.5)"
@@ -113,11 +123,28 @@ setSettings = (settings: Object) => undefined
   "timeframeSelectorPlugin": {
     "font": "9px sans-serif",
     "fontColor": "black",
-    "overlayColor": "rgba(112,112,112,0.5)",
-    "knobColor": "rgb(131,131,131)",
+    "overlayColor": "rgba(112, 112, 112, 0.5)",
+    "graphStrokeColor": "rgb(0, 0, 0, 0.2)",
+    "graphFillColor": "rgb(0, 0, 0, 0.25)",
+    "bottomLineColor": "rgb(0, 0, 0, 0.25)",
+    "knobColor": "rgb(131, 131, 131)",
     "knobSize": 6,
     "height": 60,
     "backgroundColor": "white"
+  },
+  "waterfallPlugin": {
+    "defaultHeight": 150
+  },
+  "togglePlugin": {
+    "height": 16,
+    "color": "rgb(202,202,202, 0.25)",
+    "strokeColor": "rgb(138,138,138, 0.50)",
+    "dotsColor": "rgb(97,97,97)",
+    "fontColor": "black",
+    "font": "10px sans-serif",
+    "triangleWidth": 10,
+    "triangleHeight": 7,
+    "leftPadding": 10
   }
 }
 ```
@@ -131,6 +158,7 @@ You can override whatever you want. For example:
   }
 }
 ```
+
 After applying this style, the blocks of the flame chart will be 20 pixels high instead of 16 pixels.
 
 #### Data format
@@ -155,6 +183,31 @@ type Node = {
 };
 
 type Data = Array<Node>;
+
+type WaterfallItems = Array<{
+    name: string,
+    intervals: string | WaterfallInterval,
+    timing: {
+        [string: key]: number
+    }
+}>
+
+type WaterfallInterval = {
+    name: string,
+    color: string,
+    type: 'block' | 'line',
+    start: string, // timing name
+    end: string // timing name
+}
+
+type WaterfallIntervals = {
+    [string: intervalName]: WaterfallInterval
+}
+
+type Waterfall = {
+    items: WaterfallItems,
+    intervals: WaterfallIntervals
+}
 ```
 
 #### Updating
@@ -162,6 +215,7 @@ type Data = Array<Node>;
 ```js
 flameChart.setData(newData);
 flameChart.setMarks(newMarks);
+flameChart.setWaterfall(newWaterfall);
 ```
 
 #### Scaling

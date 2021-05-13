@@ -25,7 +25,7 @@ export const template = ({ bundle }) => (
         }
 
         .input {
-            width: 100px;
+            width: 150px;
         }
 
         .inputWrapper {
@@ -98,11 +98,17 @@ export const template = ({ bundle }) => (
             border: 1px solid black;
             padding: 4px;
             margin-right: 16px;
+            max-height: 360px;
         }
         
         .footerSectionTitle{
             text-align: center;
             margin-bottom: 16px;
+        }
+        
+        .footerSectionInputs {
+            max-height: 278px;
+            overflow: auto; 
         }
 
         #wrapper {
@@ -139,7 +145,7 @@ export const template = ({ bundle }) => (
         <div class="footerSection">
             <div>
                 <div class="footerSectionTitle">Styles</div>
-                <div id="styles-inputs"></div>
+                <div  class="footerSectionInputs" id="styles-inputs"></div>
             </div>
             <div>
                 <div class="buttonsWrapper stylesButton">

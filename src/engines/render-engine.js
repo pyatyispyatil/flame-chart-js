@@ -90,7 +90,7 @@ export class RenderEngine extends BasicRenderEngine {
     recalcChildrenSizes() {
         const childrenSizes = this.getChildrenSizes();
 
-        this.freeSpace = childrenSizes.reduce((acc, { height }) => acc + height, 0);
+        this.freeSpace = childrenSizes.reduce((acc, { height }) => acc - height, this.height);
         this.childEngines.forEach((engine, index) => {
             engine.resize(childrenSizes[index], true);
         });
@@ -196,9 +196,9 @@ export class RenderEngine extends BasicRenderEngine {
         const plugin = this.plugins[index];
         const engine = this.childEngines[index];
 
-        if (!engine.collapsed) {
-            engine.clear();
+        engine.clear();
 
+        if (!engine.collapsed) {
             const isFullRendered = plugin.render();
 
             if (!isFullRendered) {

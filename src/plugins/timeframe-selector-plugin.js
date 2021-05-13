@@ -347,7 +347,6 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.renderStroke('white', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
         this.renderEngine.renderStroke('white', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 
-        this.interactionsEngine.clearHitRegions();
         this.interactionsEngine.addHitRegion('timeframeKnob', 'left', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
         this.interactionsEngine.addHitRegion('timeframeKnob', 'right', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
         this.interactionsEngine.addHitRegion('timeframeArea', null, 0, 0, this.renderEngine.width, this.renderEngine.height, 'text');

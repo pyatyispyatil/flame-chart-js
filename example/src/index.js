@@ -3,6 +3,7 @@ import { defaultTimeGridSettings } from '../../src/engines/time-grid.js';
 import { defaultRenderSettings } from '../../src/engines/basic-render-engine.js';
 import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
 import { defaultTimeframeSelectorPluginSettings } from './../../src/plugins/timeframe-selector-plugin.js';
+import { defaultTogglePluginSettings } from '../../src/plugins/toggle-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {
@@ -190,5 +191,6 @@ initView(flameChart, treeConfig, {
     ...defaultRenderSettings.styles,
     ...defaultTimeGridSettings.styles,
     ...defaultTimeGridPluginSettings.styles,
-    ...defaultTimeframeSelectorPluginSettings.styles
+    ...defaultTimeframeSelectorPluginSettings.styles,
+    ...defaultTogglePluginSettings.styles
 });

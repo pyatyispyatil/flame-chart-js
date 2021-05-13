@@ -127,6 +127,8 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
         this.ctx.fillRect(x, y, w, h);
+
+        this.emit('clear');
     }
 
     timeToPosition(time) {
@@ -254,8 +256,8 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resize(width, height) {
-        this.width = width || this.width;
-        this.height = height || this.height;
+        this.width = width;
+        this.height = height;
 
         this.applyCanvasSize();
 
@@ -382,5 +384,12 @@ export class BasicRenderEngine extends EventEmitter {
         }
 
         this.renderShape(color, dots, x, y);
+    }
+
+    renderCircle(color, x, y, radius) {
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        this.setCtxColor(color);
+        this.ctx.fill();
     }
 }

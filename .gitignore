@@ -1,2 +1,6 @@
 *.js.map
 dist
+node_modules
+
+#Editors
+.idea

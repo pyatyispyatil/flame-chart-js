@@ -114,10 +114,10 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     standardRender() {
-        this.renderTimeGrid();
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
         this.resolveStrokeRenderQueue();
+        this.renderTimeGrid();
     }
 
     renderTooltipFromData(fields, mouse) {

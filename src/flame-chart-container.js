@@ -15,7 +15,7 @@ export default class FlameChartContainer extends EventEmitter {
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
 
-        const childEngines = Array(this.plugins.length).fill(null).map(() => {
+        const children = Array(this.plugins.length).fill(null).map(() => {
             const renderEngine = this.renderEngine.makeInstance();
             const interactionsEngine = this.interactionsEngine.makeInstance(renderEngine);
 
@@ -24,8 +24,8 @@ export default class FlameChartContainer extends EventEmitter {
 
         this.plugins.forEach((plugin, index) => {
             plugin.init(
-                childEngines[index].renderEngine,
-                childEngines[index].interactionsEngine
+                children[index].renderEngine,
+                children[index].interactionsEngine
             );
         });
 

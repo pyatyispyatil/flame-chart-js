@@ -93,11 +93,11 @@ export default class TogglePlugin {
     }
 
     getPrevEngine() {
-        return this.renderEngine.parent.childEngines[this.renderEngine.id - 1];
+        return this.renderEngine.parent.children[this.renderEngine.id - 1];
     }
 
     getNextEngine() {
-        return this.renderEngine.parent.childEngines[this.renderEngine.id + 1];
+        return this.renderEngine.parent.children[this.renderEngine.id + 1];
     }
 
     render() {

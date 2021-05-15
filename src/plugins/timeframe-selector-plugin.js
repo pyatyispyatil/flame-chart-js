@@ -149,6 +149,8 @@ export default class TimeframeSelectorPlugin {
             this.offscreenRender();
         });
 
+        this.offscreenRenderEngine.on('min-max-change', () => this.shouldRender = true);
+
         this.setData(this.data);
     }
 
@@ -293,6 +295,8 @@ export default class TimeframeSelectorPlugin {
     offscreenRender() {
         const zoom = this.offscreenRenderEngine.getInitialZoom();
 
+        this.offscreenRenderEngine.setZoom(zoom);
+        this.offscreenRenderEngine.setPositionX(this.offscreenRenderEngine.min);
         this.offscreenRenderEngine.clear();
 
         this.timeGrid.recalc();

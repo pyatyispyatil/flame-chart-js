@@ -218,8 +218,14 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     setMinMax(min, max) {
+        const hasChanges = min !== this.min || max !== this.max;
+
         this.min = min;
         this.max = max;
+
+        if (hasChanges) {
+            this.emit('min-max-change', min, max);
+        }
     }
 
     getTimeUnits() {

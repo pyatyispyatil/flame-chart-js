@@ -13,12 +13,14 @@ const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 export default class FlameChartPlugin extends EventEmitter {
     constructor({
                     data,
-                    colors
+                    colors,
+                    customTooltip
                 }) {
         super();
 
         this.data = data;
         this.userColors = colors;
+        this.customTooltip = customTooltip;
 
         this.parseData(this.data);
         this.reset();
@@ -180,20 +182,28 @@ export default class FlameChartPlugin extends EventEmitter {
 
     renderTooltip() {
         if (this.hoveredRegion) {
-            const { data: { start, duration, children, name } } = this.hoveredRegion;
-            const timeUnits = this.renderEngine.getTimeUnits();
+            if (this.customTooltip) {
+                this.customTooltip(
+                    this.hoveredRegion,
+                    this.renderEngine,
+                    this.interactionsEngine.getGlobalMouse()
+                );
+            } else {
+                const { data: { start, duration, children, name } } = this.hoveredRegion;
+                const timeUnits = this.renderEngine.getTimeUnits();
 
-            const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
+                const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
-            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
-            const header = `${name}`;
-            const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
-            const st = `start: ${start.toFixed(nodeAccuracy)}`;
+                const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
+                const header = `${name}`;
+                const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
+                const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
-            this.renderEngine.renderTooltipFromData(
-                [{ text: header }, { text: dur }, { text: st }],
-                this.interactionsEngine.getGlobalMouse()
-            );
+                this.renderEngine.renderTooltipFromData(
+                    [{ text: header }, { text: dur }, { text: st }],
+                    this.interactionsEngine.getGlobalMouse()
+                );
+            }
 
             return true;
         }

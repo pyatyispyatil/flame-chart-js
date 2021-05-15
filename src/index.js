@@ -12,6 +12,7 @@ export { default as TimeGridPlugin } from './plugins/time-grid-plugin.js';
 export { default as MarksPlugin } from './plugins/marks-plugin.js';
 export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin.js';
 export { default as WaterfallPlugin } from './plugins/waterfall-plugin.js';
+export { default as TogglePlugin } from './plugins/toggle-plugin.js';
 
 export default class FlameChart extends FlameChartContainer {
     constructor({

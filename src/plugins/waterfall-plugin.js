@@ -4,7 +4,7 @@ import EventEmitter from 'events';
 export const defaultWaterfallPluginSettings = {
     styles: {
         waterfallPlugin: {
-            defaultHeight: 150
+            defaultHeight: 68
         }
     }
 }
@@ -12,7 +12,7 @@ export const defaultWaterfallPluginSettings = {
 export default class WaterfallPlugin extends EventEmitter {
     constructor({ items, intervals }, settings = {}) {
         super();
-        this.setData(items, intervals);
+        this.setData({ items, intervals });
         this.setSettings(settings);
     }
 
@@ -64,42 +64,47 @@ export default class WaterfallPlugin extends EventEmitter {
         this.positionY = 0;
     }
 
-    setData(data, commonIntervals) {
+    setData({ items: data, intervals: commonIntervals }) {
         this.positionY = 0;
 
+        this.initialData = data;
+        this.data = data.map(({ name, intervals, timing }, index) => {
+            const values = Object.values(timing);
+            const min = values.reduce((acc, val) => Math.min(acc, val));
+            const max = values.reduce((acc, val) => Math.max(acc, val));
+            const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
+            const preparedIntervals = resolvedIntervals
+                .map(({ start, end, color, type, name }) => ({
+                    start: typeof start === 'string' ? timing[start] : start,
+                    end: typeof end === 'string' ? timing[end] : end,
+                    color, name, type
+                }));
+            const blocks = preparedIntervals.filter(({ type }) => type === 'block');
+            const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
+            const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
+
+            return {
+                intervals: preparedIntervals,
+                textBlock: {
+                    min: minBlock,
+                    max: maxBlock
+                },
+                name,
+                timing,
+                min,
+                max,
+                index
+            };
+        });
+
         if (data.length) {
-            this.initialData = data;
-            this.data = data.map(({ name, intervals, timing }, index) => {
-                const values = Object.values(timing);
-                const min = values.reduce((acc, val) => Math.min(acc, val));
-                const max = values.reduce((acc, val) => Math.max(acc, val));
-                const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
-                const preparedIntervals = resolvedIntervals
-                    .map(({ start, end, color, type, name }) => ({
-                        start: typeof start === 'string' ? timing[start] : start,
-                        end: typeof end === 'string' ? timing[end] : end,
-                        color, name, type
-                    }));
-                const blocks = preparedIntervals.filter(({ type }) => type === 'block');
-                const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
-                const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
-
-                return {
-                    intervals: preparedIntervals,
-                    textBlock: {
-                        min: minBlock,
-                        max: maxBlock
-                    },
-                    name,
-                    timing,
-                    min,
-                    max,
-                    index
-                };
-            });
-
             this.min = this.data.reduce((acc, { min }) => Math.min(acc, min), this.data[0].min);
             this.max = this.data.reduce((acc, { max }) => Math.max(acc, max), this.data[0].max);
+        }
+
+        if (this.renderEngine) {
+            this.renderEngine.recalcMinMax();
+            this.renderEngine.resetParentView();
         }
     }
 
@@ -147,6 +152,7 @@ export default class WaterfallPlugin extends EventEmitter {
     render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
+        const maxLines = Math.ceil(this.renderEngine.height / (this.renderEngine.blockHeight + 1));
 
         let stack = [];
         const viewedData = this.data
@@ -171,31 +177,33 @@ export default class WaterfallPlugin extends EventEmitter {
                 stack.push(entry);
 
                 return result;
-            });
+            })
 
         viewedData.forEach(({ name, intervals, textBlock, level, index }) => {
-            const textStart = this.renderEngine.timeToPosition(textBlock.min);
-            const textEnd = this.renderEngine.timeToPosition(textBlock.max);
             const y = (level * (this.renderEngine.blockHeight + 1) - this.positionY);
 
-            this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
+            if (y + this.renderEngine.blockHeight >= 0 && y - this.renderEngine.blockHeight <= this.renderEngine.height) {
+                const textStart = this.renderEngine.timeToPosition(textBlock.min);
+                const textEnd = this.renderEngine.timeToPosition(textBlock.max);
+                this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
-            const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
-                const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
+                const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
+                    const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
-                if (type === 'block') {
-                    this.renderEngine.addRectToRenderQueue(color, x, y, w);
-                } else if (type === 'line') {
+                    if (type === 'block') {
+                        this.renderEngine.addRectToRenderQueue(color, x, y, w);
+                    } else if (type === 'line') {
 
-                }
+                    }
 
-                return {
-                    x: acc.x === null ? x : acc.x,
-                    w: w + acc.w
-                };
-            }, { x: null, w: 0 });
+                    return {
+                        x: acc.x === null ? x : acc.x,
+                        w: w + acc.w
+                    };
+                }, { x: null, w: 0 });
 
-            this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+            }
         }, 0);
     }
 }

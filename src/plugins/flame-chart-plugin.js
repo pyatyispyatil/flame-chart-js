@@ -63,7 +63,6 @@ export default class FlameChartPlugin extends EventEmitter {
         this.lastRandomColor = DEFAULT_COLOR;
 
         this.positionY = 0;
-        this.userColors = {};
         this.selectedRegion = null;
     }
 

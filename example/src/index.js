@@ -155,7 +155,6 @@ const flameChart = new FlameChart({
 flameChart.on('select', (node) => {
     setNodeView(node ? JSON.stringify({
         ...node,
-        end: node.start + node.duration,
         children: undefined,
         parent: undefined
     }, null, '  ') : '');

@@ -48,7 +48,13 @@ export default class WaterfallPlugin extends EventEmitter {
 
     handleSelect(region) {
         if (region && region.type === 'waterfall-node') {
-            this.emit(this.initialData[region.data], 'waterfall-node');
+            this.selectedRegion = region;
+            this.emit('select', this.initialData[region.data], 'waterfall-node');
+            this.renderEngine.render();
+        } else if (this.selectedRegion && !region) {
+            this.selectedRegion = null;
+            this.emit('select', null, 'waterfall-node');
+            this.renderEngine.render();
         }
     }
 
@@ -186,6 +192,7 @@ export default class WaterfallPlugin extends EventEmitter {
             if (y + blockHeight >= 0 && y - blockHeight <= this.renderEngine.height) {
                 const textStart = this.renderEngine.timeToPosition(textBlock.min);
                 const textEnd = this.renderEngine.timeToPosition(textBlock.max);
+
                 this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
                 const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
@@ -194,7 +201,7 @@ export default class WaterfallPlugin extends EventEmitter {
                     if (type === 'block') {
                         this.renderEngine.addRectToRenderQueue(color, x, y, w);
                     } else if (type === 'line') {
-
+                        // ToDo add other types
                     }
 
                     return {
@@ -202,6 +209,14 @@ export default class WaterfallPlugin extends EventEmitter {
                         w: w + acc.w
                     };
                 }, { x: null, w: 0 });
+
+                if (this.selectedRegion && this.selectedRegion.type === 'waterfall-node') {
+                     const selectedIndex = this.selectedRegion.data;
+
+                     if (selectedIndex === index) {
+                         this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+                     }
+                }
 
                 this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
             }

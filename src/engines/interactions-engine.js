@@ -241,11 +241,11 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'down',
             'up',
             'move',
-            'click'
+            'click',
+            'select'
         ].forEach((eventName) => parent.on(eventName, (...args) => this.resend(eventName, ...args)));
 
         [
-            'select',
             'hover'
         ].forEach((eventName) => parent.on(eventName, (...args) => this.emit(eventName, ...args)));
 

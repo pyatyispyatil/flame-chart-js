@@ -10,8 +10,10 @@ export default class MarksPlugin {
     calcMinMax() {
         const { marks } = this;
 
-        this.min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
-        this.max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
+        if (marks.length) {
+            this.min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
+            this.max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
+        }
     }
 
     init(renderEngine, interactionsEngine) {
@@ -38,6 +40,8 @@ export default class MarksPlugin {
 
     setMarks(marks) {
         this.marks = this.prepareMarks(marks);
+
+        this.calcMinMax();
 
         this.renderEngine.recalcMinMax();
         this.renderEngine.resetParentView();

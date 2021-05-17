@@ -11,7 +11,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         this.plugins = plugins;
 
-        this.childEngines = [];
+        this.children = [];
         this.requestedRenders = [];
 
         this.timeGrid = new TimeGrid(this, settings);
@@ -21,7 +21,7 @@ export class RenderEngine extends BasicRenderEngine {
         const offscreenRenderEngine = new OffscreenRenderEngine({
             width: this.width,
             height: 0,
-            id: this.childEngines.length,
+            id: this.children.length,
             parent: this,
             settings: this.settings
         });
@@ -29,7 +29,7 @@ export class RenderEngine extends BasicRenderEngine {
         offscreenRenderEngine.setMinMax(this.min, this.max);
         offscreenRenderEngine.resetView();
 
-        this.childEngines.push(offscreenRenderEngine);
+        this.children.push(offscreenRenderEngine);
 
         return offscreenRenderEngine;
     }
@@ -55,7 +55,7 @@ export class RenderEngine extends BasicRenderEngine {
     setMinMax(min, max) {
         super.setMinMax(min, max);
 
-        this.childEngines.forEach((engine) => engine.setMinMax(min, max));
+        this.children.forEach((engine) => engine.setMinMax(min, max));
     }
 
     setSettings(data) {
@@ -67,8 +67,8 @@ export class RenderEngine extends BasicRenderEngine {
             this.timeGrid.setSettings(data);
         }
 
-        if (this.childEngines) {
-            this.childEngines.forEach((engine) => engine.setSettings(data));
+        if (this.children) {
+            this.children.forEach((engine) => engine.setSettings(data));
             this.plugins.forEach((plugin) => plugin.setSettings && plugin.setSettings(data));
             this.recalcChildrenSizes();
         }
@@ -91,17 +91,17 @@ export class RenderEngine extends BasicRenderEngine {
         const childrenSizes = this.getChildrenSizes();
 
         this.freeSpace = childrenSizes.reduce((acc, { height }) => acc - height, this.height);
-        this.childEngines.forEach((engine, index) => {
+        this.children.forEach((engine, index) => {
             engine.resize(childrenSizes[index], true);
         });
     }
 
     getChildrenSizes() {
-        const indexes = this.childEngines.map((engine, index) => index);
+        const indexes = this.children.map((engine, index) => index);
 
         const enginesTypes = indexes.map((index) => {
             const plugin = this.plugins[index];
-            const engine = this.childEngines[index];
+            const engine = this.children[index];
 
             if (engine.flexible && plugin.height) {
                 return 'flexibleStatic';
@@ -114,7 +114,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         const freeSpace = enginesTypes.reduce((acc, type, index) => {
             const plugin = this.plugins[index];
-            const engine = this.childEngines[index];
+            const engine = this.children[index];
 
             if (engine.collapsed) {
                 return acc;
@@ -135,7 +135,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         return enginesTypes
             .reduce((acc, type, index) => {
-                const engine = this.childEngines[index];
+                const engine = this.children[index];
                 const plugin = this.plugins[index];
                 let height;
 
@@ -177,7 +177,7 @@ export class RenderEngine extends BasicRenderEngine {
     setZoom(zoom) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
-            this.childEngines.forEach((engine) => engine.setZoom(zoom));
+            this.children.forEach((engine) => engine.setZoom(zoom));
 
             return true;
         }
@@ -187,14 +187,14 @@ export class RenderEngine extends BasicRenderEngine {
 
     setPositionX(x) {
         const res = super.setPositionX(x);
-        this.childEngines.forEach((engine) => engine.setPositionX(x));
+        this.children.forEach((engine) => engine.setPositionX(x));
 
         return res;
     }
 
     renderPlugin(index) {
         const plugin = this.plugins[index];
-        const engine = this.childEngines[index];
+        const engine = this.children[index];
 
         engine.clear();
 
@@ -230,7 +230,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         this.timeGrid.renderLines(this.height - this.freeSpace, this.freeSpace);
 
-        this.childEngines.forEach((engine) => {
+        this.children.forEach((engine) => {
             if (!engine.collapsed) {
                 this.copy(engine);
             }
@@ -257,7 +257,7 @@ export class RenderEngine extends BasicRenderEngine {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
                 this.timeGrid.recalc();
 
-                this.childEngines.forEach((engine, index) => this.renderPlugin(index));
+                this.children.forEach((engine, index) => this.renderPlugin(index));
 
                 this.shallowRender();
 

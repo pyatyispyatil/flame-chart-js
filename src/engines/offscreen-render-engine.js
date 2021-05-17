@@ -58,15 +58,10 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     resize({ width, height, position }, isParentCall) {
-        const hasWidth = typeof width === 'number';
-        const hasHeight = typeof height === 'number';
+        const isHeightChanged = super.resize(width, height);
 
-        if (hasWidth && this.width !== width || hasHeight && this.height !== height) {
-            super.resize(hasWidth ? width : this.width, hasHeight ? height : this.height);
-
-            if (!isParentCall) {
-                this.parent.recalcChildrenSizes();
-            }
+        if (!isParentCall && isHeightChanged) {
+            this.parent.recalcChildrenSizes();
         }
 
         if (typeof position === 'number') {
@@ -114,10 +109,10 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     standardRender() {
-        this.renderTimeGrid();
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
         this.resolveStrokeRenderQueue();
+        this.renderTimeGrid();
     }
 
     renderTooltipFromData(fields, mouse) {

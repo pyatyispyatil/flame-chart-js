@@ -4,7 +4,7 @@ import EventEmitter from 'events';
 export const defaultWaterfallPluginSettings = {
     styles: {
         waterfallPlugin: {
-            defaultHeight: 150
+            defaultHeight: 68
         }
     }
 }
@@ -12,7 +12,7 @@ export const defaultWaterfallPluginSettings = {
 export default class WaterfallPlugin extends EventEmitter {
     constructor({ items, intervals }, settings = {}) {
         super();
-        this.setData(items, intervals);
+        this.setData({ items, intervals });
         this.setSettings(settings);
     }
 
@@ -48,7 +48,13 @@ export default class WaterfallPlugin extends EventEmitter {
 
     handleSelect(region) {
         if (region && region.type === 'waterfall-node') {
-            this.emit(this.initialData[region.data], 'waterfall-node');
+            this.selectedRegion = region;
+            this.emit('select', this.initialData[region.data], 'waterfall-node');
+            this.renderEngine.render();
+        } else if (this.selectedRegion && !region) {
+            this.selectedRegion = null;
+            this.emit('select', null, 'waterfall-node');
+            this.renderEngine.render();
         }
     }
 
@@ -64,42 +70,48 @@ export default class WaterfallPlugin extends EventEmitter {
         this.positionY = 0;
     }
 
-    setData(data, commonIntervals) {
+    setData({ items: data, intervals: commonIntervals }) {
         this.positionY = 0;
 
+        this.initialData = data;
+        this.data = data.map(({ name, intervals, timing }, index) => {
+            const values = Object.values(timing);
+            const min = values.reduce((acc, val) => Math.min(acc, val));
+            const max = values.reduce((acc, val) => Math.max(acc, val));
+            const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
+            const preparedIntervals = resolvedIntervals
+                .map(({ start, end, color, type, name }) => ({
+                    start: typeof start === 'string' ? timing[start] : start,
+                    end: typeof end === 'string' ? timing[end] : end,
+                    color, name, type
+                }));
+            const blocks = preparedIntervals.filter(({ type }) => type === 'block');
+            const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
+            const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
+
+            return {
+                intervals: preparedIntervals,
+                textBlock: {
+                    min: minBlock,
+                    max: maxBlock
+                },
+                name,
+                timing,
+                min,
+                max,
+                index
+            };
+        })
+            .sort((a, b) => a.min - b.min || b.max - a.max)
+
         if (data.length) {
-            this.initialData = data;
-            this.data = data.map(({ name, intervals, timing }, index) => {
-                const values = Object.values(timing);
-                const min = values.reduce((acc, val) => Math.min(acc, val));
-                const max = values.reduce((acc, val) => Math.max(acc, val));
-                const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
-                const preparedIntervals = resolvedIntervals
-                    .map(({ start, end, color, type, name }) => ({
-                        start: typeof start === 'string' ? timing[start] : start,
-                        end: typeof end === 'string' ? timing[end] : end,
-                        color, name, type
-                    }));
-                const blocks = preparedIntervals.filter(({ type }) => type === 'block');
-                const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
-                const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
-
-                return {
-                    intervals: preparedIntervals,
-                    textBlock: {
-                        min: minBlock,
-                        max: maxBlock
-                    },
-                    name,
-                    timing,
-                    min,
-                    max,
-                    index
-                };
-            });
-
             this.min = this.data.reduce((acc, { min }) => Math.min(acc, min), this.data[0].min);
             this.max = this.data.reduce((acc, { max }) => Math.max(acc, max), this.data[0].max);
+        }
+
+        if (this.renderEngine) {
+            this.renderEngine.recalcMinMax();
+            this.renderEngine.resetParentView();
         }
     }
 
@@ -147,7 +159,7 @@ export default class WaterfallPlugin extends EventEmitter {
     render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
-
+        const blockHeight = this.renderEngine.blockHeight + 1;
         let stack = [];
         const viewedData = this.data
             .filter(({ min, max }) => !(
@@ -157,45 +169,57 @@ export default class WaterfallPlugin extends EventEmitter {
                     leftSide > max && rightSide > min
                 ))
             )
-            .sort((a, b) => a.min - b.min || b.max - a.max)
             .map((entry) => {
                 while (stack.length && entry.min - stack[stack.length - 1].max > 0) {
                     stack.pop();
                 }
 
+                const level = stack.length;
+
                 const result = {
                     ...entry,
-                    level: stack.length
+                    level
                 };
 
                 stack.push(entry);
 
                 return result;
-            });
+            })
 
         viewedData.forEach(({ name, intervals, textBlock, level, index }) => {
-            const textStart = this.renderEngine.timeToPosition(textBlock.min);
-            const textEnd = this.renderEngine.timeToPosition(textBlock.max);
-            const y = (level * (this.renderEngine.blockHeight + 1) - this.positionY);
+            const y = level * blockHeight - this.positionY;
 
-            this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
+            if (y + blockHeight >= 0 && y - blockHeight <= this.renderEngine.height) {
+                const textStart = this.renderEngine.timeToPosition(textBlock.min);
+                const textEnd = this.renderEngine.timeToPosition(textBlock.max);
 
-            const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
-                const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
+                this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
-                if (type === 'block') {
-                    this.renderEngine.addRectToRenderQueue(color, x, y, w);
-                } else if (type === 'line') {
+                const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
+                    const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
+                    if (type === 'block') {
+                        this.renderEngine.addRectToRenderQueue(color, x, y, w);
+                    } else if (type === 'line') {
+                        // ToDo add other types
+                    }
+
+                    return {
+                        x: acc.x === null ? x : acc.x,
+                        w: w + acc.w
+                    };
+                }, { x: null, w: 0 });
+
+                if (this.selectedRegion && this.selectedRegion.type === 'waterfall-node') {
+                     const selectedIndex = this.selectedRegion.data;
+
+                     if (selectedIndex === index) {
+                         this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+                     }
                 }
 
-                return {
-                    x: acc.x === null ? x : acc.x,
-                    w: w + acc.w
-                };
-            }, { x: null, w: 0 });
-
-            this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+            }
         }, 0);
     }
 }

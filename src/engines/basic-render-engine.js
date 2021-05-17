@@ -262,12 +262,19 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resize(width, height) {
-        this.width = width;
-        this.height = height;
+        const isWidthChanged = typeof width === 'number' && this.width !== width;
+        const isHeightChanged = typeof height === 'number' && this.height !== height;
 
-        this.applyCanvasSize();
+        if (isWidthChanged || isHeightChanged) {
+            this.width = isWidthChanged ? width : this.width;
+            this.height = isHeightChanged ? height : this.height;
 
-        this.emit('resize', { width: this.width, height: this.height });
+            this.applyCanvasSize();
+
+            this.emit('resize', { width: this.width, height: this.height });
+
+            return isHeightChanged;
+        }
     }
 
     applyCanvasSize() {

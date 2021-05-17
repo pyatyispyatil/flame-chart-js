@@ -95,7 +95,8 @@ export default class WaterfallPlugin extends EventEmitter {
                 max,
                 index
             };
-        });
+        })
+            .sort((a, b) => a.min - b.min || b.max - a.max)
 
         if (data.length) {
             this.min = this.data.reduce((acc, { min }) => Math.min(acc, min), this.data[0].min);
@@ -152,8 +153,7 @@ export default class WaterfallPlugin extends EventEmitter {
     render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
-        const maxLines = Math.ceil(this.renderEngine.height / (this.renderEngine.blockHeight + 1));
-
+        const blockHeight = this.renderEngine.blockHeight + 1;
         let stack = [];
         const viewedData = this.data
             .filter(({ min, max }) => !(
@@ -163,15 +163,16 @@ export default class WaterfallPlugin extends EventEmitter {
                     leftSide > max && rightSide > min
                 ))
             )
-            .sort((a, b) => a.min - b.min || b.max - a.max)
             .map((entry) => {
                 while (stack.length && entry.min - stack[stack.length - 1].max > 0) {
                     stack.pop();
                 }
 
+                const level = stack.length;
+
                 const result = {
                     ...entry,
-                    level: stack.length
+                    level
                 };
 
                 stack.push(entry);
@@ -180,9 +181,9 @@ export default class WaterfallPlugin extends EventEmitter {
             })
 
         viewedData.forEach(({ name, intervals, textBlock, level, index }) => {
-            const y = (level * (this.renderEngine.blockHeight + 1) - this.positionY);
+            const y = level * blockHeight - this.positionY;
 
-            if (y + this.renderEngine.blockHeight >= 0 && y - this.renderEngine.blockHeight <= this.renderEngine.height) {
+            if (y + blockHeight >= 0 && y - blockHeight <= this.renderEngine.height) {
                 const textStart = this.renderEngine.timeToPosition(textBlock.min);
                 const textEnd = this.renderEngine.timeToPosition(textBlock.max);
                 this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);

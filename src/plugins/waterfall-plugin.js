@@ -74,7 +74,7 @@ export default class WaterfallPlugin extends EventEmitter {
         this.positionY = 0;
 
         this.initialData = data;
-        this.data = data.map(({ name, intervals, timing }, index) => {
+        this.data = data.map(({ name, intervals, timing, ...rest }, index) => {
             const values = Object.values(timing);
             const min = values.reduce((acc, val) => Math.min(acc, val));
             const max = values.reduce((acc, val) => Math.max(acc, val));
@@ -90,6 +90,7 @@ export default class WaterfallPlugin extends EventEmitter {
             const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
 
             return {
+                ...rest,
                 intervals: preparedIntervals,
                 textBlock: {
                     min: minBlock,
@@ -127,7 +128,7 @@ export default class WaterfallPlugin extends EventEmitter {
     renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'waterfall-node') {
             const { data: index } = this.hoveredRegion;
-            const { name, intervals, timing } = this.data[index];
+            const { name, intervals, timing, meta } = this.data.find(({ index: i }) => index === i);
             const timeUnits = this.renderEngine.getTimeUnits();
             const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
 
@@ -140,6 +141,11 @@ export default class WaterfallPlugin extends EventEmitter {
             const timingTexts = Object.entries(timing).map(([name, time]) => ({
                 text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
             }));
+            const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
+            const metaTexts = meta.map(({ name, value, color }) => ({
+                text: `${name}: ${value}`,
+                color
+            }))
 
             this.renderEngine.renderTooltipFromData(
                 [
@@ -147,7 +153,8 @@ export default class WaterfallPlugin extends EventEmitter {
                     intervalsHeader,
                     ...intervalsTexts,
                     timingHeader,
-                    ...timingTexts
+                    ...timingTexts,
+                    ...(metaTexts.length ? [metaHeader, ...metaTexts] : [])
                 ],
                 this.interactionsEngine.getGlobalMouse()
             );
@@ -211,11 +218,11 @@ export default class WaterfallPlugin extends EventEmitter {
                 }, { x: null, w: 0 });
 
                 if (this.selectedRegion && this.selectedRegion.type === 'waterfall-node') {
-                     const selectedIndex = this.selectedRegion.data;
+                    const selectedIndex = this.selectedRegion.data;
 
-                     if (selectedIndex === index) {
-                         this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
-                     }
+                    if (selectedIndex === index) {
+                        this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+                    }
                 }
 
                 this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);

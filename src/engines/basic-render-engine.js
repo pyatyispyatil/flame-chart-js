@@ -3,6 +3,11 @@ import { deepMerge } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 
+const checkSafari = () => {
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
+}
+
 const getPixelRatio = (ctx) => {
     const dpr = window.devicePixelRatio || 1;
     const bsr = ctx.webkitBackingStorePixelRatio ||
@@ -41,6 +46,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.width = canvas.width;
         this.height = canvas.height;
 
+        this.isSafari = checkSafari();
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d', { alpha: false });
         this.pixelRatio = getPixelRatio(this.ctx);
@@ -291,16 +297,18 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     copy(engine) {
+        const ratio = this.isSafari ? 1 : engine.pixelRatio;
+
         this.ctx.drawImage(
             engine.canvas,
             0,
             0,
-            engine.canvas.width * engine.pixelRatio,
-            engine.canvas.height * engine.pixelRatio,
+            engine.canvas.width * ratio,
+            engine.canvas.height * ratio,
             0,
             engine.position || 0,
-            engine.width * engine.pixelRatio,
-            engine.height * engine.pixelRatio
+            engine.width * ratio,
+            engine.height * ratio
         );
     }
 

@@ -105,6 +105,7 @@ export default class WaterfallPlugin extends EventEmitter {
                 index
             };
         })
+            .filter(({ intervals }) => intervals.length)
             .sort((a, b) => a.min - b.min || b.max - a.max)
 
         if (data.length) {

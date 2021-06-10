@@ -75,7 +75,7 @@ export default class WaterfallPlugin extends EventEmitter {
 
         this.initialData = data;
         this.data = data.map(({ name, intervals, timing, ...rest }, index) => {
-            const values = Object.values(timing);
+            const values = Object.values(timing).filter((value) => typeof value === 'number');
             const min = values.reduce((acc, val) => Math.min(acc, val));
             const max = values.reduce((acc, val) => Math.max(acc, val));
             const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
@@ -85,7 +85,9 @@ export default class WaterfallPlugin extends EventEmitter {
                     end: typeof end === 'string' ? timing[end] : end,
                     color, name, type
                 }));
-            const blocks = preparedIntervals.filter(({ type }) => type === 'block');
+            const blocks = preparedIntervals.filter(({ type, start, end }) => (
+                type === 'block' && typeof start === 'number' && typeof end === 'number'
+            ));
             const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
             const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
 

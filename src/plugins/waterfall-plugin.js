@@ -88,8 +88,8 @@ export default class WaterfallPlugin extends EventEmitter {
             const blocks = preparedIntervals.filter(({ type, start, end }) => (
                 type === 'block' && typeof start === 'number' && typeof end === 'number'
             ));
-            const minBlock = blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start);
-            const maxBlock = blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end);
+            const minBlock = blocks.length ? blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start) : 0;
+            const maxBlock = blocks.length ? blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end) : 0;
 
             return {
                 ...rest,

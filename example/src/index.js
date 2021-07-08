@@ -152,12 +152,12 @@ const flameChart = new FlameChart({
     colors
 });
 
-flameChart.on('select', (node) => {
-    setNodeView(node ? JSON.stringify({
+flameChart.on('select', (node, type) => {
+    setNodeView(node ? `${type}\r\n${JSON.stringify({
         ...node,
         children: undefined,
         parent: undefined
-    }, null, '  ') : '');
+    }, null, '  ')}` : '');
 });
 
 window.addEventListener('resize', () => {

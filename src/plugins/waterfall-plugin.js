@@ -145,10 +145,10 @@ export default class WaterfallPlugin extends EventEmitter {
                 text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
             }));
             const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
-            const metaTexts = meta.map(({ name, value, color }) => ({
+            const metaTexts = meta ? meta.map(({ name, value, color }) => ({
                 text: `${name}: ${value}`,
                 color
-            }))
+            })) : []
 
             this.renderEngine.renderTooltipFromData(
                 [

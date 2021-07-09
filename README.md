@@ -128,6 +128,7 @@ setSettings = (settings: Object) => undefined
     "graphFillColor": "rgb(0, 0, 0, 0.25)",
     "bottomLineColor": "rgb(0, 0, 0, 0.25)",
     "knobColor": "rgb(131, 131, 131)",
+    "knobStrokeColor": "white",
     "knobSize": 6,
     "height": 60,
     "backgroundColor": "white"
@@ -144,6 +145,7 @@ setSettings = (settings: Object) => undefined
     "font": "10px sans-serif",
     "triangleWidth": 10,
     "triangleHeight": 7,
+    "triangleColor": "black",
     "leftPadding": 10
   }
 }

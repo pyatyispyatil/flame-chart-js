@@ -11,6 +11,7 @@ export const defaultTogglePluginSettings = {
             font: '10px sans-serif',
             triangleWidth: 10,
             triangleHeight: 7,
+            triangleColor: 'black',
             leftPadding: 10
         }
     }
@@ -115,7 +116,7 @@ export default class TogglePlugin {
 
         this.renderEngine.setCtxColor(this.styles.fontColor);
         this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
-        this.renderEngine.renderTriangle('black', this.styles.leftPadding, 0 + this.styles.height / 2, this.styles.triangleWidth, this.styles.triangleHeight, nextEngine.collapsed ? 'right' : 'bottom');
+        this.renderEngine.renderTriangle(this.styles.triangleColor, this.styles.leftPadding, 0 + this.styles.height / 2, this.styles.triangleWidth, this.styles.triangleHeight, nextEngine.collapsed ? 'right' : 'bottom');
 
         const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title)
         const buttonWidth = titleWidth + triangleFullWidth;

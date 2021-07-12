@@ -36,7 +36,8 @@ export const defaultRenderSettings = {
             headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
             headerTitleLeftPadding: 16
         }
-    }
+    },
+    tooltip: undefined
 };
 
 export class BasicRenderEngine extends EventEmitter {

@@ -22,12 +22,13 @@ export const defaultTimeframeSelectorPluginSettings = {
     styles: {
         timeframeSelectorPlugin: {
             font: '9px sans-serif',
-            fontColor: 'black',
+            fontColor: 'black',            
             overlayColor: 'rgba(112, 112, 112, 0.5)',
             graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
             graphFillColor: 'rgb(0, 0, 0, 0.25)',
             bottomLineColor: 'rgb(0, 0, 0, 0.25)',
             knobColor: 'rgb(131, 131, 131)',
+            knobStrokeColor: 'white',
             knobSize: 6,
             height: 60,
             backgroundColor: 'white'
@@ -353,8 +354,8 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.fillRect(currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
         this.renderEngine.fillRect(currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 
-        this.renderEngine.renderStroke('white', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
-        this.renderEngine.renderStroke('white', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
+        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
+        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 
         this.interactionsEngine.addHitRegion('timeframeKnob', 'left', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
         this.interactionsEngine.addHitRegion('timeframeKnob', 'right', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');

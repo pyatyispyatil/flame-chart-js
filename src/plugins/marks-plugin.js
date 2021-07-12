@@ -1,7 +1,9 @@
 import Color from 'color';
+import { EventEmitter } from 'events';
 
-export default class MarksPlugin {
+export default class MarksPlugin extends EventEmitter  {
     constructor(marks) {
+        super();
         this.marks = this.prepareMarks(marks);
 
         this.calcMinMax();
@@ -20,9 +22,25 @@ export default class MarksPlugin {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
-        this.interactionsEngine.on('hover', (region) => {
-            this.hoveredRegion = region;
-        });
+        this.interactionsEngine.on('hover', this.handleHover.bind(this));
+        this.interactionsEngine.on('select', this.handleSelect.bind(this));
+    }
+
+
+    handleHover(region) {
+        this.hoveredRegion = region;
+    }
+
+    handleSelect(region) {
+        if (region && region.type === 'timestamp') {
+            this.selectedRegion = region;
+            this.emit('select', region.data, 'timestamp');
+            this.renderEngine.render();
+        } else if (this.selectedRegion && !region) {
+            this.selectedRegion = null;
+            this.emit('select', null, 'timestamp');
+            this.renderEngine.render();
+        }
     }
 
     get height() {
@@ -92,17 +110,25 @@ export default class MarksPlugin {
 
     renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
-            const { data: { fullName, timestamp } } = this.hoveredRegion;
+            if (this.renderEngine.settings.tooltip === false) {
+                return true;
+            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+                this.renderEngine.settings.tooltip(
+                    this.hoveredRegion,
+                    this.renderEngine,
+                    this.interactionsEngine.getGlobalMouse())
+            } else {
+                const { data: { fullName, timestamp } } = this.hoveredRegion;
 
-            const marksAccuracy = this.renderEngine.getAccuracy() + 2;
-            const header = `${fullName}`;
-            const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
+                const marksAccuracy = this.renderEngine.getAccuracy() + 2;
+                const header = `${fullName}`;
+                const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
 
-            this.renderEngine.renderTooltipFromData(
-                [{ text: header }, { text: time }],
-                this.interactionsEngine.getGlobalMouse()
-            );
-
+                this.renderEngine.renderTooltipFromData(
+                    [{ text: header }, { text: time }],
+                    this.interactionsEngine.getGlobalMouse()
+                );
+            }
             return true;
         }
     }

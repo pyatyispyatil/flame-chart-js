@@ -93,7 +93,7 @@ resize = (width: number, height: number) => undefined;
 setSettings = (settings: Object) => undefined
 ```
 
-#### Styles
+#### Settings
 
 ##### Default styles
 
@@ -128,6 +128,7 @@ setSettings = (settings: Object) => undefined
     "graphFillColor": "rgb(0, 0, 0, 0.25)",
     "bottomLineColor": "rgb(0, 0, 0, 0.25)",
     "knobColor": "rgb(131, 131, 131)",
+    "knobStrokeColor": "white",
     "knobSize": 6,
     "height": 60,
     "backgroundColor": "white"
@@ -144,12 +145,13 @@ setSettings = (settings: Object) => undefined
     "font": "10px sans-serif",
     "triangleWidth": 10,
     "triangleHeight": 7,
+    "triangleColor": "black",
     "leftPadding": 10
   }
 }
 ```
 
-You can override whatever you want. For example:
+You can override whatever style you want. For example:
 
 ```json
 {
@@ -160,6 +162,29 @@ You can override whatever you want. For example:
 ```
 
 After applying this style, the blocks of the flame chart will be 20 pixels high instead of 16 pixels.
+
+##### Custom Tooltip
+
+You can override or prevent the tooltip render by defining this within the settings objet.
+
+```json
+{  
+  "tooltip": undefined,
+}
+
+```
+
+For example:
+
+```ts
+// prevent tooltip render
+chart.setSettings({ "tooltip": false });
+
+// override tooltip render
+chart.setSettings({ 
+  "tooltip" : (data, renderEngine, mouse) => undefined
+});
+```
 
 #### Data format
 

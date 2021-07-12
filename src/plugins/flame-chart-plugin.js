@@ -13,14 +13,12 @@ const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 export default class FlameChartPlugin extends EventEmitter {
     constructor({
                     data,
-                    colors,
-                    customTooltip
+                    colors
                 }) {
         super();
 
         this.data = data;
         this.userColors = colors;
-        this.customTooltip = customTooltip;
 
         this.parseData(this.data);
         this.reset();
@@ -181,12 +179,13 @@ export default class FlameChartPlugin extends EventEmitter {
 
     renderTooltip() {
         if (this.hoveredRegion) {
-            if (this.customTooltip) {
-                this.customTooltip(
+            if (this.renderEngine.settings.tooltip === false) {
+                return true;
+            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+                this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse()
-                );
+                    this.interactionsEngine.getGlobalMouse())
             } else {
                 const { data: { start, duration, children, name } } = this.hoveredRegion;
                 const timeUnits = this.renderEngine.getTimeUnits();

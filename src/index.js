@@ -43,6 +43,8 @@ export default class FlameChart extends FlameChartContainer {
 
         if (marks) {
             marksPlugin = new MarksPlugin(marks);
+            marksPlugin.on('select', (node, type) => this.emit('select', node, type));
+
             activePlugins.push(marksPlugin);
         }
 

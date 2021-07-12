@@ -93,7 +93,7 @@ resize = (width: number, height: number) => undefined;
 setSettings = (settings: Object) => undefined
 ```
 
-#### Styles
+#### Settings
 
 ##### Default styles
 
@@ -151,7 +151,7 @@ setSettings = (settings: Object) => undefined
 }
 ```
 
-You can override whatever you want. For example:
+You can override whatever style you want. For example:
 
 ```json
 {
@@ -162,6 +162,29 @@ You can override whatever you want. For example:
 ```
 
 After applying this style, the blocks of the flame chart will be 20 pixels high instead of 16 pixels.
+
+##### Custom Tooltip
+
+You can override or prevent the tooltip render by defining this within the settings objet.
+
+```json
+{  
+  "tooltip": undefined,
+}
+
+```
+
+For example:
+
+```ts
+// prevent tooltip render
+chart.setSettings({ "tooltip": false });
+
+// override tooltip render
+chart.setSettings({ 
+  "tooltip" : (data, renderEngine, mouse) => undefined
+});
+```
 
 #### Data format
 

@@ -110,17 +110,25 @@ export default class MarksPlugin extends EventEmitter  {
 
     renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
-            const { data: { fullName, timestamp } } = this.hoveredRegion;
+            if (this.renderEngine.settings.tooltip === false) {
+                return true;
+            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+                this.renderEngine.settings.tooltip(
+                    this.hoveredRegion,
+                    this.renderEngine,
+                    this.interactionsEngine.getGlobalMouse())
+            } else {
+                const { data: { fullName, timestamp } } = this.hoveredRegion;
 
-            const marksAccuracy = this.renderEngine.getAccuracy() + 2;
-            const header = `${fullName}`;
-            const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
+                const marksAccuracy = this.renderEngine.getAccuracy() + 2;
+                const header = `${fullName}`;
+                const time = `${timestamp.toFixed(marksAccuracy)} ${this.renderEngine.timeUnits}`;
 
-            this.renderEngine.renderTooltipFromData(
-                [{ text: header }, { text: time }],
-                this.interactionsEngine.getGlobalMouse()
-            );
-
+                this.renderEngine.renderTooltipFromData(
+                    [{ text: header }, { text: time }],
+                    this.interactionsEngine.getGlobalMouse()
+                );
+            }
             return true;
         }
     }

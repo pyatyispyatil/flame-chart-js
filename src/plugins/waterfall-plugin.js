@@ -130,38 +130,49 @@ export default class WaterfallPlugin extends EventEmitter {
 
     renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'waterfall-node') {
-            const { data: index } = this.hoveredRegion;
-            const { name, intervals, timing, meta } = this.data.find(({ index: i }) => index === i);
-            const timeUnits = this.renderEngine.getTimeUnits();
-            const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
+            if (this.renderEngine.settings.tooltip === false) {
+                return true;
+            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+                const { data: index } = this.hoveredRegion;
+                var data = { ...this.hoveredRegion }
+                data.data = this.data.find(({ index: i }) => index === i)
+                this.renderEngine.settings.tooltip(
+                    data,
+                    this.renderEngine,
+                    this.interactionsEngine.getGlobalMouse())
+            } else {
+                const { data: index } = this.hoveredRegion;
+                const { name, intervals, timing, meta } = this.data.find(({ index: i }) => index === i);
+                const timeUnits = this.renderEngine.getTimeUnits();
+                const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
 
-            const header = { text: `${name}` };
-            const intervalsHeader = { text: 'intervals', color: this.renderEngine.styles.tooltipHeaderFontColor };
-            const intervalsTexts = intervals.map(({ name, start, end }) => ({
-                text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`
-            }));
-            const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
-            const timingTexts = Object.entries(timing).map(([name, time]) => ({
-                text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
-            }));
-            const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
-            const metaTexts = meta ? meta.map(({ name, value, color }) => ({
-                text: `${name}: ${value}`,
-                color
-            })) : []
+                const header = { text: `${name}` };
+                const intervalsHeader = { text: 'intervals', color: this.renderEngine.styles.tooltipHeaderFontColor };
+                const intervalsTexts = intervals.map(({ name, start, end }) => ({
+                    text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`
+                }));
+                const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
+                const timingTexts = Object.entries(timing).map(([name, time]) => ({
+                    text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
+                }));
+                const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
+                const metaTexts = meta ? meta.map(({ name, value, color }) => ({
+                    text: `${name}: ${value}`,
+                    color
+                })) : []
 
-            this.renderEngine.renderTooltipFromData(
-                [
-                    header,
-                    intervalsHeader,
-                    ...intervalsTexts,
-                    timingHeader,
-                    ...timingTexts,
-                    ...(metaTexts.length ? [metaHeader, ...metaTexts] : [])
-                ],
-                this.interactionsEngine.getGlobalMouse()
-            );
-
+                this.renderEngine.renderTooltipFromData(
+                    [
+                        header,
+                        intervalsHeader,
+                        ...intervalsTexts,
+                        timingHeader,
+                        ...timingTexts,
+                        ...(metaTexts.length ? [metaHeader, ...metaTexts] : [])
+                    ],
+                    this.interactionsEngine.getGlobalMouse()
+                );
+            }
             return true;
         }
     }

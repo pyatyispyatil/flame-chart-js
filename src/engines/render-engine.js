@@ -235,16 +235,21 @@ export class RenderEngine extends BasicRenderEngine {
                 this.copy(engine);
             }
         });
-
+        let tooltipRendered = false;
         this.plugins.forEach((plugin) => {
             if (plugin.postRender) {
                 plugin.postRender();
             }
 
             if (plugin.renderTooltip) {
-                plugin.renderTooltip();
+                tooltipRendered = tooltipRendered || !!plugin.renderTooltip();
             }
         });
+
+        if (!tooltipRendered && typeof this.settings.tooltip === "function"){
+            // notify tooltip of nothing to render
+            this.settings.tooltip(null, this, null);
+        }
     }
 
     render() {

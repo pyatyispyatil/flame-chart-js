@@ -1,6 +1,10 @@
 import { deepMerge } from '../utils.js';
 import EventEmitter from 'events';
 
+const getValueByChoice = (array, property, fn) => (
+    array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null
+)
+
 export const defaultWaterfallPluginSettings = {
     styles: {
         waterfallPlugin: {
@@ -75,28 +79,28 @@ export default class WaterfallPlugin extends EventEmitter {
 
         this.initialData = data;
         this.data = data.map(({ name, intervals, timing, ...rest }, index) => {
-            const values = Object.values(timing).filter((value) => typeof value === 'number');
-            const min = values.reduce((acc, val) => Math.min(acc, val));
-            const max = values.reduce((acc, val) => Math.max(acc, val));
             const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
             const preparedIntervals = resolvedIntervals
                 .map(({ start, end, color, type, name }) => ({
                     start: typeof start === 'string' ? timing[start] : start,
                     end: typeof end === 'string' ? timing[end] : end,
                     color, name, type
-                }));
-            const blocks = preparedIntervals.filter(({ type, start, end }) => (
-                type === 'block' && typeof start === 'number' && typeof end === 'number'
-            ));
-            const minBlock = blocks.length ? blocks.reduce((acc, { start }) => Math.min(acc, start), blocks[0].start) : 0;
-            const maxBlock = blocks.length ? blocks.reduce((acc, { end }) => Math.max(acc, end), blocks[0].end) : 0;
+                }))
+                .filter(({ start, end }) => typeof start === 'number' && typeof end === 'number');
+            const blocks = preparedIntervals.filter(({ type }) => type === 'block');
+
+            const blockStart = getValueByChoice(blocks, 'start', Math.min) || 0;
+            const blockEnd = getValueByChoice(blocks, 'end', Math.max) || 0;
+
+            const min = getValueByChoice(preparedIntervals, 'start', Math.min) || 0;
+            const max = getValueByChoice(preparedIntervals, 'end', Math.max) || 0;
 
             return {
                 ...rest,
                 intervals: preparedIntervals,
                 textBlock: {
-                    min: minBlock,
-                    max: maxBlock
+                    start: blockStart,
+                    end: blockEnd
                 },
                 name,
                 timing,
@@ -132,7 +136,7 @@ export default class WaterfallPlugin extends EventEmitter {
         if (this.hoveredRegion && this.hoveredRegion.type === 'waterfall-node') {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
                 const { data: index } = this.hoveredRegion;
                 var data = { ...this.hoveredRegion }
                 data.data = this.data.find(({ index: i }) => index === i)
@@ -142,7 +146,7 @@ export default class WaterfallPlugin extends EventEmitter {
                     this.interactionsEngine.getGlobalMouse())
             } else {
                 const { data: index } = this.hoveredRegion;
-                const { name, intervals, timing, meta } = this.data.find(({ index: i }) => index === i);
+                const { name, intervals, timing, meta = [] } = this.data.find(({ index: i }) => index === i);
                 const timeUnits = this.renderEngine.getTimeUnits();
                 const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
 
@@ -152,9 +156,11 @@ export default class WaterfallPlugin extends EventEmitter {
                     text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`
                 }));
                 const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
-                const timingTexts = Object.entries(timing).map(([name, time]) => ({
-                    text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
-                }));
+                const timingTexts = Object.entries(timing)
+                    .filter(([, time]) => typeof time === 'number')
+                    .map(([name, time]) => ({
+                        text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
+                    }));
                 const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
                 const metaTexts = meta ? meta.map(({ name, value, color }) => ({
                     text: `${name}: ${value}`,
@@ -211,8 +217,8 @@ export default class WaterfallPlugin extends EventEmitter {
             const y = level * blockHeight - this.positionY;
 
             if (y + blockHeight >= 0 && y - blockHeight <= this.renderEngine.height) {
-                const textStart = this.renderEngine.timeToPosition(textBlock.min);
-                const textEnd = this.renderEngine.timeToPosition(textBlock.max);
+                const textStart = this.renderEngine.timeToPosition(textBlock.start);
+                const textEnd = this.renderEngine.timeToPosition(textBlock.end);
 
                 this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 

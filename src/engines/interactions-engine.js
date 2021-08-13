@@ -285,10 +285,10 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor) {
+    addHitRegion(type, data, x, y, w, h, cursor, id) {
         this.hitRegions.push({
             type, data, x, y, w, h,
-            cursor
+            cursor, id,
         });
     }
 

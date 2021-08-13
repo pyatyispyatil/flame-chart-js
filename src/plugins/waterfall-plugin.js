@@ -1,5 +1,5 @@
 import { deepMerge } from '../utils.js';
-import EventEmitter from 'events';
+import UIPlugin from './ui-plugin.js';
 
 const getValueByChoice = (array, property, fn) => (
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null
@@ -13,7 +13,7 @@ export const defaultWaterfallPluginSettings = {
     }
 }
 
-export default class WaterfallPlugin extends EventEmitter {
+export default class WaterfallPlugin extends UIPlugin {
     constructor({ items, intervals }, settings = {}) {
         super();
         this.setData({ items, intervals });
@@ -51,7 +51,7 @@ export default class WaterfallPlugin extends EventEmitter {
     }
 
     handleSelect(region) {
-        if (region && region.type === 'waterfall-node') {
+        if (region && region.id === this.id) {
             this.selectedRegion = region;
             this.emit('select', this.initialData[region.data], 'waterfall-node');
             this.renderEngine.render();
@@ -133,7 +133,7 @@ export default class WaterfallPlugin extends EventEmitter {
     }
 
     renderTooltip() {
-        if (this.hoveredRegion && this.hoveredRegion.type === 'waterfall-node') {
+        if (this.hoveredRegion && this.hoveredRegion.id === this.id) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
             } else if (typeof this.renderEngine.settings.tooltip === 'function') {
@@ -245,7 +245,7 @@ export default class WaterfallPlugin extends EventEmitter {
                     }
                 }
 
-                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight, undefined, this.id);
             }
         }, 0);
     }

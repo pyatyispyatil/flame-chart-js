@@ -194,7 +194,10 @@ export class InteractionsEngine extends EventEmitter {
                 const offsetTop = hoveredInstance.renderEngine.position;
 
                 return hoveredInstance.hitRegions.find(({ x, y, w, h }) => (
-                    this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y + offsetTop && this.mouse.y <= y + h + offsetTop
+                    this.mouse.x >= x
+                    && this.mouse.x <= x + w
+                    && this.mouse.y >= y + offsetTop
+                    && this.mouse.y <= y + h + offsetTop
                 ));
             }
         }
@@ -229,9 +232,16 @@ export class InteractionsEngine extends EventEmitter {
 }
 
 class SeparatedInteractionsEngine extends EventEmitter {
+    static count = 0;
+
+    static getId() {
+        return SeparatedInteractionsEngine.count++;
+    }
+
     constructor(parent, renderEngine) {
         super();
 
+        this.id = SeparatedInteractionsEngine.getId();
         this.parent = parent;
         this.renderEngine = renderEngine;
 
@@ -243,11 +253,19 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'move',
             'click',
             'select'
-        ].forEach((eventName) => parent.on(eventName, (...args) => this.resend(eventName, ...args)));
+        ].forEach((eventName) => parent.on(eventName, (region, mouse, isClick) => {
+            if (!region || region.id === this.id) {
+                this.resend(eventName, region, mouse, isClick);
+            }
+        }));
 
         [
             'hover'
-        ].forEach((eventName) => parent.on(eventName, (...args) => this.emit(eventName, ...args)));
+        ].forEach((eventName) => parent.on(eventName, (region, mouse) => {
+            if (!region || region.id === this.id) {
+                this.emit(eventName, region, mouse);
+            }
+        }));
 
         parent.on('change-position', (data, startMouse, endMouse, instance) => {
             if (instance === this) {
@@ -255,7 +273,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
             }
         });
 
-        this.clearHitRegions();
+        this.hitRegions = [];
     }
 
     resend(...args) {
@@ -285,10 +303,11 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor, id) {
+    addHitRegion(type, data, x, y, w, h, cursor) {
         this.hitRegions.push({
             type, data, x, y, w, h,
-            cursor, id,
+            cursor,
+            id: this.id
         });
     }
 

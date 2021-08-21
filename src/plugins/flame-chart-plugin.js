@@ -6,11 +6,11 @@ import {
     getFlatTreeMinMax
 } from './utils/tree-clusters.js';
 import Color from 'color';
-import { EventEmitter } from 'events';
+import UIPlugin from './ui-plugin.js';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
-export default class FlameChartPlugin extends EventEmitter {
+export default class FlameChartPlugin extends UIPlugin {
     constructor({
                     data,
                     colors
@@ -25,12 +25,12 @@ export default class FlameChartPlugin extends EventEmitter {
     }
 
     init(renderEngine, interactionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+        super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
+        this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
 
         this.initData();
     }
@@ -38,6 +38,8 @@ export default class FlameChartPlugin extends EventEmitter {
     handlePositionChange({ deltaX, deltaY }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
+
+        this.interactionsEngine.setCursor('grabbing');
 
         if (this.positionY + deltaY >= 0) {
             this.setPositionY(this.positionY + deltaY);
@@ -50,6 +52,10 @@ export default class FlameChartPlugin extends EventEmitter {
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
         }
+    }
+
+    handleMouseUp() {
+        this.interactionsEngine.clearCursor();
     }
 
     setPositionY(y) {
@@ -181,11 +187,12 @@ export default class FlameChartPlugin extends EventEmitter {
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
                 this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse())
+                    this.interactionsEngine.getGlobalMouse()
+                );
             } else {
                 const { data: { start, duration, children, name } } = this.hoveredRegion;
                 const timeUnits = this.renderEngine.getTimeUnits();

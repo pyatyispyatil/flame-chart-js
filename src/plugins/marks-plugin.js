@@ -1,7 +1,7 @@
 import Color from 'color';
-import { EventEmitter } from 'events';
+import UIPlugin from './ui-plugin.js';
 
-export default class MarksPlugin extends EventEmitter  {
+export default class MarksPlugin extends UIPlugin {
     constructor(marks) {
         super();
         this.marks = this.prepareMarks(marks);
@@ -19,8 +19,7 @@ export default class MarksPlugin extends EventEmitter  {
     }
 
     init(renderEngine, interactionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+        super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));

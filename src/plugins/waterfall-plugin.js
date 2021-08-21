@@ -21,17 +21,19 @@ export default class WaterfallPlugin extends UiPlugin {
     }
 
     init(renderEngine, interactionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+        super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
+        this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
     }
 
     handlePositionChange({ deltaX, deltaY }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
+
+        this.interactionsEngine.setCursor('grabbing');
 
         if (this.positionY + deltaY >= 0) {
             this.setPositionY(this.positionY + deltaY);
@@ -46,12 +48,16 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
+    handleMouseUp() {
+        this.interactionsEngine.clearCursor();
+    }
+
     handleHover(region) {
         this.hoveredRegion = region;
     }
 
     handleSelect(region) {
-        if (region && region.id === this.id) {
+        if (region) {
             this.selectedRegion = region;
             this.emit('select', this.initialData[region.data], 'waterfall-node');
             this.renderEngine.render();
@@ -133,17 +139,20 @@ export default class WaterfallPlugin extends UiPlugin {
     }
 
     renderTooltip() {
-        if (this.hoveredRegion && this.hoveredRegion.id === this.id) {
+        if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
             } else if (typeof this.renderEngine.settings.tooltip === 'function') {
                 const { data: index } = this.hoveredRegion;
-                var data = { ...this.hoveredRegion }
-                data.data = this.data.find(({ index: i }) => index === i)
+                const data = { ...this.hoveredRegion };
+
+                data.data = this.data.find(({ index: i }) => index === i);
+
                 this.renderEngine.settings.tooltip(
                     data,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse())
+                    this.interactionsEngine.getGlobalMouse()
+                );
             } else {
                 const { data: index } = this.hoveredRegion;
                 const { name, intervals, timing, meta = [] } = this.data.find(({ index: i }) => index === i);
@@ -245,7 +254,7 @@ export default class WaterfallPlugin extends UiPlugin {
                     }
                 }
 
-                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight, undefined, this.id);
+                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
             }
         }, 0);
     }

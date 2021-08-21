@@ -300,17 +300,19 @@ export class BasicRenderEngine extends EventEmitter {
     copy(engine) {
         const ratio = this.isSafari ? 1 : engine.pixelRatio;
 
-        this.ctx.drawImage(
-            engine.canvas,
-            0,
-            0,
-            engine.canvas.width * ratio,
-            engine.canvas.height * ratio,
-            0,
-            engine.position || 0,
-            engine.width * ratio,
-            engine.height * ratio
-        );
+        if (engine.canvas.height) {
+            this.ctx.drawImage(
+                engine.canvas,
+                0,
+                0,
+                engine.canvas.width * ratio,
+                engine.canvas.height * ratio,
+                0,
+                engine.position || 0,
+                engine.width * ratio,
+                engine.height * ratio
+            );
+        }
     }
 
     renderTooltipFromData(fields, mouse) {

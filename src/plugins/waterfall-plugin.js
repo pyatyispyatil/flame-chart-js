@@ -1,5 +1,5 @@
 import { deepMerge } from '../utils.js';
-import UIPlugin from './ui-plugin.js';
+import UiPlugin from './ui-plugin.js';
 
 const getValueByChoice = (array, property, fn) => (
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null
@@ -13,7 +13,7 @@ export const defaultWaterfallPluginSettings = {
     }
 }
 
-export default class WaterfallPlugin extends UIPlugin {
+export default class WaterfallPlugin extends UiPlugin {
     constructor({ items, intervals }, settings = {}) {
         super();
         this.setData({ items, intervals });

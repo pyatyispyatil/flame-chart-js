@@ -22,7 +22,7 @@ export const defaultTimeframeSelectorPluginSettings = {
     styles: {
         timeframeSelectorPlugin: {
             font: '9px sans-serif',
-            fontColor: 'black',            
+            fontColor: 'black',
             overlayColor: 'rgba(112, 112, 112, 0.5)',
             graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
             graphFillColor: 'rgb(0, 0, 0, 0.25)',
@@ -40,7 +40,7 @@ export default class TimeframeSelectorPlugin {
     constructor(data, settings = {}) {
         this.data = data;
         this.settings = settings;
-        this.shouldRender = true;
+        this.shouldRender = false;
     }
 
     init(renderEngine, interactionsEngine) {

@@ -178,7 +178,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
         return {
             x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.blockHeight + 1)) - this.positionY,
+            y: (level * (this.renderEngine.blockHeight)) - this.positionY,
             w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
         }
     }
@@ -253,9 +253,9 @@ export default class FlameChartPlugin extends UIPlugin {
                 addHitRegion(cluster, x, y, w);
             }
 
-            // if (w >= 0.25) {
-            //     this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
-            // }
+            if (w >= 0.25) {
+                this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+            }
 
             if (w >= minTextWidth && nodes.length === 1) {
                 this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);

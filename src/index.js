@@ -38,8 +38,8 @@ export default class FlameChart extends FlameChartContainer {
         let timeframeSelectorPlugin;
         let flameChartPlugin;
 
-        timeGridPlugin = new TimeGridPlugin(settings);
-        activePlugins.push(timeGridPlugin);
+        //timeGridPlugin = new TimeGridPlugin(settings);
+        //activePlugins.push(timeGridPlugin);
 
         if (marks) {
             marksPlugin = new MarksPlugin(marks);

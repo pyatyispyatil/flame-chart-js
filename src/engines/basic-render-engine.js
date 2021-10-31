@@ -159,7 +159,6 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     addRectToRenderQueue(color, x, y, w) {
-        console.log(y)
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
@@ -184,7 +183,6 @@ export class BasicRenderEngine extends EventEmitter {
     resolveRectRenderQueue() {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
-
             items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
         });
 

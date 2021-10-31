@@ -3,7 +3,7 @@ import { deepMerge } from '../utils.js';
 export const defaultTogglePluginSettings = {
     styles: {
         togglePlugin: {
-            height: 16,
+            height: 0,
             color: 'rgb(202,202,202, 0.25)',
             strokeColor: 'rgb(138,138,138, 0.50)',
             dotsColor: 'rgb(97,97,97)',

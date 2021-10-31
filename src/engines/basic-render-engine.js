@@ -159,6 +159,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     addRectToRenderQueue(color, x, y, w) {
+        console.log(y)
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }

@@ -17,7 +17,7 @@ export class TimeGrid {
         this.end = 0;
         this.accuracy = 0;
         this.delta = 0;
-
+        this.disabled = true
         this.setSettings(settings);
     }
 
@@ -29,6 +29,7 @@ export class TimeGrid {
     }
 
     recalc() {
+        if (!this.disabled){
         const timeWidth = this.renderEngine.max - this.renderEngine.min;
         const initialLinesCount = this.renderEngine.width / MIN_PIXEL_DELTA;
         const initialTimeLineDelta = timeWidth / initialLinesCount;
@@ -41,6 +42,7 @@ export class TimeGrid {
         this.end = Math.ceil(realView / this.delta) + this.start;
 
         this.accuracy = this.calcNumberFix();
+        }
     }
 
     calcNumberFix() {
@@ -69,14 +71,17 @@ export class TimeGrid {
     }
 
     renderLines(start, height, renderEngine = this.renderEngine) {
+        if (!this.disabled){
         renderEngine.setCtxColor(this.styles.color);
 
         this.forEachTime((pixelPosition) => {
             renderEngine.fillRect(pixelPosition, start, 1, height);
         });
     }
+    }
 
     renderTimes(renderEngine = this.renderEngine) {
+        if (!this.disabled){
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 
@@ -87,5 +92,6 @@ export class TimeGrid {
                 renderEngine.charHeight
             );
         });
+    }
     }
 }

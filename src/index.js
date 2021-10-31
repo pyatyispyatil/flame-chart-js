@@ -28,7 +28,7 @@ export default class FlameChart extends FlameChartContainer {
         const {
             headers: {
                 waterfall: waterfallName = 'waterfall',
-                //flameChart: flameChartName = 'flame chart'
+                flameChart: flameChartName = 'flame chart'
             } = {}
         } = settings;
 

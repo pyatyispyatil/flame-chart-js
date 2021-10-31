@@ -253,9 +253,9 @@ export default class FlameChartPlugin extends UIPlugin {
                 addHitRegion(cluster, x, y, w);
             }
 
-            if (w >= 0.25) {
-                this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
-            }
+            // if (w >= 0.25) {
+            //     this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+            // }
 
             if (w >= minTextWidth && nodes.length === 1) {
                 this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
@@ -272,7 +272,7 @@ export default class FlameChartPlugin extends UIPlugin {
             const { start, duration, level } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+            //this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
         }
 
         clearTimeout(this.renderChartTimeout);

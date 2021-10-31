@@ -40,7 +40,7 @@ export default class TimeframeSelectorPlugin {
     constructor(data, settings = {}) {
         this.data = data;
         this.settings = settings;
-        this.shouldRender = false;
+        this.shouldRender = true;
     }
 
     init(renderEngine, interactionsEngine) {

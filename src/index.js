@@ -60,7 +60,7 @@ export default class FlameChart extends FlameChartContainer {
         }
 
         if (data) {
-            timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);
+            //timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);
             flameChartPlugin = new FlameChartPlugin({ data, colors });
             flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
 
@@ -69,7 +69,7 @@ export default class FlameChart extends FlameChartContainer {
             }
 
             activePlugins.push(flameChartPlugin);
-            activePlugins.unshift(timeframeSelectorPlugin);
+            //activePlugins.unshift(timeframeSelectorPlugin);
         }
 
         super({
@@ -81,10 +81,10 @@ export default class FlameChart extends FlameChartContainer {
             ]
         });
 
-        if (flameChartPlugin && timeframeSelectorPlugin) {
+        if (flameChartPlugin) {
             this.setData = (data) => {
                 flameChartPlugin.setData(data);
-                timeframeSelectorPlugin.setData(data);
+                //timeframeSelectorPlugin.setData(data);
             };
 
             this.setFlameChartPosition = ({ x, y }) => {

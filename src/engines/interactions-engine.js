@@ -45,20 +45,20 @@ export class InteractionsEngine extends EventEmitter {
     initListeners() {
         if (this.canvas) {
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
-            //this.canvas.addEventListener('mousedown', this.handleMouseDown);
-            //this.canvas.addEventListener('mouseup', this.handleMouseUp);
-            //this.canvas.addEventListener('mouseleave', this.handleMouseUp);
-            //this.canvas.addEventListener('mousemove', this.handleMouseMove);
+            this.canvas.addEventListener('mousedown', this.handleMouseDown);
+            this.canvas.addEventListener('mouseup', this.handleMouseUp);
+            this.canvas.addEventListener('mouseleave', this.handleMouseUp);
+            this.canvas.addEventListener('mousemove', this.handleMouseMove);
         }
     }
 
     removeListeners() {
         if (this.canvas) {
             this.canvas.removeEventListener('wheel', this.handleMouseWheel);
-            //this.canvas.removeEventListener('mousedown', this.handleMouseDown);
-            //this.canvas.removeEventListener('mouseup', this.handleMouseUp);
-            //this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
-            //this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+            this.canvas.removeEventListener('mousedown', this.handleMouseDown);
+            this.canvas.removeEventListener('mouseup', this.handleMouseUp);
+            this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
+            this.canvas.removeEventListener('mousemove', this.handleMouseMove);
         }
     }
 

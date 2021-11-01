@@ -100,16 +100,15 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseDown() {
-
         this.moveActive = true;
         this.mouseDownPosition = {
             x: this.mouse.x,
             y: this.mouse.y
         };
         this.mouseDownHoveredInstance = this.hoveredInstance;
-        if(e.metaKey == false) {
+
         this.emit('down', this.hoveredRegion, this.mouse);
-        }
+
     }
 
     handleMouseUp() {
@@ -120,9 +119,9 @@ export class InteractionsEngine extends EventEmitter {
         if (isClick) {
             this.handleRegionHit(this.mouse.x, this.mouse.y);
         }
-        if(e.metaKey == false) {
+
         this.emit('up', this.hoveredRegion, this.mouse, isClick);
-        }
+
         if (isClick) {
             this.emit('click', this.hoveredRegion, this.mouse);
         }

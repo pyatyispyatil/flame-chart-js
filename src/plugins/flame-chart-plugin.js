@@ -92,10 +92,10 @@ export default class FlameChartPlugin extends UIPlugin {
             console.log('zoom!')
             console.log(zoom)
             }
-
-            this.renderEngine.render();
             this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
             this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            this.renderEngine.render();
+
         }
     }
 

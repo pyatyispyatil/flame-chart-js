@@ -66,7 +66,7 @@ export class InteractionsEngine extends EventEmitter {
         const { deltaY, deltaX } = e;
         console.log(e)
         console.log(deltaX)
-        e.preventDefault();
+        //e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
         const initialZoom = this.renderEngine.getInitialZoom();

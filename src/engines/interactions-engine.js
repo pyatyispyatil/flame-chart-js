@@ -44,6 +44,7 @@ export class InteractionsEngine extends EventEmitter {
 
     initListeners() {
         if (this.canvas) {
+            console.log('init listeners')
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
@@ -66,7 +67,7 @@ export class InteractionsEngine extends EventEmitter {
         const { deltaY, deltaX } = e;
         console.log(e)
         console.log(deltaX)
-        //e.preventDefault();
+        e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
         const initialZoom = this.renderEngine.getInitialZoom();

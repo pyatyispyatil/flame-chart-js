@@ -127,8 +127,6 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseMove(e) {
-        if(e.metaKey == true) {
-
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
@@ -147,7 +145,6 @@ export class InteractionsEngine extends EventEmitter {
         this.checkRegionHover();
 
         this.emit('move', this.hoveredRegion, this.mouse);
-        }
     }
 
     handleRegionHit() {

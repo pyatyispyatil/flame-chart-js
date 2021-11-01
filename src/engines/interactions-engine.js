@@ -64,11 +64,8 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseWheel(e) {
-        if(e.metaKey == true)
-        {
+        if(e.metaKey == true) {
         const { deltaY, deltaX } = e;
-        console.log(e)
-        console.log(deltaX)
         e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
@@ -103,6 +100,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseDown() {
+        if(e.metaKey == true) {
         this.moveActive = true;
         this.mouseDownPosition = {
             x: this.mouse.x,
@@ -111,6 +109,7 @@ export class InteractionsEngine extends EventEmitter {
         this.mouseDownHoveredInstance = this.hoveredInstance;
 
         this.emit('down', this.hoveredRegion, this.mouse);
+    }
     }
 
     handleMouseUp() {

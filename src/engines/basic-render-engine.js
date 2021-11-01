@@ -264,7 +264,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resetView() {
-        this.setZoom(this.getInitialZoom());
+        //this.setZoom(this.getInitialZoom());
         this.setPositionX(this.min);
     }
 

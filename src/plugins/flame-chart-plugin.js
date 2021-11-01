@@ -28,7 +28,7 @@ export default class FlameChartPlugin extends UIPlugin {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-        this.interactionsEngine.on('select', this.handleSelect.bind(this));
+        this.interactionsEngine.on('click', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
 
@@ -88,7 +88,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            this.emit('click', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
         }
     }
 
@@ -272,7 +272,7 @@ export default class FlameChartPlugin extends UIPlugin {
             const { start, duration, level } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            //this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+            this.renderEngine.addStrokeToRenderQueue('black', x, y, w, this.renderEngine.blockHeight);
         }
 
         clearTimeout(this.renderChartTimeout);

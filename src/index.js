@@ -28,7 +28,7 @@ export default class FlameChart extends FlameChartContainer {
         const {
             headers: {
                 waterfall: waterfallName = 'waterfall',
-                //flameChart: flameChartName = 'flame chart'
+                flameChart: flameChartName = 'flame chart'
             } = {}
         } = settings;
 
@@ -41,23 +41,23 @@ export default class FlameChart extends FlameChartContainer {
         //timeGridPlugin = new TimeGridPlugin(settings);
         //activePlugins.push(timeGridPlugin);
 
-        if (marks) {
-            marksPlugin = new MarksPlugin(marks);
-            marksPlugin.on('select', (node, type) => this.emit('select', node, type));
+        // if (marks) {
+        //     marksPlugin = new MarksPlugin(marks);
+        //     marksPlugin.on('select', (node, type) => this.emit('select', node, type));
 
-            activePlugins.push(marksPlugin);
-        }
+        //     activePlugins.push(marksPlugin);
+        // }
 
-        if (waterfall) {
-            waterfallPlugin = new WaterfallPlugin(waterfall, settings);
-            waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
+        // if (waterfall) {
+        //     waterfallPlugin = new WaterfallPlugin(waterfall, settings);
+        //     waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
 
-            if (data) {
-                activePlugins.push(new TogglePlugin(waterfallName, settings));
-            }
+        //     if (data) {
+        //         activePlugins.push(new TogglePlugin(waterfallName, settings));
+        //     }
 
-            activePlugins.push(waterfallPlugin);
-        }
+        //     activePlugins.push(waterfallPlugin);
+        // }
 
         if (data) {
             //timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);

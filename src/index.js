@@ -62,7 +62,7 @@ export default class FlameChart extends FlameChartContainer {
         if (data) {
             //timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, settings);
             flameChartPlugin = new FlameChartPlugin({ data, colors });
-            flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
+            flameChartPlugin.on('click', (node, type) => this.emit('click', node, type));
 
             // if (waterfall) {
             //     activePlugins.push(new TogglePlugin(flameChartName, settings));

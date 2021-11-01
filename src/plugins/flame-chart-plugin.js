@@ -56,8 +56,9 @@ export default class FlameChartPlugin extends UIPlugin {
 
     handleMouseUp() {
         this.interactionsEngine.clearCursor();
-        console.log('mouseup')
+        if (this.selectedRegion && this.selectedRegion.data){
         this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+        }
     }
 
     setPositionY(y) {
@@ -91,8 +92,6 @@ export default class FlameChartPlugin extends UIPlugin {
             const zoom = this.renderEngine.width / (end - start);
             this.renderEngine.setPositionX(start);
             this.renderEngine.setZoom(zoom);
-            console.log('zoom!')
-            console.log(zoom)
             }
             this.renderEngine.render();
 

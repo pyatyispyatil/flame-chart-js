@@ -28,7 +28,7 @@ export default class FlameChartPlugin extends UIPlugin {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-        this.interactionsEngine.on('click', this.handleSelect.bind(this));
+        this.interactionsEngine.on('mousedown', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
 
@@ -92,10 +92,10 @@ export default class FlameChartPlugin extends UIPlugin {
             console.log('zoom!')
             console.log(zoom)
             }
-            this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
-            this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
-            this.renderEngine.render();
 
+            this.renderEngine.render();
+            this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node2');
         }
     }
 

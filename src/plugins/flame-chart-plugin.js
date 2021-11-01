@@ -82,7 +82,7 @@ export default class FlameChartPlugin extends UIPlugin {
     handleSelect(region) {
         const mouse = this.interactionsEngine.getMouse();
         const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
-
+        console.log(selectedRegion)
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;
             if (selectedRegion && selectedRegion.data){

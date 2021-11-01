@@ -44,7 +44,7 @@ export class InteractionsEngine extends EventEmitter {
 
     initListeners() {
         if (this.canvas) {
-            console.log('init listeners')
+            console.log('init')
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
@@ -64,6 +64,8 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseWheel(e) {
+        if(e.metaKey == true)
+        {
         const { deltaY, deltaX } = e;
         console.log(e)
         console.log(deltaX)
@@ -97,6 +99,7 @@ export class InteractionsEngine extends EventEmitter {
         if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
             this.renderEngine.render();
         }
+    }
     }
 
     handleMouseDown() {

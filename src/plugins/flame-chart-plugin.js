@@ -89,6 +89,8 @@ export default class FlameChartPlugin extends UIPlugin {
             const zoom = this.renderEngine.width / (end - start);
             this.renderEngine.setPositionX(start);
             this.renderEngine.setZoom(zoom);
+            console.log('zoom!')
+            console.log(zoom)
             }
 
             this.renderEngine.render();

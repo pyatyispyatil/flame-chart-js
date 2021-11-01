@@ -65,6 +65,7 @@ export class InteractionsEngine extends EventEmitter {
     handleMouseWheel(e) {
         const { deltaY, deltaX } = e;
         console.log(e)
+        console.log(deltaX)
         e.preventDefault();
 
         const realView = this.renderEngine.getRealView();

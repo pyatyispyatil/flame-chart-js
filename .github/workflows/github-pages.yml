@@ -20,13 +20,17 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Build Example
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Setup NodeJs
+        uses: actions/setup-node@v2.4.1
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm i && npm run build
+          
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        
+      - name: Build Example
+        run: npm i && npm run build
     
       - name: GitHub Pages Deploy
         # You may pin to the exact commit or the version.

@@ -4,12 +4,11 @@ name: Github Pages
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,7 +19,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Setup NodeJs
+      - name: Setup NodeJS
         uses: actions/setup-node@v2.4.1
         with:
           node-version: 16
@@ -30,7 +29,7 @@ jobs:
         uses: actions/checkout@v2.4.0
         
       - name: Build Example
-        run: npm i && npm run build
+        run: npm ci && npm run build
 
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v3.7.3

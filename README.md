@@ -10,7 +10,7 @@
 
 ### Demo
 
-https://pyatyispyatil.github.io/flame-chart-js/example/dist/index.html
+https://pyatyispyatil.github.io/flame-chart-js
 
 ### Usage
 

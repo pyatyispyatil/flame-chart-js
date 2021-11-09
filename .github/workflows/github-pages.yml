@@ -20,10 +20,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Build
-        run: npm i && npm run build
+      - name: Build Example
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: npm i && npm run build
     
-      - name: GitHub Pages
+      - name: GitHub Pages Deploy
         # You may pin to the exact commit or the version.
         # uses: crazy-max/ghaction-github-pages@db4476a01402e1a7ce05f41832040eef16d14925
         uses: crazy-max/ghaction-github-pages@v2.5.0

@@ -31,17 +31,11 @@ jobs:
         
       - name: Build Example
         run: npm i && npm run build
-    
+
       - name: GitHub Pages Deploy
-        # You may pin to the exact commit or the version.
-        # uses: crazy-max/ghaction-github-pages@db4476a01402e1a7ce05f41832040eef16d14925
-        uses: crazy-max/ghaction-github-pages@v2.5.0
+        uses: peaceiris/actions-gh-pages@v3.7.3
         with:
-          # Git branch where assets will be deployed
-          target_branch: github-pages
-          # Build directory to deploy
-          build_dir: example/dist
-          # Commit message
-          commit_message: build github-pages
-          # Enable verbose output
-          verbose: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: github-pages
+          publish_dir: ./example/dist
+          destination_dir: ./

@@ -101,6 +101,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleHover(region) {
+
         this.hoveredRegion = this.findNodeInCluster(region);
     }
 
@@ -108,6 +109,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const mouse = this.interactionsEngine.getMouse();
 
         if (region && region.type === 'cluster') {
+            this.interactionsEngine.setCursor('pointer');
             const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
 
@@ -120,6 +122,9 @@ export default class FlameChartPlugin extends UIPlugin {
                     type: 'node'
                 };
             }
+        }
+        else{
+            this.interactionsEngine.clearCursor();
         }
     }
 

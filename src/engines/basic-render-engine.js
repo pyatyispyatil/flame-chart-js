@@ -199,7 +199,7 @@ export class BasicRenderEngine extends EventEmitter {
             if (textWidth > textMaxWidth) {
                 const avgCharWidth = textWidth / (text.length);
                 const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
-                const halfChars = (maxChars+1) / 2;
+                const halfChars = maxChars / 2;
 
                 if (halfChars > 0) {
                     text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);

@@ -209,7 +209,15 @@ export class BasicRenderEngine extends EventEmitter {
             }
 
             if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                if (text==='root'){
+                    this.setCtxColor('#ffffff');
+                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                    this.setCtxColor(this.styles.fontColor);
+                }
+                else{
+                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+
+                }
             }
         });
 

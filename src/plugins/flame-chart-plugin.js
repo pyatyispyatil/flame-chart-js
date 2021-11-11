@@ -56,6 +56,8 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handlePositionChangeOnScroll({ deltaY }) {
+        console.log('here!')
+        console.log(deltaY)
         const startPositionY = this.positionY;
 
         this.interactionsEngine.setCursor('move');

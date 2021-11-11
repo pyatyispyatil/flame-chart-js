@@ -98,13 +98,12 @@ export class InteractionsEngine extends EventEmitter {
     }
     else{
         const { deltaY } = e;
-        console.log(e)
         e.preventDefault();
         console.log(deltaY);
             const mouseDeltaX = this.mouse.x
             const mouseDeltaY = this.mouse.y - e.deltaY;
             console.log(mouseDeltaY);
-            if (mouseDeltaY ) {
+            if (mouseDeltaY) {
                 this.emit('change-scroll-position', {
                     deltaY: mouseDeltaY
                 }, this.mouseDownHoveredInstance);

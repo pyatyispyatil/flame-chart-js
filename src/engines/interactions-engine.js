@@ -97,19 +97,39 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
     else{
-        const { deltaY } = e;
-        e.preventDefault();
-        console.log(deltaY);
-            const mouseDeltaX = this.mouse.x
+        // const { deltaY } = e;
+        // e.preventDefault();
+        // console.log(deltaY);
+        //     const mouseDeltaX = this.mouse.x
+        //     const mouseDeltaY = this.mouse.y - e.deltaY;
+        //     console.log(mouseDeltaY);
+        //     if (mouseDeltaY) {
+        //         console.log('emitting..')
+        //         this.emit('change-scroll-position', {
+        //             deltaY: mouseDeltaY
+        //         });
+        //     }
+
+        // this.checkRegionHover();
+
+         const { deltaY } = e;
+         e.preventDefault();
             const mouseDeltaY = this.mouse.y - e.deltaY;
-            console.log(mouseDeltaY);
-            if (mouseDeltaY) {
-                this.emit('change-scroll-position', {
+            this.mouseDownHoveredInstance = this.hoveredInstance;
+
+            if (mouseDeltaY || mouseDeltaX) {
+                this.emit('change-position', {
+                    deltaX: mouseDeltaX,
                     deltaY: mouseDeltaY
-                });
+                }, {x:this.mouse.x,mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
 
+
+        this.mouse.y = mouseDeltaY;
+
         this.checkRegionHover();
+
+        this.emit('move', this.hoveredRegion, this.mouse);
 
         //this.emit('move', this.hoveredRegion, this.mouse);
     }

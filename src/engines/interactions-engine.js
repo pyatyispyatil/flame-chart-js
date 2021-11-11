@@ -96,6 +96,27 @@ export class InteractionsEngine extends EventEmitter {
             this.renderEngine.render();
         }
     }
+    else{
+        const { deltaX } = e;
+        e.preventDefault();
+
+        if (this.moveActive) {
+            const mouseDeltaY = this.mouse.y
+
+            if (mouseDeltaY || mouseDeltaX) {
+                this.emit('change-position', {
+                    deltaX: deltaX,
+                    deltaY: mouseDeltaY
+                }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
+            }
+        }
+
+        this.mouse.x = deltaX;
+
+        this.checkRegionHover();
+
+        this.emit('move', this.hoveredRegion, this.mouse);
+    }
     }
 
     handleMouseDown() {

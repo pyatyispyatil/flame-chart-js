@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { deepMerge } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
-const nodeBorderRadius = 2
+const nodeBorderRadius = 20
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
     return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;

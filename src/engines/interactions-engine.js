@@ -106,7 +106,7 @@ export class InteractionsEngine extends EventEmitter {
             if (mouseDeltaY) {
                 this.emit('change-scroll-position', {
                     deltaY: mouseDeltaY
-                }, this.mouseDownHoveredInstance);
+                });
             }
 
         this.checkRegionHover();
@@ -293,10 +293,8 @@ class SeparatedInteractionsEngine extends EventEmitter {
             }
         });
 
-        parent.on('change-scroll-position', (data, instance) => {
-            if (instance === this) {
-                this.emit('change-scroll-position', data);
-            }
+        parent.on('change-scroll-position', (data) => {
+            this.emit('change-scroll-position', data);
         });
 
         this.hitRegions = [];

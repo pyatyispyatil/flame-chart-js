@@ -42,8 +42,9 @@ export default class FlameChartPlugin extends UIPlugin {
         //this.interactionsEngine.setCursor('grabbing');
         console.log(this.positionY)
         console.log(deltaY)
-        if (this.positionY + deltaY >= 0) {
-            this.setPositionY(this.positionY + deltaY);
+        const changeToPosition = this.positionY + deltaY
+        if (changeToPosition >= 0 && changeToPosition <5000) {
+            this.setPositionY(changeToPosition);
         } else {
             this.setPositionY(0);
         }

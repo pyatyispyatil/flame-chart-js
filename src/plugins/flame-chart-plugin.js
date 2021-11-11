@@ -42,7 +42,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const changeToPosition = this.positionY + deltaY
         if (changeToPosition >= 0 && changeToPosition <5000) {
             this.setPositionY(changeToPosition);
-        } else {
+        } else if (changeToPosition < 0) {
             this.setPositionY(0);
         }
 

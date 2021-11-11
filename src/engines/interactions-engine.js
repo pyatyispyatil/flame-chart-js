@@ -123,7 +123,7 @@ export class InteractionsEngine extends EventEmitter {
                 this.emit('change-position', {
                     deltaX: 0,
                     deltaY: mouseDeltaY
-                }, {x:this.mouse.x,y:this.mouse.y}, this.mouse, this.mouseDownHoveredInstance);
+                }, {x:this.mouse.x,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
 
 

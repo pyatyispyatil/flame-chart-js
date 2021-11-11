@@ -113,15 +113,16 @@ export class InteractionsEngine extends EventEmitter {
         // this.checkRegionHover();
 
          const { deltaY } = e;
+         console.log(deltaY);
          e.preventDefault();
-            const mouseDeltaY = this.mouse.y - e.deltaY;
+            const mouseDeltaY = this.mouse.y - deltaY;
             this.mouseDownHoveredInstance = this.hoveredInstance;
 
             if (mouseDeltaY || mouseDeltaX) {
                 this.emit('change-position', {
                     deltaX: mouseDeltaX,
                     deltaY: mouseDeltaY
-                }, {x:this.mouse.x,mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
+                }, {x:this.mouse.x,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
 
 

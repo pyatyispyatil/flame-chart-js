@@ -121,9 +121,9 @@ export class InteractionsEngine extends EventEmitter {
 
             if (mouseDeltaY) {
                 this.emit('change-position', {
-                    deltaX: mouseDeltaX,
+                    deltaX: 0,
                     deltaY: mouseDeltaY
-                }, {x:mouseDeltaX,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
+                }, {x:this.mouse.x,y:this.mouse.y}, this.mouse, this.mouseDownHoveredInstance);
             }
 
 
@@ -133,7 +133,6 @@ export class InteractionsEngine extends EventEmitter {
 
             this.emit('move', this.hoveredRegion, this.mouse);
 
-        //this.emit('move', this.hoveredRegion, this.mouse);
         }
     }
 
@@ -166,17 +165,17 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseMove(e) {
-        if (this.moveActive) {
-            const mouseDeltaY = this.mouse.y - e.offsetY;
-            const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
+        // if (this.moveActive) {
+        //     const mouseDeltaY = this.mouse.y - e.offsetY;
+        //     const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
 
-            if (mouseDeltaY || mouseDeltaX) {
-                this.emit('change-position', {
-                    deltaX: mouseDeltaX,
-                    deltaY: mouseDeltaY
-                }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
-            }
-        }
+        //     if (mouseDeltaY || mouseDeltaX) {
+        //         this.emit('change-position', {
+        //             deltaX: mouseDeltaX,
+        //             deltaY: mouseDeltaY
+        //         }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
+        //     }
+        // }
 
         this.mouse.x = e.offsetX;
         this.mouse.y = e.offsetY;

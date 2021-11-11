@@ -40,21 +40,18 @@ export const defaultRenderSettings = {
     tooltip: undefined
 };
 
-CanvasRenderingContext2D.prototype.roundRect = function (x,y,width,height,radius) {
-    radius = Math.min(Math.max(width-1,1),Math.max(height-1,1),radius);
-    var rectX = x;
-    var rectY = y;
-    var rectWidth = width;
-    var rectHeight = height;
-    var cornerRadius = radius;
-
-    this.lineJoin = "round";
-    this.lineWidth = cornerRadius;
-    this.strokeRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
-    this.fillRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
-    this.stroke();
-    this.fill();
-}
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+  }
 
 export class BasicRenderEngine extends EventEmitter {
     constructor(canvas, settings) {

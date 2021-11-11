@@ -116,13 +116,14 @@ export class InteractionsEngine extends EventEmitter {
          console.log(deltaY);
          e.preventDefault();
             const mouseDeltaY = this.mouse.y - deltaY;
+            const mouseDeltaX = this.mouse.x
             this.mouseDownHoveredInstance = this.hoveredInstance;
 
-            if (mouseDeltaY || mouseDeltaX) {
+            if (mouseDeltaY) {
                 this.emit('change-position', {
                     deltaX: mouseDeltaX,
                     deltaY: mouseDeltaY
-                }, {x:this.mouse.x,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
+                }, {x:mouseDeltaX,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
 
 

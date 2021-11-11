@@ -105,18 +105,14 @@ export class InteractionsEngine extends EventEmitter {
             const mouseDeltaY = this.mouse.y - e.deltaY;
             console.log(mouseDeltaY);
             if (mouseDeltaY ) {
-                this.emit('change-position', {
-                    deltaX: mouseDeltaX,
+                this.emit('change-scroll-position', {
                     deltaY: mouseDeltaY
-                }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
+                }, this.mouseDownHoveredInstance);
             }
-
-
-            this.mouse.y = mouseDeltaY;
 
         this.checkRegionHover();
 
-        this.emit('move', this.hoveredRegion, this.mouse);
+        //this.emit('move', this.hoveredRegion, this.mouse);
     }
     }
 
@@ -295,6 +291,12 @@ class SeparatedInteractionsEngine extends EventEmitter {
         parent.on('change-position', (data, startMouse, endMouse, instance) => {
             if (instance === this) {
                 this.emit('change-position', data, startMouse, endMouse);
+            }
+        });
+
+        parent.on('change-scroll-position', (data, instance) => {
+            if (instance === this) {
+                this.emit('change-scroll-position', data);
             }
         });
 

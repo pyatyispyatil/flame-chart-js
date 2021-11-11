@@ -28,6 +28,7 @@ export default class FlameChartPlugin extends UIPlugin {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
+        this.interactionsEngine.on('change-scroll-position', this.handlePositionChangeOnScroll.bind(this));
         this.interactionsEngine.on('down', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
@@ -50,6 +51,22 @@ export default class FlameChartPlugin extends UIPlugin {
         this.renderEngine.tryToChangePosition(deltaX)
 
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
+            this.renderEngine.parent.render();
+        }
+    }
+
+    handlePositionChangeOnScroll({ deltaY }) {
+        const startPositionY = this.positionY;
+
+        this.interactionsEngine.setCursor('move');
+
+        if (this.positionY + deltaY >= 0) {
+            this.setPositionY(this.positionY + deltaY);
+        } else {
+            this.setPositionY(0);
+        }
+
+        if (startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
         }
     }

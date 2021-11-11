@@ -97,23 +97,22 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
     else{
-        const { deltaX } = e;
+        const { deltaY } = e;
         console.log(e)
         e.preventDefault();
-        console.log(deltaX);
-        const positionScrollDelta = deltaX / this.renderEngine.zoom;
-        console.log(positionScrollDelta);
-            const mouseDeltaY = this.mouse.y
-
-            if (mouseDeltaY || deltaX) {
+        console.log(deltaY);
+            const mouseDeltaX = this.mouse.x
+            const mouseDeltaY = this.mouse.y - e.offsetY;
+            console.log(mouseDeltaY);
+            if (mouseDeltaY ) {
                 this.emit('change-position', {
-                    deltaX: deltaX,
+                    deltaX: mouseDeltaX,
                     deltaY: mouseDeltaY
                 }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
             }
 
 
-        this.mouse.x = deltaX;
+            this.mouse.y = e.offsetY;
 
         this.checkRegionHover();
 

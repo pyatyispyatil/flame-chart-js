@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { deepMerge } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
-
+const node borderRaduis
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
     return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
@@ -40,46 +40,20 @@ export const defaultRenderSettings = {
     tooltip: undefined
 };
 
-/**
- * Draws a rounded rectangle using the current state of the canvas.
- * If you omit the last three params, it will draw a rectangle
- * outline with a 5 pixel border radius
- * @param {Number} x The top left x coordinate
- * @param {Number} y The top left y coordinate
- * @param {Number} width The width of the rectangle
- * @param {Number} height The height of the rectangle
- * @param {Object} radius All corner radii. Defaults to 0,0,0,0;
- * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
- * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
- */
- CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius, fill, stroke) {
-    var cornerRadius = { upperLeft: 0, upperRight: 0, lowerLeft: 0, lowerRight: 0 };
-    if (typeof stroke == "undefined") {
-        stroke = true;
-    }
-    if (typeof radius === "object") {
-        for (var side in radius) {
-            cornerRadius[side] = radius[side];
-        }
-    }
+CanvasRenderingContext2D.prototype.roundRect = function (x,y,width,height,radius) {
+    radius = Math.min(Math.max(width-1,1),Math.max(height-1,1),radius);
+    var rectX = x;
+    var rectY = y;
+    var rectWidth = width;
+    var rectHeight = height;
+    var cornerRadius = radius;
 
-    this.beginPath();
-    this.moveTo(x + cornerRadius.upperLeft, y);
-    this.lineTo(x + width - cornerRadius.upperRight, y);
-    this.quadraticCurveTo(x + width, y, x + width, y + cornerRadius.upperRight);
-    this.lineTo(x + width, y + height - cornerRadius.lowerRight);
-    this.quadraticCurveTo(x + width, y + height, x + width - cornerRadius.lowerRight, y + height);
-    this.lineTo(x + cornerRadius.lowerLeft, y + height);
-    this.quadraticCurveTo(x, y + height, x, y + height - cornerRadius.lowerLeft);
-    this.lineTo(x, y + cornerRadius.upperLeft);
-    this.quadraticCurveTo(x, y, x + cornerRadius.upperLeft, y);
-    this.closePath();
-    if (stroke) {
-        this.stroke();
-    }
-    if (fill) {
-        this.fill();
-    }
+    this.lineJoin = "round";
+    this.lineWidth = cornerRadius;
+    this.strokeRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
+    this.fillRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
+    this.stroke();
+    this.fill();
 }
 
 export class BasicRenderEngine extends EventEmitter {
@@ -163,7 +137,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderBlock(color, x, y, w) {
         this.setCtxColor(color);
-        this.fillRect(x, y, w, this.blockHeight);
+        this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
     renderStroke(color, x, y, w, h) {
@@ -175,7 +149,7 @@ export class BasicRenderEngine extends EventEmitter {
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
-        this.fillRect(x, y, w, h);
+        this.ctx.fillRect(x, y, w, h);
 
         this.emit('clear');
     }
@@ -378,7 +352,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.shadowBlur = 5;
 
         this.setCtxColor(this.styles.tooltipBackgroundColor);
-        this.fillRect(
+        this.ctx.fillRect(
             mouseX,
             mouseY,
             fullWidth + this.blockPaddingLeftRight * 2,

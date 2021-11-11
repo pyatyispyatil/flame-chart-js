@@ -40,6 +40,19 @@ export const defaultRenderSettings = {
     tooltip: undefined
 };
 
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+  }
+
 export class BasicRenderEngine extends EventEmitter {
     constructor(canvas, settings) {
         super();
@@ -112,7 +125,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     fillRect(x, y, w, h) {
-        this.ctx.fillRect(x, y, w, h);
+        this.ctx.roundRect(x, y, w, h,2);
     }
 
     fillText(text, x, y) {
@@ -121,7 +134,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderBlock(color, x, y, w) {
         this.setCtxColor(color);
-        this.ctx.fillRect(x, y, w, this.blockHeight);
+        this.fillRect(x, y, w, this.blockHeight);
     }
 
     renderStroke(color, x, y, w, h) {
@@ -133,7 +146,7 @@ export class BasicRenderEngine extends EventEmitter {
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
-        this.ctx.fillRect(x, y, w, h);
+        this.fillRect(x, y, w, h);
 
         this.emit('clear');
     }
@@ -336,7 +349,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.shadowBlur = 5;
 
         this.setCtxColor(this.styles.tooltipBackgroundColor);
-        this.ctx.fillRect(
+        this.fillRect(
             mouseX,
             mouseY,
             fullWidth + this.blockPaddingLeftRight * 2,

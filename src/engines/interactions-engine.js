@@ -64,39 +64,39 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseWheel(e) {
         if(e.metaKey == true) {
-        const { deltaY, deltaX } = e;
-        e.preventDefault();
+            const { deltaY, deltaX } = e;
+            e.preventDefault();
 
-        const realView = this.renderEngine.getRealView();
-        const initialZoom = this.renderEngine.getInitialZoom();
-        const startPosition = this.renderEngine.positionX;
-        const startZoom = this.renderEngine.zoom;
-        const positionScrollDelta = deltaX / this.renderEngine.zoom;
-        let zoomDelta = (deltaY / 1000) * this.renderEngine.zoom;
+            const realView = this.renderEngine.getRealView();
+            const initialZoom = this.renderEngine.getInitialZoom();
+            const startPosition = this.renderEngine.positionX;
+            const startZoom = this.renderEngine.zoom;
+            const positionScrollDelta = deltaX / this.renderEngine.zoom;
+            let zoomDelta = (deltaY / 1000) * this.renderEngine.zoom;
 
-        this.renderEngine.tryToChangePosition(positionScrollDelta);
+            this.renderEngine.tryToChangePosition(positionScrollDelta);
 
-        zoomDelta = this.renderEngine.zoom - zoomDelta >= initialZoom ? zoomDelta : this.renderEngine.zoom - initialZoom
+            zoomDelta = this.renderEngine.zoom - zoomDelta >= initialZoom ? zoomDelta : this.renderEngine.zoom - initialZoom
 
-        if (zoomDelta !== 0) {
-            const zoomed = this.renderEngine.setZoom(this.renderEngine.zoom - zoomDelta);
+            if (zoomDelta !== 0) {
+                const zoomed = this.renderEngine.setZoom(this.renderEngine.zoom - zoomDelta);
 
-            if (zoomed) {
-                const proportion = this.mouse.x / this.renderEngine.width;
-                const timeDelta = realView - (this.renderEngine.width / this.renderEngine.zoom);
-                const positionDelta = timeDelta * proportion;
+                if (zoomed) {
+                    const proportion = this.mouse.x / this.renderEngine.width;
+                    const timeDelta = realView - (this.renderEngine.width / this.renderEngine.zoom);
+                    const positionDelta = timeDelta * proportion;
 
-                this.renderEngine.tryToChangePosition(positionDelta);
+                    this.renderEngine.tryToChangePosition(positionDelta);
+                }
+            }
+
+            this.checkRegionHover();
+
+            if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
+                this.renderEngine.render();
             }
         }
-
-        this.checkRegionHover();
-
-        if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
-            this.renderEngine.render();
-        }
-    }
-    else{
+        else {
         // const { deltaY } = e;
         // e.preventDefault();
         // console.log(deltaY);
@@ -126,14 +126,14 @@ export class InteractionsEngine extends EventEmitter {
             }
 
 
-        this.mouse.y = mouseDeltaY;
+            this.mouse.y = mouseDeltaY;
 
-        this.checkRegionHover();
+            this.checkRegionHover();
 
-        this.emit('move', this.hoveredRegion, this.mouse);
+            this.emit('move', this.hoveredRegion, this.mouse);
 
         //this.emit('move', this.hoveredRegion, this.mouse);
-    }
+        }
     }
 
     handleMouseDown() {

@@ -99,8 +99,7 @@ export class InteractionsEngine extends EventEmitter {
     else{
         const { deltaX } = e;
         e.preventDefault();
-
-        if (this.moveActive) {
+        console.log(deltaX);
             const mouseDeltaY = this.mouse.y
 
             if (mouseDeltaY || mouseDeltaX) {
@@ -109,7 +108,7 @@ export class InteractionsEngine extends EventEmitter {
                     deltaY: mouseDeltaY
                 }, this.mouseDownPosition, this.mouse, this.mouseDownHoveredInstance);
             }
-        }
+
 
         this.mouse.x = deltaX;
 

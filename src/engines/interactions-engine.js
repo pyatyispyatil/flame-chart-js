@@ -98,11 +98,14 @@ export class InteractionsEngine extends EventEmitter {
     }
     else{
         const { deltaX } = e;
+        console.log(e)
         e.preventDefault();
         console.log(deltaX);
+        const positionScrollDelta = deltaX / this.renderEngine.zoom;
+        console.log(positionScrollDelta);
             const mouseDeltaY = this.mouse.y
 
-            if (mouseDeltaY || mouseDeltaX) {
+            if (mouseDeltaY || deltaX) {
                 this.emit('change-position', {
                     deltaX: deltaX,
                     deltaY: mouseDeltaY

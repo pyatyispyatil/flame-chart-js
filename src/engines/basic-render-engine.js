@@ -2,11 +2,24 @@ import { EventEmitter } from 'events';
 import { deepMerge } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
-
+const nodeBorderRadius= 3;
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
     return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
 }
+
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+  }
 
 const getPixelRatio = (ctx) => {
     const dpr = window.devicePixelRatio || 1;
@@ -112,7 +125,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     fillRect(x, y, w, h) {
-        this.ctx.fillRect(x, y, w, h);
+        this.ctx.roundRect(x, y, w, h, nodeBorderRadius).fill();
     }
 
     fillText(text, x, y) {
@@ -121,7 +134,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderBlock(color, x, y, w) {
         this.setCtxColor(color);
-        this.ctx.fillRect(x, y, w, this.blockHeight);
+        this.fillRect(x, y, w, this.blockHeight);
     }
 
     renderStroke(color, x, y, w, h) {
@@ -133,7 +146,7 @@ export class BasicRenderEngine extends EventEmitter {
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
-        this.ctx.fillRect(x, y, w, h);
+        this.fillRect(x, y, w, h);
 
         this.emit('clear');
     }

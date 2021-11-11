@@ -110,7 +110,7 @@ export class InteractionsEngine extends EventEmitter {
                 }, {x:this.mouse.x,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
 
-            this.mouse.y = mouseDeltaY;
+            //this.mouse.y = mouseDeltaY;
 
             this.checkRegionHover();
 

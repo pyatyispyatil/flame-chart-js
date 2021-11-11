@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { deepMerge } from './../utils.js';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
-const node borderRaduis
+const nodeBorderRadius = 20
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
     return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
@@ -128,7 +128,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     fillRect(x, y, w, h) {
-        this.ctx.roundRect(x, y, w, h,2);
+        this.ctx.roundRect(x, y, w, h,nodeBorderRadius);
     }
 
     fillText(text, x, y) {
@@ -137,7 +137,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderBlock(color, x, y, w) {
         this.setCtxColor(color);
-        this.ctx.fillRect(x, y, w, this.blockHeight);
+        this.ctx.roundRect(x, y, w, this.blockHeight,nodeBorderRadius);
     }
 
     renderStroke(color, x, y, w, h) {
@@ -149,7 +149,7 @@ export class BasicRenderEngine extends EventEmitter {
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
-        this.ctx.fillRect(x, y, w, h);
+        this.ctx.roundRect(x, y, w, h,nodeBorderRadius);
 
         this.emit('clear');
     }

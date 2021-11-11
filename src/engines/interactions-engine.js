@@ -102,7 +102,7 @@ export class InteractionsEngine extends EventEmitter {
         e.preventDefault();
         console.log(deltaY);
             const mouseDeltaX = this.mouse.x
-            const mouseDeltaY = this.mouse.y - e.offsetY;
+            const mouseDeltaY = this.mouse.y - e.deltaY;
             console.log(mouseDeltaY);
             if (mouseDeltaY ) {
                 this.emit('change-position', {
@@ -112,7 +112,7 @@ export class InteractionsEngine extends EventEmitter {
             }
 
 
-            this.mouse.y = e.offsetY;
+            this.mouse.y = mouseDeltaY;
 
         this.checkRegionHover();
 

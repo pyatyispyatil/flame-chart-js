@@ -97,34 +97,18 @@ export class InteractionsEngine extends EventEmitter {
             }
         }
         else {
-        // const { deltaY } = e;
-        // e.preventDefault();
-        // console.log(deltaY);
-        //     const mouseDeltaX = this.mouse.x
-        //     const mouseDeltaY = this.mouse.y - e.deltaY;
-        //     console.log(mouseDeltaY);
-        //     if (mouseDeltaY) {
-        //         console.log('emitting..')
-        //         this.emit('change-scroll-position', {
-        //             deltaY: mouseDeltaY
-        //         });
-        //     }
-
-        // this.checkRegionHover();
-
          const { deltaY } = e;
          console.log(deltaY);
          e.preventDefault();
             const mouseDeltaY = this.mouse.y - deltaY;
             this.mouseDownHoveredInstance = this.hoveredInstance;
-
+            console.log(mouseDeltaY);
             if (mouseDeltaY) {
                 this.emit('change-position', {
                     deltaX: 0,
                     deltaY: deltaY
                 }, {x:this.mouse.x,y:mouseDeltaY}, this.mouse, this.mouseDownHoveredInstance);
             }
-
 
             this.mouse.y = mouseDeltaY;
 
@@ -311,10 +295,6 @@ class SeparatedInteractionsEngine extends EventEmitter {
             if (instance === this) {
                 this.emit('change-position', data, startMouse, endMouse);
             }
-        });
-
-        parent.on('change-scroll-position', (data) => {
-            this.emit('change-scroll-position', data);
         });
 
         this.hitRegions = [];

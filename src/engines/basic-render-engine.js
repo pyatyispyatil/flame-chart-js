@@ -222,7 +222,7 @@ export class BasicRenderEngine extends EventEmitter {
             }
 
             if (text) {
-                if (text==='root'){
+                if (text==='All'){
                     this.setCtxColor('#ffffff');
                     this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
                     this.setCtxColor(this.styles.fontColor);

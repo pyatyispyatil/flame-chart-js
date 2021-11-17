@@ -67,7 +67,8 @@ export default class FlameChartPlugin extends UIPlugin {
     reset() {
         this.colors = {};
         this.lastRandomColor = DEFAULT_COLOR;
-        this.positionY = 0;
+        console.log(this.positionY)
+        this.positionY = this.positionY || 0;
         this.selectedRegion = null;
     }
 

@@ -19,7 +19,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.data = data;
         this.userColors = colors;
-
+        this.canvasHeight = 5000
         this.parseData(this.data);
         this.reset();
     }
@@ -40,7 +40,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const startPositionX = this.renderEngine.parent.positionX;
 
         const changeToPosition = this.positionY + deltaY
-        if (changeToPosition >= 0 && changeToPosition <5000) {
+        if (changeToPosition >= 0 && changeToPosition <this.canvasHeight) {
             this.setPositionY(changeToPosition);
         } else if (changeToPosition < 0) {
             this.setPositionY(0);
@@ -145,9 +145,9 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,withYreset) {
+    setData(data,withYreset,canvasHeight) {
         this.data = data;
-
+        this.canvasHeight = canvasHeight;
         this.parseData();
         this.initData();
         this.reset(withYreset);

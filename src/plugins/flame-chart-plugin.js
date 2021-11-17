@@ -67,8 +67,8 @@ export default class FlameChartPlugin extends UIPlugin {
     reset() {
         this.colors = {};
         this.lastRandomColor = DEFAULT_COLOR;
-
-        this.positionY = 0;
+        //disabled to prevent selecting a node go to top
+        //this.positionY = 0;
         this.selectedRegion = null;
     }
 

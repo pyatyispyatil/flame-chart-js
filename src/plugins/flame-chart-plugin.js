@@ -145,12 +145,11 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,withYreset = true) {
+    setData(data,withYreset) {
         this.data = data;
 
         this.parseData();
         this.initData();
-
         this.reset(withYreset);
 
         this.renderEngine.recalcMinMax();

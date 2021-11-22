@@ -138,13 +138,12 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
         .map((nodes) => {
             const node = nodes[0];
             const duration = calcClusterDuration(nodes);
-            console.log(node)
             return {
                 start: node.start,
                 end: node.start + duration,
                 duration,
                 type: node.type,
-                color: addAlpha(node.color,Math.random()),
+                color: node.matched? addAlpha(node.color,0.4):node.color,
                 level: node.level,
                 nodes
             };

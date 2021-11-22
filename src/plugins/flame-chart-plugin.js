@@ -149,7 +149,6 @@ export default class FlameChartPlugin extends UIPlugin {
         this.data = data;
         this.canvasHeight = canvasHeight;
         if (shouldParseTree){
-        console.log('parsing!')
         this.parseData();
         }
         this.initData();

@@ -101,6 +101,13 @@ export default class FlameChartPlugin extends UIPlugin {
     handleHover(region) {
 
         this.hoveredRegion = this.findNodeInCluster(region);
+
+        if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
+            console.log(this.hoveredRegion)
+            const { hoveredStart, hoveredDuration, hoveredLevel } = this.hoveredRegion.data;
+            const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
+            this.renderEngine.addStrokeToRenderQueue('red', x, y, w, this.renderEngine.blockHeight);
+        }
     }
 
     findNodeInCluster(region) {
@@ -285,11 +292,7 @@ export default class FlameChartPlugin extends UIPlugin {
             this.renderEngine.addStrokeToRenderQueue('black', x, y, w, this.renderEngine.blockHeight);
         }
 
-        if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
-            const { hoveredStart, hoveredDuration, hoveredLevel } = this.hoveredRegion.data;
-            const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
-            this.renderEngine.addStrokeToRenderQueue('red', x, y, w, this.renderEngine.blockHeight);
-        }
+
 
         clearTimeout(this.renderChartTimeout);
 

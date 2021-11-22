@@ -241,7 +241,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.strokeRenderQueue.forEach(({ color, x, y, w, h }) => {
             this.renderStroke(color, x, y, w, h);
         });
-
+        console.log('render stroke!')
         this.strokeRenderQueue = [];
     }
 
@@ -377,6 +377,7 @@ export class BasicRenderEngine extends EventEmitter {
             );
         });
     }
+
 
     renderShape(color, dots, posX, posY) {
         this.setCtxColor(color);

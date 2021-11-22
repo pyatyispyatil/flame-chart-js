@@ -144,7 +144,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
                 end: node.start + duration,
                 duration,
                 type: node.type,
-                color: addAlpha(node.color,0.3),
+                color: addAlpha(node.color,Math.random()),
                 level: node.level,
                 nodes
             };

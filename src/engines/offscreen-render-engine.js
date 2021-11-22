@@ -119,6 +119,10 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.parent.renderTooltipFromData(fields, mouse);
     }
 
+    renderNodeStrokeFromData(fields) {
+        this.parent.renderNodeStrokeFromData(fields);
+    }
+
     resetParentView() {
         this.parent.resetView();
         this.parent.render();

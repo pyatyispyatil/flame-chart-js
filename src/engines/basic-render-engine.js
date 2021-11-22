@@ -241,7 +241,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.strokeRenderQueue.forEach(({ color, x, y, w, h }) => {
             this.renderStroke(color, x, y, w, h);
         });
-        console.log('render stroke!')
+
         this.strokeRenderQueue = [];
     }
 
@@ -376,6 +376,11 @@ export class BasicRenderEngine extends EventEmitter {
                 mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * index
             );
         });
+    }
+
+    renderNodeStrokeFromData(fields){
+        const {color, x, y, w, h} = fields
+        this.renderStroke(color, x, y, w, h);
     }
 
 

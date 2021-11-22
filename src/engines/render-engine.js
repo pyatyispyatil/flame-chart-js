@@ -244,6 +244,10 @@ export class RenderEngine extends BasicRenderEngine {
             if (plugin.renderTooltip) {
                 tooltipRendered = tooltipRendered || !!plugin.renderTooltip();
             }
+            if (plugin.renderNodeStroke){
+                plugin.renderNodeStroke()
+            }
+
         });
 
         if (!tooltipRendered && typeof this.settings.tooltip === "function"){

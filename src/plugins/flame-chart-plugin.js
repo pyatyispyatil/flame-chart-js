@@ -145,12 +145,10 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,withYreset,canvasHeight,shouldParseTree = true) {
+    setData(data,withYreset,canvasHeight) {
         this.data = data;
         this.canvasHeight = canvasHeight;
-        if (shouldParseTree){
         this.parseData();
-        }
         this.initData();
         this.reset(withYreset);
 

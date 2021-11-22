@@ -82,8 +82,8 @@ export default class FlameChart extends FlameChartContainer {
         });
 
         if (flameChartPlugin) {
-            this.setData = (data,withYreset = true,canvasHeight = 5000,shouldParseTree= true) => {
-                flameChartPlugin.setData(data,withYreset,canvasHeight,shouldParseTree);
+            this.setData = (data,withYreset = true,canvasHeight = 5000) => {
+                flameChartPlugin.setData(data,withYreset,canvasHeight);
                 //timeframeSelectorPlugin.setData(data);
             };
 

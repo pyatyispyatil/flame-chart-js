@@ -144,7 +144,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
                 end: node.start + duration,
                 duration,
                 type: node.type,
-                color: node.color,
+                color: addAlpha(node.color,0.3),
                 level: node.level,
                 nodes
             };
@@ -165,3 +165,10 @@ export const reclusterizeClusteredFlatTree = (clusteredFlatTree, zoom, start, en
             return acc;
         }, []);
 }
+
+
+// add alpha to hex color
+const addAlpha = (color, opacity) => {
+    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
+    return color + _opacity.toString(16).toUpperCase();
+};

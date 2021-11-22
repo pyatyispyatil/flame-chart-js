@@ -104,7 +104,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
         if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
             console.log(this.hoveredRegion)
-            const { hoveredStart, hoveredDuration, hoveredLevel } = this.hoveredRegion.data;
+            const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
             const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
             this.renderEngine.addStrokeToRenderQueue('red', x, y, w, this.renderEngine.blockHeight);
         }

@@ -99,15 +99,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleHover(region) {
-
         this.hoveredRegion = this.findNodeInCluster(region);
-
-        // if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
-        //     console.log(this.hoveredRegion)
-        //     const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
-        //     const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
-        //     this.renderEngine.addStrokeToRenderQueue('red', x, y, w, this.renderEngine.blockHeight);
-        // }
     }
 
     findNodeInCluster(region) {
@@ -230,11 +222,12 @@ export default class FlameChartPlugin extends UIPlugin {
             return true;
         }
     }
+
     renderNodeStroke() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
             const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
             const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
-            this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'red'}
+            this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'blue'}
             );
         }
     }

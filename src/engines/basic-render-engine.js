@@ -146,6 +146,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
         this.ctx.lineWidth = 4;
+        this.ctx.lineCap = "round";
         this.ctx.strokeRect(x, y, w, h);
     }
 

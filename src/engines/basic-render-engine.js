@@ -142,6 +142,12 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.setLineDash([]);
         this.ctx.strokeRect(x, y, w, h);
     }
+    renderHoverStroke(color, x, y, w, h) {
+        this.setStrokeColor(color);
+        this.ctx.setLineDash([]);
+        this.ctx.lineWidth = 10;
+        this.ctx.strokeRect(x, y, w, h);
+    }
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
@@ -380,7 +386,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderNodeStrokeFromData(fields){
         const {color, x, y, w, h} = fields
-        this.renderStroke(color, x, y, w, h);
+        this.renderHoverStroke(color, x, y, w, h);
     }
 
 

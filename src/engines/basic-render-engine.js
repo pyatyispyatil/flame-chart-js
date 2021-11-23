@@ -142,11 +142,12 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.setLineDash([]);
         this.ctx.strokeRect(x, y, w, h);
     }
+
     renderHoverStroke(color, x, y, w, h) {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
         this.ctx.lineWidth = 4;
-        this.ctx.roundRect(x, y, w, h,4);
+        this.ctx.roundRect(x, y, w, h,nodeBorderRadius).stroke();
     }
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {

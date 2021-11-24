@@ -146,7 +146,7 @@ export class BasicRenderEngine extends EventEmitter {
     renderHoverStroke(color, x, y, w, h) {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
-        this.ctx.shadowBlur=3;
+        //this.ctx.shadowBlur=3;
         this.ctx.lineWidth = 4;
         this.ctx.roundRect(x, y, w, h,nodeBorderRadius).stroke();
     }
@@ -162,7 +162,7 @@ export class BasicRenderEngine extends EventEmitter {
           // increase the size of blur
           this.ctx.shadowBlur+=0.25;
           // stroke the rect (which also draws its shadow)
-          this.ctx.strokeRect(x,y,w,h);
+          this.ctx.roundRect(x, y, w, h,nodeBorderRadius).stroke();
         }
         // cancel shadowing by making the shadowColor transparent
         //this.ctx.shadowColor='rgba(0,0,0,0)';

@@ -409,7 +409,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderNodeStrokeFromData(fields){
         const {color, x, y, w, h} = fields
-        //this.shadowRect(color, x, y, w, h,1)
+        this.shadowRect(x, y, w, h,5,color)
         //this.renderHoverStroke(color, x, y, w, h);
     }
 

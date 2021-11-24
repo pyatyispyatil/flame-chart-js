@@ -165,10 +165,10 @@ export class BasicRenderEngine extends EventEmitter {
           this.ctx.strokeRect(x,y,w,h);
         }
         // cancel shadowing by making the shadowColor transparent
-        this.ctx.shadowColor='rgba(0,0,0,0)';
+        //this.ctx.shadowColor='rgba(0,0,0,0)';
         // restroke the interior of the rect for a more solid colored center
-        this.ctx.lineWidth=2;
-        this.ctx.strokeRect(x+2,y+2,w-4,h-4);
+        //this.ctx.lineWidth=2;
+        //this.ctx.strokeRect(x+2,y+2,w-4,h-4);
 
       }
 

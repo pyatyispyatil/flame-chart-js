@@ -161,7 +161,7 @@ export class BasicRenderEngine extends EventEmitter {
             // increase the size of blur
             this.ctx.shadowBlur+=0.25;
             // stroke the rect (which also draws its shadow)
-            this.ctx.strokeRect(x,y,w,h);
+            this.ctx.renderHoverStroke(color,x,y,w,h);
         }
         // cancel shadowing by making the shadowColor transparent
         this.ctx.shadowColor='rgba(0,0,0,0)';

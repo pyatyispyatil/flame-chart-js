@@ -150,6 +150,26 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.roundRect(x, y, w, h,nodeBorderRadius).stroke();
     }
 
+    shadowRect(color,x,y,w,h,repeats=1){
+        // set stroke & shadow to the same color
+        this.ctx.strokeStyle=color;
+        this.ctx.shadowColor=color;
+        // set initial blur of 3px
+        this.ctx.shadowBlur=3;
+        // repeatedly overdraw the blur to make it prominent
+        for(var i=0;i<repeats;i++){
+            // increase the size of blur
+            this.ctx.shadowBlur+=0.25;
+            // stroke the rect (which also draws its shadow)
+            this.ctx.strokeRect(x,y,w,h);
+        }
+        // cancel shadowing by making the shadowColor transparent
+        this.ctx.shadowColor='rgba(0,0,0,0)';
+        // restroke the interior of the rect for a more solid colored center
+        this.ctx.lineWidth=2;
+        this.ctx.strokeRect(x+2,y+2,w-4,h-4);
+    }
+
     clear(w = this.width, h = this.height, x = 0, y = 0) {
         this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxColor(this.styles.backgroundColor);
@@ -387,7 +407,8 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderNodeStrokeFromData(fields){
         const {color, x, y, w, h} = fields
-        this.renderHoverStroke(color, x, y, w, h);
+        this.shadowRect(color, x, y, w, h,1)
+        //this.renderHoverStroke(color, x, y, w, h);
     }
 
 

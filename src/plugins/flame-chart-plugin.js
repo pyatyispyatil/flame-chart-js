@@ -85,7 +85,6 @@ export default class FlameChartPlugin extends UIPlugin {
         const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;
-            console.log(this.selectedRegion)
             if (selectedRegion && selectedRegion.data){
             const {start,end,level} = selectedRegion.data
             const zoom = this.renderEngine.width / (end - start);

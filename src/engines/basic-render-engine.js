@@ -151,6 +151,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     shadowRect(color,x,y,w,h,repeats=1){
+        this.setStrokeColor(color);
         // set stroke & shadow to the same color
         this.ctx.strokeStyle=color;
         this.ctx.shadowColor=color;
@@ -161,7 +162,7 @@ export class BasicRenderEngine extends EventEmitter {
             // increase the size of blur
             this.ctx.shadowBlur+=0.25;
             // stroke the rect (which also draws its shadow)
-            this.renderHoverStroke(color,x,y,w,h);
+            this.ctx.strokeRect(x,y,w,h);
         }
         // cancel shadowing by making the shadowColor transparent
         this.ctx.shadowColor='rgba(0,0,0,0)';

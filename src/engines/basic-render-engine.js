@@ -156,7 +156,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.strokeStyle=color;
         this.ctx.shadowColor=color;
         // set initial blur of 3px
-        this.ctx.shadowBlur=3;
+        this.ctx.shadowBlur=20;
         // repeatedly overdraw the blur to make it prominent
         for(var i=0;i<repeats;i++){
           // increase the size of blur

@@ -19,6 +19,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.data = data;
         this.userColors = colors;
+        this.currentHoveredNode = null
         this.canvasHeight = 5000
         this.parseData(this.data);
         this.reset();
@@ -225,7 +226,9 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     renderNodeStroke() {
-        if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
+        if (this.hoveredRegion && this.hoveredRegion.type === 'node' && this.hoveredRegion!==this.currentHoveredNode){
+            console.log('hi')
+            this.currentHoveredNode = this.hoveredRegion;
             const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
             const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
             this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'#373A4A'}

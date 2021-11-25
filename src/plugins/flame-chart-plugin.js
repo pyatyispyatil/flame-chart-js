@@ -19,8 +19,6 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.data = data;
         this.userColors = colors;
-        this.currentHoveredNode = null;
-        this.nodeImageData = null;
         this.canvasHeight = 5000
         this.parseData(this.data);
         this.reset();
@@ -226,22 +224,11 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    checkIfSameRegion() {
-        //console.log(this.currentHoveredNode?.data?.index);
-        //console.log(this.hoveredRegion?.data?.index);
-        return this.currentHoveredNode?.data?.index === this.hoveredRegion?.data?.index;
-    }
-
     renderNodeStroke() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'node'){
-
             const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
             const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
-            if (!this.checkIfSameRegion()){
-                this.currentHoveredNode=this.hoveredRegion;
-                this.nodeImageData = this.renderEngine.getNodeImage(x, y, w, this.renderEngine.blockHeight);
-            }
-            this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'#373A4A',nodeImage:this.nodeImageData}
+            this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'#373A4A'}
             );
         }
     }

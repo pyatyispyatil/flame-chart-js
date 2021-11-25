@@ -156,7 +156,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.strokeStyle=color;
         this.ctx.shadowColor=color;
         // set initial blur of 3px
-        this.ctx.shadowBlur=4;
+        this.ctx.shadowBlur=6;
         // repeatedly overdraw the blur to make it prominent
         for(var i=0;i<repeats;i++){
           // increase the size of blur
@@ -408,16 +408,10 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderNodeStrokeFromData(fields){
-        const {color, x, y, w, h,nodeImage} = fields
-        this.shadowRect(x, y, w, h,3,color);
-        this.ctx.putImageData(nodeImage, x, y);
+        const {color, x, y, w, h} = fields
+        this.shadowRect(x, y, w, h,1,color);
         //this.renderHoverStroke(color, x, y, w, h);
     }
-
-    getNodeImage(x, y, w, h){
-        return this.ctx.getImageData(x, y, w, h);
-    }
-
 
     renderShape(color, dots, posX, posY) {
         this.setCtxColor(color);

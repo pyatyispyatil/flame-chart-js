@@ -226,14 +226,13 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     checkIfSameRegion(newRegion) {
-        console.log(newRegion);
-        return this.currentHoveredNode!==newRegion;
+        return this.currentHoveredNode?.data?.index==newRegion?.data?.index;
     }
 
     renderNodeStroke() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'node' && this.checkIfSameRegion(this.hoveredRegion)){
+            this.currentHoveredNode=this.hoveredRegion;
             console.log('hi')
-            this.currentHoveredNode = this.hoveredRegion;
             const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;
             const { x, y, w } = this.calcRect(hoveredStart, hoveredDuration, hoveredLevel);
             this.renderEngine.renderNodeStrokeFromData({x,y,w,h:this.renderEngine.blockHeight,color:'#373A4A'}

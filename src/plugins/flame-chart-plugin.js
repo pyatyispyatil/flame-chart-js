@@ -226,6 +226,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     checkIfSameRegion(newRegion) {
+        console.log(this.currentHoveredNode?.data?.index)
         return this.currentHoveredNode?.data?.index==newRegion?.data?.index;
     }
 

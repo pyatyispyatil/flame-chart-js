@@ -414,7 +414,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.setCtxColor('rgba(255,255,255,0.5)');
         this.ctx.fillRect(0, 0, x, this.height);
         this.ctx.fillRect(x+w, 0, this.width-x-w, this.height);
-        this.ctx.fillRect(x, 0, w, y);
+        this.ctx.fillRect(x-5, 0, w+10, y);
     }
 
     renderNodeStrokeFromData(fields){

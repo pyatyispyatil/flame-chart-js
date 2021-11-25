@@ -408,9 +408,15 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderNodeStrokeFromData(fields){
-        const {color, x, y, w, h} = fields
-        this.shadowRect(x, y, w, h,3,color)
+        const {color, x, y, w, h,nodeImage} = fields
+        this.shadowRect(x, y, w, h,3,color);
+        this.ctx.putImageData(nodeImage, x, y);
         //this.renderHoverStroke(color, x, y, w, h);
+    }
+
+    getNodeImage(fields){
+        const { x, y, w, h} = fields
+        return this.ctx.getImageData(x, y, w, h);
     }
 
 

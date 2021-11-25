@@ -409,6 +409,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     renderOuterNodeMask(fields){
         this.ctx.shadowBlur=12;
+        this.ctx.shadowColor='rgba(255,255,255,0)';
         const {x, y, w} = fields;
         this.setCtxColor('rgba(255,255,255,0.5)');
         this.ctx.fillRect(0, 0, x, this.height);

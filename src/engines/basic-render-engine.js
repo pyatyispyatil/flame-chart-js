@@ -407,9 +407,20 @@ export class BasicRenderEngine extends EventEmitter {
         });
     }
 
+    renderOuterNodeMask(fields){
+        const {x, y, w} = fields;
+        this.width;
+        this.height;
+        this.setCtxColor('rgba(255,255,255,0.3)');
+        this.ctx.fillRect(0, 0, x, this.height);
+        this.ctx.fillRect(x+w, 0, this.width-x-w, this.height);
+        this.ctx.fillRect(x, 0, w, y);
+    }
+
     renderNodeStrokeFromData(fields){
         const {color, x, y, w, h} = fields
         this.shadowRect(x, y, w, h,1,color);
+        this.renderOuterNodeMask(fields);
         //this.renderHoverStroke(color, x, y, w, h);
     }
 

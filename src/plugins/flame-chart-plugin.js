@@ -228,11 +228,10 @@ export default class FlameChartPlugin extends UIPlugin {
     checkIfSameRegion() {
         console.log(this.currentHoveredNode?.data?.index);
         console.log(this.hoveredRegion?.data?.index);
-        return this.currentHoveredNode?.data?.index === this.hoveredRegion?.data?.index;
+        return this.currentHoveredNode?.data?.index !== this.hoveredRegion?.data?.index;
     }
 
     renderNodeStroke() {
-        console.log('test');
         if (this.hoveredRegion && this.hoveredRegion.type === 'node' && this.checkIfSameRegion()){
             this.currentHoveredNode=this.hoveredRegion;
             console.log('hi')

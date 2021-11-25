@@ -414,8 +414,7 @@ export class BasicRenderEngine extends EventEmitter {
         //this.renderHoverStroke(color, x, y, w, h);
     }
 
-    getNodeImage(fields){
-        const { x, y, w, h} = fields
+    getNodeImage(x, y, w, h){
         return this.ctx.getImageData(x, y, w, h);
     }
 

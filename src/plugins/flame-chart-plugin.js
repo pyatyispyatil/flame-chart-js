@@ -225,8 +225,13 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
+    checkIfSameRegion(newRegion) {
+        console.log(newRegion);
+        return this.currentHoveredNode!==newRegion;
+    }
+
     renderNodeStroke() {
-        if (this.hoveredRegion && this.hoveredRegion.type === 'node' && this.hoveredRegion!==this.currentHoveredNode){
+        if (this.hoveredRegion && this.hoveredRegion.type === 'node' && checkIfSameRegion(this.hoveredRegion)){
             console.log('hi')
             this.currentHoveredNode = this.hoveredRegion;
             const { start:hoveredStart, duration:hoveredDuration, level:hoveredLevel } = this.hoveredRegion.data;

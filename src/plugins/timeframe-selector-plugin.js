@@ -47,9 +47,9 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
-        this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
-        this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
-        this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
+        ///this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
+        //this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
+        //this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
 
         this.setSettings(this.settings);
     }

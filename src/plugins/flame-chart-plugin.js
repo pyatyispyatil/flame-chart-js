@@ -306,14 +306,14 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));
 
-        if (this.selectedRegion && this.selectedRegion.type === 'node') {
-            const { start, duration, level } = this.selectedRegion.data;
-            const { x, y, w } = this.calcRect(start, duration, level);
-            console.log('flame-chart-plugin render');
-            this.renderEngine.addStrokeToRenderQueue('black', x, y, w, this.renderEngine.blockHeight);
-            this.renderEngine.renderOuterNodeMask({x,y,w,h:this.renderEngine.blockHeight,color:'rgba(55, 58, 74,0.7)'});
+        // if (this.selectedRegion && this.selectedRegion.type === 'node') {
+        //     const { start, duration, level } = this.selectedRegion.data;
+        //     const { x, y, w } = this.calcRect(start, duration, level);
+        //     console.log('flame-chart-plugin render');
+        //     this.renderEngine.addStrokeToRenderQueue('black', x, y, w, this.renderEngine.blockHeight);
+        //     this.renderEngine.renderOuterNodeMask({x,y,w,h:this.renderEngine.blockHeight,color:'rgba(55, 58, 74,0.7)'});
 
-        }
+        // }
 
 
 

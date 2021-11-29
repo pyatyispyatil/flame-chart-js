@@ -175,6 +175,9 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     setZoom(zoom) {
+        console.log('render-engine')
+        console.log(zoom)
+
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
             this.children.forEach((engine) => engine.setZoom(zoom));

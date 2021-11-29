@@ -157,7 +157,9 @@ export default class FlameChartPlugin extends UIPlugin {
         this.reset(keepYposition,newYPosition,resetSelected);
 
         this.renderEngine.recalcMinMax();
+        if (resetSelected){
         this.renderEngine.resetParentView();
+        }
     }
 
     parseData() {

@@ -189,8 +189,6 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     setZoom(zoom) {
-        console.log('basic-render')
-        console.log(zoom)
         this.zoom = zoom;
     }
 

@@ -64,10 +64,12 @@ export default class FlameChartPlugin extends UIPlugin {
         this.positionY = y;
     }
 
-    reset(newYPosition = 0,resetSelected) {
+    reset(keepYposition,newYPosition = 0,resetSelected) {
         this.colors = {};
         this.lastRandomColor = DEFAULT_COLOR;
-        //this.positionY = newYPosition;
+        if (!keepYposition){
+        this.positionY = newYPosition;
+        }
         if (resetSelected){
         this.selectedRegion = null;
         }
@@ -147,12 +149,12 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,newYPosition,canvasHeight,resetSelected) {
+    setData(data,keepYposition,newYPosition,canvasHeight,resetSelected) {
         this.data = data;
         this.canvasHeight = canvasHeight;
         this.parseData();
         this.initData();
-        this.reset(newYPosition,resetSelected);
+        this.reset(keepYposition,newYPosition,resetSelected);
 
         this.renderEngine.recalcMinMax();
         this.renderEngine.resetParentView();

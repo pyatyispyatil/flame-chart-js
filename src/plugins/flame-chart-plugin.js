@@ -233,6 +233,16 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
+    renderSelectedNodeMask() {
+        if (this.selectedRegion && this.selectedRegion.type === 'node') {
+            const { start, duration, level } = this.selectedRegion.data;
+            const { x, y, w } = this.calcRect(start, duration, level);
+            console.log('renderSelectedNodeMask');
+            this.renderEngine.renderOuterNodeMask({x,y,w,h:this.renderEngine.blockHeight,color:'rgba(55, 58, 74,0.7)'});
+
+        }
+    }
+
     render() {
         const {
             width,

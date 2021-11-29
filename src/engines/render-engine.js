@@ -249,6 +249,9 @@ export class RenderEngine extends BasicRenderEngine {
             if (plugin.renderNodeStroke){
                 plugin.renderNodeStroke()
             }
+            if (plugin.renderSelectedNodeMask){
+                plugin.renderSelectedNodeMask()
+            }
 
         });
 

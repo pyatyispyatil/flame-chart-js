@@ -230,6 +230,7 @@ export class RenderEngine extends BasicRenderEngine {
     shallowRender() {
         this.clear();
         console.log('shallowRender');
+        console.log(plugins)
         this.timeGrid.renderLines(this.height - this.freeSpace, this.freeSpace);
 
         this.children.forEach((engine) => {

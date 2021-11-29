@@ -208,6 +208,8 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     partialRender(id) {
+        console.log('partialRender');
+
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }
@@ -227,7 +229,7 @@ export class RenderEngine extends BasicRenderEngine {
 
     shallowRender() {
         this.clear();
-
+        console.log('shallowRender');
         this.timeGrid.renderLines(this.height - this.freeSpace, this.freeSpace);
 
         this.children.forEach((engine) => {

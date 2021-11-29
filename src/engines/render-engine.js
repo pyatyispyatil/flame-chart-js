@@ -208,7 +208,7 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     partialRender(id) {
-
+        console.log('partialRender')
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }
@@ -262,7 +262,7 @@ export class RenderEngine extends BasicRenderEngine {
 
     render() {
         cancelAnimationFrame(this.lastPartialAnimationFrame);
-
+        console.log('render')
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;
 

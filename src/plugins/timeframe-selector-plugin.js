@@ -72,6 +72,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     handleMouseUp(region, mouse, isClick) {
+        console.log('timeframe!')
         let isDoubleClick = false;
 
         if (this.timeout) {
@@ -141,6 +142,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     postInit() {
+        console.log('postInit!')
         this.offscreenRenderEngine = this.renderEngine.makeChild();
         this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
         this.timeGrid = new TimeGrid(this.offscreenRenderEngine, this.settings);
@@ -156,6 +158,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     setLeftKnobPosition(mouseX) {
+        console.log('setLeftKnobPosition!')
         const maxPosition = this.getRightKnobPosition();
 
         if (mouseX < maxPosition - 1) {
@@ -188,6 +191,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     applyChanges() {
+        console.log('applyChanges!')
         this.renderEngine.parent.setPositionX(this.renderEngine.positionX);
         this.renderEngine.parent.setZoom(this.renderEngine.zoom);
         this.renderEngine.parent.render();

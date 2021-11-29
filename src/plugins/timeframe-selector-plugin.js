@@ -295,7 +295,7 @@ export default class TimeframeSelectorPlugin {
 
     offscreenRender() {
         const zoom = this.offscreenRenderEngine.getInitialZoom();
-
+        console.log(zoom)
         this.offscreenRenderEngine.setZoom(zoom);
         this.offscreenRenderEngine.setPositionX(this.offscreenRenderEngine.min);
         this.offscreenRenderEngine.clear();

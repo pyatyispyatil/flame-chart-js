@@ -230,7 +230,7 @@ export class RenderEngine extends BasicRenderEngine {
     shallowRender() {
         this.clear();
         console.log('shallowRender');
-        console.log(plugins)
+        console.log(this.plugins)
         this.timeGrid.renderLines(this.height - this.freeSpace, this.freeSpace);
 
         this.children.forEach((engine) => {
@@ -248,10 +248,10 @@ export class RenderEngine extends BasicRenderEngine {
                 tooltipRendered = tooltipRendered || !!plugin.renderTooltip();
             }
             if (plugin.renderNodeStroke){
-                plugin.renderNodeStroke()
+                plugin.renderNodeStroke();
             }
             if (plugin.renderSelectedNodeMask){
-                plugin.renderSelectedNodeMask()
+                plugin.renderSelectedNodeMask();
             }
 
         });

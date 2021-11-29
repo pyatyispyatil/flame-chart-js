@@ -248,9 +248,9 @@ export class RenderEngine extends BasicRenderEngine {
             if (plugin.renderNodeStroke){
                 plugin.renderNodeStroke();
             }
-            if (plugin.renderSelectedNodeMask){
-                plugin.renderSelectedNodeMask();
-            }
+            // if (plugin.renderSelectedNodeMask){
+            //     plugin.renderSelectedNodeMask();
+            // }
 
         });
 
@@ -277,5 +277,11 @@ export class RenderEngine extends BasicRenderEngine {
                 this.lastGlobalAnimationFrame = null;
             });
         }
+        this.plugins.forEach((plugin) => {
+            if (plugin.renderSelectedNodeMask){
+                plugin.renderSelectedNodeMask();
+            }
+
+        });
     }
 }

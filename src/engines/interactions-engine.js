@@ -132,15 +132,15 @@ export class InteractionsEngine extends EventEmitter {
 
         const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
 
-        if (isClick) {
-            this.handleRegionHit(this.mouse.x, this.mouse.y);
-        }
+        // if (isClick) {
+        //     this.handleRegionHit(this.mouse.x, this.mouse.y);
+        // }
 
         this.emit('up', this.hoveredRegion, this.mouse, isClick);
 
-        if (isClick) {
-            this.emit('click', this.hoveredRegion, this.mouse);
-        }
+        // if (isClick) {
+        //     this.emit('click', this.hoveredRegion, this.mouse);
+        // }
     }
 
     handleMouseMove(e) {
@@ -164,11 +164,11 @@ export class InteractionsEngine extends EventEmitter {
         this.emit('move', this.hoveredRegion, this.mouse);
     }
 
-    handleRegionHit() {
-        const selectedRegion = this.getHoveredRegion();
+    // handleRegionHit() {
+    //     const selectedRegion = this.getHoveredRegion();
 
-        this.emit('select', selectedRegion, this.mouse);
-    }
+    //     this.emit('select', selectedRegion, this.mouse);
+    // }
 
     checkRegionHover() {
         const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
@@ -271,7 +271,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'down',
             'up',
             'move',
-            'click',
+            //'click',
             'select'
         ].forEach((eventName) => parent.on(eventName, (region, mouse, isClick) => {
             if (!region || region.id === this.id) {

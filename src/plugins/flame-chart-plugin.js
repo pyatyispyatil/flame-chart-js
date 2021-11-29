@@ -94,9 +94,10 @@ export default class FlameChartPlugin extends UIPlugin {
             const zoom = this.renderEngine.width / (end - start);
             //this.renderEngine.setPositionX(start);
             //this.setPositionY(level * 21);
+            this.renderEngine.setPositionX(start);
             this.renderEngine.setZoom(zoom);
             }
-            //this.renderEngine.render();
+            this.renderEngine.render();
 
             this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
             //this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');

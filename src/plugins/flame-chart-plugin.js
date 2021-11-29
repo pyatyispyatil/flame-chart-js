@@ -64,11 +64,13 @@ export default class FlameChartPlugin extends UIPlugin {
         this.positionY = y;
     }
 
-    reset(newYPosition = 0) {
+    reset(newYPosition = 0,resetSelected) {
         this.colors = {};
         this.lastRandomColor = DEFAULT_COLOR;
         this.positionY = newYPosition;
+        if (resetSelected){
         this.selectedRegion = null;
+        }
     }
 
     calcMinMax() {
@@ -145,12 +147,12 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,newYPosition,canvasHeight) {
+    setData(data,newYPosition,canvasHeight,resetSelected) {
         this.data = data;
         this.canvasHeight = canvasHeight;
         this.parseData();
         this.initData();
-        this.reset(newYPosition);
+        this.reset(newYPosition,resetSelected);
 
         this.renderEngine.recalcMinMax();
         this.renderEngine.resetParentView();

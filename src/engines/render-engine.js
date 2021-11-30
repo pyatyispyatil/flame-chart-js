@@ -204,6 +204,11 @@ export class RenderEngine extends BasicRenderEngine {
 
             if (!isFullRendered) {
                 engine.standardRender();
+                this.plugins.forEach((plugin) => {
+                if (plugin.renderSelectedNodeMask){
+                    plugin.renderSelectedNodeMask();
+                }
+            });
             }
         }
     }

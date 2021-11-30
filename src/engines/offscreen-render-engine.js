@@ -113,7 +113,6 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.resolveRectRenderQueue();
         this.resolveTextRenderQueue();
         this.resolveStrokeRenderQueue();
-        this.parent.renderSelectedNodeMask();
         //this.renderTimeGrid();
     }
 

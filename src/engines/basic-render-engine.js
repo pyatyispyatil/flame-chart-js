@@ -410,7 +410,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.shadowBlur=12;
         this.ctx.shadowColor='rgba(255,255,255,0)';
         const {x, y, w} = fields;
-        this.setCtxColor('rgba(255,255,255,0.5)');
+        this.setCtxColor('rgba(255,255,255,0.3)');
         this.ctx.fillRect(0, 0, x, this.height);
         this.ctx.fillRect(x+w, 0, this.width-x-w, this.height);
         this.ctx.fillRect(x-0.1, 0, w+0.2, y);

@@ -49,6 +49,7 @@ export class InteractionsEngine extends EventEmitter {
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
             this.canvas.addEventListener('mouseleave', this.handleMouseUp);
             this.canvas.addEventListener('mousemove', this.handleMouseMove);
+            this.canvas.addEventListener('mouseout', this.handleMouseOut);
         }
     }
 
@@ -59,7 +60,13 @@ export class InteractionsEngine extends EventEmitter {
             this.canvas.removeEventListener('mouseup', this.handleMouseUp);
             this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
             this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+            this.canvas.removeEventListener('mouseout', this.handleMouseOut);
+
         }
+    }
+
+    handleMouseOut(e){
+        this.emit('mouseout', this.mouse);
     }
 
     handleMouseWheel(e) {

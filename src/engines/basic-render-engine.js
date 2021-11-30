@@ -417,7 +417,17 @@ export class BasicRenderEngine extends EventEmitter {
 
         //render 'selected mark' on the selected node
         this.setCtxColor('#373A4A');
-        this.ctx.fillRect(x, y, 4, this.blockHeight);
+        this.fillRect(x, y, 3.5, this.blockHeight);
+        this.drawTriangleMark(fields)
+    }
+
+    drawTriangleMark(fields){
+        const {x, y, w} = fields;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x+10, y+this.blockHeight/2);
+        this.ctx.lineTo(x+20, y);
+        this.ctx.lineTo(x+20, y+this.blockHeight);
+        this.ctx.fill();
     }
 
     renderNodeStrokeFromData(fields){

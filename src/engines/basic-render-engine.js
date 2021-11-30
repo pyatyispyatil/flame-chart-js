@@ -414,6 +414,10 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillRect(0, 0, x, this.height);
         this.ctx.fillRect(x+w, 0, this.width-x-w, this.height);
         this.ctx.fillRect(x-0.1, 0, w+0.2, y);
+
+        //render 'selected mark' on the selected node
+        this.setCtxColor('#373A4A');
+        this.ctx.fillRect(x, y, 4, this.blockHeight);
     }
 
     renderNodeStrokeFromData(fields){

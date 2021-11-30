@@ -18,7 +18,7 @@ export class InteractionsEngine extends EventEmitter {
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
-
+        this.handleMouseOut = this.handleMouseOut.bind(this);
         this.initListeners();
 
         this.reset();
@@ -66,6 +66,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseOut(e){
+        console.log('interactions-mouse-out')
         this.emit('mouseout', this.mouse);
     }
 

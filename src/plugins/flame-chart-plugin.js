@@ -36,6 +36,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleMouseOut() {
+        console.log('flame-graph-mouse-out')
         this.emit('mouseout', this.mouse);
     }
 

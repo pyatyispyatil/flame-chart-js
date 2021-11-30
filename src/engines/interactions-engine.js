@@ -66,7 +66,6 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseOut(e){
-        console.log('interactions-mouse-out')
         this.emit('mouseout', this.mouse);
     }
 

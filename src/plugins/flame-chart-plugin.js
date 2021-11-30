@@ -31,8 +31,12 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.on('down', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
-
+        this.interactionsEngine.on('mouseout', this.handleMouseOut.bind(this));
         this.initData();
+    }
+
+    handleMouseOut() {
+        this.emit('mouseout', this.mouse);
     }
 
     handlePositionChange({ deltaX, deltaY }) {

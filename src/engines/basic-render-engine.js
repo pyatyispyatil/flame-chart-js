@@ -425,8 +425,8 @@ export class BasicRenderEngine extends EventEmitter {
         const {x, y, w} = fields;
         this.ctx.beginPath();
         this.ctx.moveTo(x+w+10, y+this.blockHeight/2);
-        this.ctx.lineTo(x+w+16, y-4);
-        this.ctx.lineTo(x+w+16, y-4+this.blockHeight);
+        this.ctx.lineTo(x+w+20, y+4);
+        this.ctx.lineTo(x+w+20, y-4+this.blockHeight);
         this.ctx.fill();
     }
 

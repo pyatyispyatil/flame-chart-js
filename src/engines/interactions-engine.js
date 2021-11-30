@@ -301,6 +301,13 @@ class SeparatedInteractionsEngine extends EventEmitter {
             }
         });
 
+        [
+            'mouseout'
+        ].forEach((eventName) => parent.on(eventName, ( mouse) => {
+                this.emit(eventName, mouse);
+
+        }));
+
         this.hitRegions = [];
     }
 

@@ -118,7 +118,7 @@ export class InteractionsEngine extends EventEmitter {
             this.checkRegionHover();
 
             this.emit('move', this.hoveredRegion, this.mouse);
-
+            this.clearCursor();
         }
     }
 

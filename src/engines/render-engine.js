@@ -214,7 +214,6 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     partialRender(id) {
-        //console.log('partialRender')
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }
@@ -234,7 +233,6 @@ export class RenderEngine extends BasicRenderEngine {
 
     shallowRender() {
         this.clear();
-        //console.log('shallowRender');
         this.timeGrid.renderLines(this.height - this.freeSpace, this.freeSpace);
 
         this.children.forEach((engine) => {
@@ -254,9 +252,6 @@ export class RenderEngine extends BasicRenderEngine {
             if (plugin.renderNodeStroke){
                 plugin.renderNodeStroke();
             }
-            // if (plugin.renderSelectedNodeMask){
-            //     plugin.renderSelectedNodeMask();
-            // }
 
         });
 
@@ -268,7 +263,6 @@ export class RenderEngine extends BasicRenderEngine {
 
     render() {
         cancelAnimationFrame(this.lastPartialAnimationFrame);
-        //console.log('render')
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;
 
@@ -283,11 +277,6 @@ export class RenderEngine extends BasicRenderEngine {
                 this.lastGlobalAnimationFrame = null;
             });
         }
-        // this.plugins.forEach((plugin) => {
-        //     if (plugin.renderSelectedNodeMask){
-        //         plugin.renderSelectedNodeMask();
-        //     }
 
-        // });
     }
 }

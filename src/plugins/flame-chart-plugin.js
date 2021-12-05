@@ -43,7 +43,7 @@ export default class FlameChartPlugin extends UIPlugin {
     handlePositionChange({ deltaX, deltaY }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
-
+        this.interactionsEngine.setCursor('grabbing');
         const changeToPosition = this.positionY + deltaY
         if (changeToPosition >= 0 && changeToPosition <this.canvasHeight) {
             this.setPositionY(changeToPosition);

@@ -28,7 +28,8 @@ export default class FlameChartPlugin extends UIPlugin {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-        this.interactionsEngine.on('down', this.handleSelect.bind(this));
+        //this.interactionsEngine.on('down', this.handleSelect.bind(this));
+        this.interactionsEngine.on('click', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('mouseout', this.handleMouseOut.bind(this));
@@ -247,14 +248,10 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     renderSelectedNodeMask() {
-        //console.log('renderSelectedNodeMask');
-        //console.log(this.selectedRegion)
         if (this.selectedRegion && this.selectedRegion.type === 'node') {
             const { start, duration, level } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
-
             this.renderEngine.renderOuterNodeMask({x,y,w,h:this.renderEngine.blockHeight,color:'rgba(55, 58, 74,0.7)'});
-
         }
     }
 

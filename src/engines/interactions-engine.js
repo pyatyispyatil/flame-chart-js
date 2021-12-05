@@ -130,7 +130,7 @@ export class InteractionsEngine extends EventEmitter {
         };
         this.mouseDownHoveredInstance = this.hoveredInstance;
 
-        this.emit('down', this.hoveredRegion, this.mouse);
+        //this.emit('down', this.hoveredRegion, this.mouse);
 
     }
 
@@ -139,9 +139,9 @@ export class InteractionsEngine extends EventEmitter {
 
         const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
 
-        // if (isClick) {
-        //     this.handleRegionHit(this.mouse.x, this.mouse.y);
-        // }
+        if (isClick) {
+            this.emit('click', this.hoveredRegion, this.mouse);
+        }
 
         this.emit('up', this.hoveredRegion, this.mouse, isClick);
 
@@ -278,7 +278,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'down',
             'up',
             'move',
-            //'click',
+            'click',
             'select'
         ].forEach((eventName) => parent.on(eventName, (region, mouse, isClick) => {
             if (!region || region.id === this.id) {

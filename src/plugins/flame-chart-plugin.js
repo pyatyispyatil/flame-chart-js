@@ -157,7 +157,7 @@ export default class FlameChartPlugin extends UIPlugin {
     setData(data,keepYposition,newYPosition,resetSelected) {
         this.data = data;
         if (Array.isArray(data)) {
-        this.canvasHeight = getFlamegraphHeight(data[0]) * this.renderEngine.blockHeight + 50;
+        this.canvasHeight = this.getFlamegraphHeight(data[0]) * this.renderEngine.blockHeight + 50;
         }
         this.parseData();
         this.initData();

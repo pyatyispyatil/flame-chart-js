@@ -154,9 +154,11 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data,keepYposition,newYPosition,canvasHeight,resetSelected) {
+    setData(data,keepYposition,newYPosition,resetSelected) {
         this.data = data;
-        this.canvasHeight = canvasHeight;
+        if (Array.isArray(data)) {
+        this.canvasHeight = getFlamegraphHeight(data[0]) * this.renderEngine.blockHeight + 50;
+        }
         this.parseData();
         this.initData();
         this.reset(keepYposition,newYPosition,resetSelected);
@@ -255,6 +257,14 @@ export default class FlameChartPlugin extends UIPlugin {
 
         }
     }
+
+    getFlamegraphHeight(flamegraphObject, level = 0){
+        if (flamegraphObject?.children?.length > 0) {
+            return Math.max(...flamegraphObject.children.map((child) => getFlamegraphHeight(child, level + 1)));
+        }
+        return level;
+    };
+
 
     render() {
         const {

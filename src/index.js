@@ -83,8 +83,8 @@ export default class FlameChart extends FlameChartContainer {
         });
 
         if (flameChartPlugin) {
-            this.setData = (data,keepYposition = false,newYPosition = 0,canvasHeight = 5000, resetSelected = true) => {
-                flameChartPlugin.setData(data,keepYposition,newYPosition,canvasHeight,resetSelected);
+            this.setData = (data,keepYposition = false,newYPosition = 0, resetSelected = true) => {
+                flameChartPlugin.setData(data,keepYposition,newYPosition,resetSelected);
                 //timeframeSelectorPlugin.setData(data);
             };
 

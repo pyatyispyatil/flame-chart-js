@@ -260,7 +260,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
     getFlamegraphHeight(flamegraphObject, level = 0){
         if (flamegraphObject?.children?.length > 0) {
-            return Math.max(...flamegraphObject.children.map((child) => getFlamegraphHeight(child, level + 1)));
+            return Math.max(...flamegraphObject.children.map((child) => this.getFlamegraphHeight(child, level + 1)));
         }
         return level;
     };

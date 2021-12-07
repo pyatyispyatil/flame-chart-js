@@ -115,18 +115,18 @@ export default class FlameChartPlugin extends UIPlugin {
         let currentX = this.renderEngine.positionX;
         let currentZoom = this.renderEngine.zoom;
         let xPerRound,zoomPerRound;
-        if (start>currentX){
+        //if (start>currentX){
             xPerRound = (start - currentX)/ 100;
-        }
-        else{
-            xPerRound = (currentX - start)/ 100;
-        }
-        if (zoom> currentZoom){
+        //}
+        // else{
+        //     xPerRound = (currentX - start)/ 100;
+        // }
+        //if (zoom> currentZoom){
             zoomPerRound = (zoom - currentZoom) / 100;
-        }
-        else{
-            zoomPerRound = (currentZoom - zoom) / 100;
-        }
+        //}
+        // else{
+        //     zoomPerRound = (currentZoom - zoom) / 100;
+        // }
         for (let i=1;i<101;i++){
             console.log('x to: '+currentX + i * xPerRound);
             console.log('zoom to: '+currentZoom + i * zoomPerRound);

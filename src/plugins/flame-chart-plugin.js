@@ -110,7 +110,7 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    handleZoomAnimation(start,zoom){
+    async handleZoomAnimation(start,zoom){
         console.log('trying animation to:'+start+','+zoom);
         let currentX = this.renderEngine.positionX;
         let currentZoom = this.renderEngine.zoom;
@@ -133,7 +133,7 @@ export default class FlameChartPlugin extends UIPlugin {
             this.renderEngine.setPositionX(currentX + i * xPerRound);
             this.renderEngine.setZoom(currentZoom + i * zoomPerRound);
             this.renderEngine.render();
-            sleep(500)
+            await sleep(500);
         }
 
     }
@@ -354,3 +354,7 @@ export default class FlameChartPlugin extends UIPlugin {
         }, 16);
     }
 }
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }

@@ -133,7 +133,7 @@ export default class FlameChartPlugin extends UIPlugin {
             this.renderEngine.setPositionX(currentX + i * xPerRound);
             this.renderEngine.setZoom(currentZoom + i * zoomPerRound);
             this.renderEngine.render();
-            await sleep(500);
+            await sleep(50);
         }
 
     }

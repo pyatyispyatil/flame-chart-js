@@ -34,6 +34,7 @@ const getPixelRatio = (ctx) => {
 
 export const defaultRenderSettings = {
     timeUnits: 'ms',
+    inverted: false,
     styles: {
         main: {
             blockHeight: 16,

@@ -44,7 +44,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
         this.interactionsEngine.setCursor('grabbing');
-        const changeToPosition = this.positionY + deltaY
+        const changeToPosition = this.renderEngine.settings.inverted ? this.positionY + deltaY : this.positionY - deltaY
         if (changeToPosition >= 0 && changeToPosition <this.canvasHeight) {
             this.setPositionY(changeToPosition);
         } else if (changeToPosition < 0) {
@@ -230,10 +230,14 @@ export default class FlameChartPlugin extends UIPlugin {
 
     calcRect(start, duration, level) {
         const w = (duration * this.renderEngine.zoom);
+        const offset = (level * (this.renderEngine.blockHeight + 1) - this.positionY)
 
         return {
             x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.blockHeight + 1)) - this.positionY,
+            y:
+                this.renderEngine.settings.inverted
+                    ? offset
+                    : this.renderEngine.height - offset - this.renderEngine.blockHeight,
             w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
         }
     }

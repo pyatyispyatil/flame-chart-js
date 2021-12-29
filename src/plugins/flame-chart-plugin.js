@@ -99,45 +99,14 @@ export default class FlameChartPlugin extends UIPlugin {
             const zoom = this.renderEngine.width / (end - start);
             //this.renderEngine.setPositionX(start);
             //this.setPositionY(level * 21);
-            this.handleZoomAnimation(start,zoom)
-            //this.renderEngine.setPositionX(start);
-            //this.renderEngine.setZoom(zoom);
+            this.renderEngine.setPositionX(start);
+            this.renderEngine.setZoom(zoom);
             }
             this.renderEngine.render();
 
             this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
             //this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
         }
-    }
-
-    async handleZoomAnimation(start,zoom){
-        console.log('trying animation to:'+start+','+zoom);
-        let currentX = this.renderEngine.positionX;
-        let currentZoom = this.renderEngine.zoom;
-        let xPerRound,zoomPerRound;
-        //if (start>currentX){
-            xPerRound = (start - currentX)/ 25;
-        //}
-        // else{
-        //     xPerRound = (currentX - start)/ 100;
-        // }
-        //if (zoom> currentZoom){
-            zoomPerRound = (zoom - currentZoom) / 50;
-        //}
-        // else{
-        //     zoomPerRound = (currentZoom - zoom) / 100;
-        // }
-        for (let i=1;i<51;i++){
-            //console.log('x to: '+currentX + i * xPerRound);
-            //console.log('zoom to: '+currentZoom + i * zoomPerRound);
-            if (i<26){
-            this.renderEngine.setPositionX(currentX + i * xPerRound);
-            }
-            this.renderEngine.setZoom(currentZoom + i * zoomPerRound);
-            this.renderEngine.render();
-            await sleep(5);
-        }
-
     }
 
     handleHover(region) {
@@ -360,7 +329,3 @@ export default class FlameChartPlugin extends UIPlugin {
         }, 16);
     }
 }
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }

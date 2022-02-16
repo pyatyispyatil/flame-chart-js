@@ -143,7 +143,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
                 end: node.start + duration,
                 duration,
                 type: node.type,
-                //color:node.color,
+                isThirdParty: node.isThirdParty,
                 color: node.matched? node.color:addAlpha(node.color,0.2),
                 level: node.level,
                 nodes

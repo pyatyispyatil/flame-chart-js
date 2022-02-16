@@ -18,6 +18,7 @@ CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
     this.arcTo(x,   y+h, x,   y,   r);
     this.arcTo(x,   y,   x+w, y,   r);
     this.closePath();
+
     return this;
   }
 
@@ -125,17 +126,59 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
+    drawLine(x1,y1,x2,y2,color,width) {
+        this.ctx.strokeStyle = color;
+        this.ctx.beginPath();
+        this.ctx.lineWidth =width;
+        this.ctx.lineCap = 'round';
+        this.ctx.moveTo(x1,y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
+    drawLines(x, y, w, h) {
+        let thickness = 0.7;
+        let gap = 15;
+        let currentX = x+gap;
+        let lineColor = 'rgba(255, 255, 255, 0.5)';
+
+        if (w<=5){
+            this.drawLine(x+w,y,x, y+h,lineColor,thickness);
+        }
+        //tiny first and last lines
+        else if (w>5){
+            this.drawLine(x+5,y,x, y+10,lineColor,thickness);
+            this.drawLine(x+w,y+10,x+w-5, y+h,lineColor,thickness);
+        }
+        if (currentX<x+w){
+          //first regular line
+          this.drawLine(currentX,y,currentX-10, y+h,lineColor,thickness);
+          currentX= currentX+gap;
+
+          //rest of the lines
+          while (currentX<x+w){
+            this.drawLine(currentX,y,currentX-10, y+h,lineColor,thickness);
+            currentX = currentX+gap;
+          };
+        };
+    };
+
     fillRect(x, y, w, h) {
         this.ctx.roundRect(x, y, w, h, nodeBorderRadius).fill();
     }
+
 
     fillText(text, x, y) {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(color, x, y, w) {
+    renderBlock(color, x, y, w,isThirdParty=false) {
         this.setCtxColor(color);
         this.fillRect(x, y, w, this.blockHeight);
+        if (isThirdParty){
+        this.drawLines(x, y, w, this.blockHeight);
+        };
     }
 
     renderStroke(color, x, y, w, h) {
@@ -201,12 +244,12 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x, y, w) {
+    addRectToRenderQueue(color, x, y, w,isThirdParty) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
 
-        this.rectRenderQueue[color].push({ x, y, w });
+        this.rectRenderQueue[color].push({ x, y, w,isThirdParty });
     }
 
     addTextToRenderQueue(text, x, y, w) {
@@ -226,7 +269,7 @@ export class BasicRenderEngine extends EventEmitter {
     resolveRectRenderQueue() {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
-            items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
+            items.forEach(({ x, y, w,isThirdParty }) => this.renderBlock(color, x, y, w,isThirdParty));
         });
 
         this.rectRenderQueue = {};

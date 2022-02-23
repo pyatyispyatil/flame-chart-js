@@ -7,6 +7,11 @@ import {
 } from './utils/tree-clusters.js';
 import Color from 'color';
 import UIPlugin from './ui-plugin.js';
+import {
+  FRAME_FLAG_IS_THIRD_PARTY,
+  FRAME_FLAG_IS_HIGHLIGHTED,
+  FRAME_FLAG_IS_INACTIVE,
+} from "./../const.js";
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
@@ -299,20 +304,37 @@ export default class FlameChartPlugin extends UIPlugin {
                 type,
                 nodes,
                 color,
-                isThirdParty
+                isThirdParty,
+                isHighlighted,
+                isInactive
             } = cluster;
+
+            let flags = 0;
+
+            if (isThirdParty) {
+              flags |= FRAME_FLAG_IS_THIRD_PARTY;
+            }
+            if (isHighlighted) {
+              flags |= FRAME_FLAG_IS_HIGHLIGHTED;
+            }
+            if (isInactive) {
+              flags |= FRAME_FLAG_IS_INACTIVE;
+            }
+
             const mouse = this.interactionsEngine.getMouse();
 
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
                 addHitRegion(cluster, x, y, w);
             }
 
+            const calculatedColor = this.getColor(type, color)
+
             if (w >= 0.25) {
-                this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w,isThirdParty);
+                this.renderEngine.addRectToRenderQueue(calculatedColor, x, y, w, flags);
             }
 
             if (w >= minTextWidth && nodes.length === 1) {
-                this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
+                this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w, calculatedColor, flags);
             }
         }
 

@@ -1,5 +1,10 @@
 import { EventEmitter } from 'events';
-import { deepMerge } from './../utils.js';
+import { addAlpha, deepMerge } from './../utils.js';
+import {
+  FRAME_FLAG_IS_THIRD_PARTY,
+  FRAME_FLAG_IS_HIGHLIGHTED,
+  FRAME_FLAG_IS_INACTIVE,
+} from "./../const.js";
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 const nodeBorderRadius= 3;
@@ -138,7 +143,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     drawLines(x, y, w, h) {
-        let thickness = 0.7;
+        let thickness = 1;
         let gap = 15;
         let currentX = x+gap;
         let lineColor = 'rgba(255, 255, 255, 0.5)';
@@ -173,12 +178,21 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(color, x, y, w,isThirdParty=false) {
-        this.setCtxColor(color);
-        this.fillRect(x, y, w, this.blockHeight);
-        if (isThirdParty){
+    renderBlock(originalColor, x, y, w, flags = 0) {
+      const color = flags & FRAME_FLAG_IS_INACTIVE ? addAlpha(originalColor, 0.2) : originalColor;
+      this.setCtxColor(color);
+      this.fillRect(x, y, w, this.blockHeight);
+
+      if (flags & FRAME_FLAG_IS_HIGHLIGHTED) {
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 3;
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = "rgba(21, 24, 34, 0.3)";
+      }
+
+      if (flags & FRAME_FLAG_IS_THIRD_PARTY) {
         this.drawLines(x, y, w, this.blockHeight);
-        };
+      }
     }
 
     renderStroke(color, x, y, w, h) {
@@ -244,20 +258,20 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x, y, w,isThirdParty) {
+    addRectToRenderQueue(color, x, y, w, flags) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
 
-        this.rectRenderQueue[color].push({ x, y, w,isThirdParty });
+        this.rectRenderQueue[color].push({ x, y, w, flags });
     }
 
-    addTextToRenderQueue(text, x, y, w) {
+    addTextToRenderQueue(text, x, y, w, color, flags) {
         if (text) {
             const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
-                this.textRenderQueue.push({ text, x, y, w, textMaxWidth });
+                this.textRenderQueue.push({ text, x, y, w, textMaxWidth, color, flags });
             }
         }
     }
@@ -267,44 +281,48 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
+        Object.entries(this.rectRenderQueue).forEach(([color, items], index) => {
             this.setCtxColor(color);
-            items.forEach(({ x, y, w,isThirdParty }) => this.renderBlock(color, x, y, w,isThirdParty));
+            items.forEach(({ x, y, w, flags }) => {
+                const isFirstFrame = index === 0
+                const normalFrameState = 0
+                this.renderBlock(color, x, y, w, isFirstFrame ? normalFrameState : flags)
+            });
         });
 
         this.rectRenderQueue = {};
     }
 
     resolveTextRenderQueue() {
-        this.setCtxColor(this.styles.fontColor);
+        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth, color, flags }) => {
+                const { width: textWidth } = this.ctx.measureText(text);
+                const fontColor = flags & FRAME_FLAG_IS_INACTIVE ? addAlpha(color, 0.3) : this.styles.fontColor;
+                this.setCtxColor(fontColor);
 
-        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
-            const { width: textWidth } = this.ctx.measureText(text);
+                if (textWidth > textMaxWidth) {
+                    const avgCharWidth = textWidth / text.length;
+                    const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
+                    const halfChars = (maxChars - 1) / 2;
 
-            if (textWidth > textMaxWidth) {
-                const avgCharWidth = textWidth / (text.length);
-                const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
-                const halfChars = (maxChars - 1) / 2;
+                    if (halfChars > 0) {
+                        text = text.slice(0, Math.ceil(halfChars)) + "…" + text.slice(text.length - Math.floor(halfChars), text.length);
+                    } else {
+                        text = "";
+                    }
+                }
 
-                if (halfChars > 0) {
-                    text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
-                } else {
-                    text = '';
+                if (text) {
+                    if (text==='All'){
+                        this.setCtxColor('#ffffff');
+                        this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                        this.setCtxColor(this.styles.fontColor);
+                    }
+                    else{
+                        this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                    }
                 }
             }
-
-            if (text) {
-                if (text==='All'){
-                    this.setCtxColor('#ffffff');
-                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
-                    this.setCtxColor(this.styles.fontColor);
-                }
-                else{
-                    this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
-
-                }
-            }
-        });
+        );
 
         this.textRenderQueue = [];
     }

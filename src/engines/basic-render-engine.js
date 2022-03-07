@@ -181,14 +181,22 @@ export class BasicRenderEngine extends EventEmitter {
     renderBlock(originalColor, x, y, w, flags = 0) {
       const color = flags & FRAME_FLAG_IS_INACTIVE ? addAlpha(originalColor, 0.2) : originalColor;
       this.setCtxColor(color);
-      this.fillRect(x, y, w, this.blockHeight);
 
+      // shadows styles should be applied BEFORE filling the rectangle
       if (flags & FRAME_FLAG_IS_HIGHLIGHTED) {
         this.ctx.shadowOffsetX = 0;
         this.ctx.shadowOffsetY = 3;
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = "rgba(21, 24, 34, 0.3)";
+      } else {
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowColor = '';
       }
+
+      // fillRect should be AFTER setting the shadows
+      this.fillRect(x, y, w, this.blockHeight);
 
       if (flags & FRAME_FLAG_IS_THIRD_PARTY) {
         this.drawLines(x, y, w, this.blockHeight);

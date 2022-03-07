@@ -44,7 +44,10 @@ export class InteractionsEngine extends EventEmitter {
 
     initListeners() {
         if (this.canvas) {
-            this.canvas.addEventListener('wheel', this.handleMouseWheel);
+            this.canvas.addEventListener("wheel", this.handleMouseWheel, {
+              capture: true,
+              passive: false,
+            });
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
             this.canvas.addEventListener('mouseleave', this.handleMouseUp);

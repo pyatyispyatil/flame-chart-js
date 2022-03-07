@@ -281,12 +281,10 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items], index) => {
+        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
             items.forEach(({ x, y, w, flags }) => {
-                const isFirstFrame = index === 0
-                const normalFrameState = 0
-                this.renderBlock(color, x, y, w, isFirstFrame ? normalFrameState : flags)
+                this.renderBlock(color, x, y, w, flags)
             });
         });
 

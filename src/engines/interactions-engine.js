@@ -11,7 +11,8 @@ export class InteractionsEngine extends EventEmitter {
         this.instances = [];
         this.mouse = {
             x: 0,
-            y: 0
+            y: 0,
+            isInsideFg: false,
         }
 
         this.handleMouseWheel = this.handleMouseWheel.bind(this);
@@ -69,6 +70,8 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseOut(e){
+        // Let consumers detect when mouse cursor has exited
+        this.mouse.isInsideFg = false;
         this.emit('mouseout', this.mouse);
     }
 
@@ -151,6 +154,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     handleMouseMove(e) {
+        this.mouse.isInsideFg = true
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;

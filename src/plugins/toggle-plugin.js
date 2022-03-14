@@ -87,6 +87,11 @@ export default class TogglePlugin {
             }
         });
 
+        this.interactionsEngine.parent.on('double', () => {
+            this.interactionsEngine.clearCursor();
+            this.resizeActive = false;
+        })
+
         this.interactionsEngine.parent.on('up', () => {
             this.interactionsEngine.clearCursor();
             this.resizeActive = false;

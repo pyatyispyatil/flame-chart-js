@@ -20,6 +20,8 @@ export class InteractionsEngine extends EventEmitter {
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseOut = this.handleMouseOut.bind(this);
+        this.handleMouseDBCLick = this.handleMouseDBCLick.bind(this);
+
         this.initListeners();
 
         this.reset();
@@ -51,9 +53,10 @@ export class InteractionsEngine extends EventEmitter {
             });
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
-            this.canvas.addEventListener('mouseleave', this.handleMouseUp);
+           // this.canvas.addEventListener('mouseleave', this.handleMouseUp);
             this.canvas.addEventListener('mousemove', this.handleMouseMove);
             this.canvas.addEventListener('mouseout', this.handleMouseOut);
+            this.canvas.addEventListener('dblclick', this.handleMouseDBCLick);
         }
     }
 
@@ -62,10 +65,10 @@ export class InteractionsEngine extends EventEmitter {
             this.canvas.removeEventListener('wheel', this.handleMouseWheel);
             this.canvas.removeEventListener('mousedown', this.handleMouseDown);
             this.canvas.removeEventListener('mouseup', this.handleMouseUp);
-            this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
+        //    this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
             this.canvas.removeEventListener('mousemove', this.handleMouseMove);
             this.canvas.removeEventListener('mouseout', this.handleMouseOut);
-
+            this.canvas.removeEventListener('dblclick', this.handleMouseDBCLick);
         }
     }
 
@@ -140,7 +143,8 @@ export class InteractionsEngine extends EventEmitter {
 
     }
 
-    handleMouseUp() {
+    handleMouseUp(e) {
+
         this.moveActive = false;
 
         const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
@@ -181,6 +185,15 @@ export class InteractionsEngine extends EventEmitter {
 
     //     this.emit('select', selectedRegion, this.mouse);
     // }
+
+    handleMouseDBCLick(e){
+
+        const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
+        if (isClick) {
+            this.emit('double', this.hoveredRegion, this.mouse, isClick);
+        }
+        this.moveActive = false;
+    }
 
     checkRegionHover() {
         const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
@@ -284,7 +297,8 @@ class SeparatedInteractionsEngine extends EventEmitter {
             'up',
             'move',
             'click',
-            'select'
+            'select',
+            'double'
         ].forEach((eventName) => parent.on(eventName, (region, mouse, isClick) => {
             if (!region || region.id === this.id) {
                 this.resend(eventName, region, mouse, isClick);

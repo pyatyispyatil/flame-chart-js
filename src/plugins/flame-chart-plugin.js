@@ -38,11 +38,19 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('mouseout', this.handleMouseOut.bind(this));
+        this.interactionsEngine.on('double', this.handleMouseDbClick.bind(this));
         this.initData();
     }
 
     handleMouseOut() {
         this.emit('mouseout', this.mouse);
+    }
+
+    handleMouseDbClick(){
+        this.interactionsEngine.clearCursor();
+        if (this.selectedRegion && this.selectedRegion.data) {
+            this.emit('dblclick', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+        }
     }
 
     handlePositionChange({ deltaX, deltaY }) {

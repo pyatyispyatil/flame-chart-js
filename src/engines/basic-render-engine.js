@@ -48,6 +48,7 @@ export const defaultRenderSettings = {
             backgroundColor: 'white',
             font: `10px sans-serif`,
             fontColor: 'black',
+            fontColorInactive: 'black',
             tooltipHeaderFontColor: 'black',
             tooltipBodyFontColor: '#688f45',
             tooltipBackgroundColor: 'white',
@@ -302,7 +303,7 @@ export class BasicRenderEngine extends EventEmitter {
     resolveTextRenderQueue() {
         this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth, color, flags }) => {
                 const { width: textWidth } = this.ctx.measureText(text);
-                const fontColor = flags & FRAME_FLAG_IS_INACTIVE ? addAlpha(color, 0.3) : this.styles.fontColor;
+                const fontColor = flags & FRAME_FLAG_IS_INACTIVE ? this.styles.fontColorInactive : this.styles.fontColor;
                 this.setCtxColor(fontColor);
 
                 if (textWidth > textMaxWidth) {

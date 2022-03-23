@@ -23,6 +23,7 @@ export const defaultTimeframeSelectorPluginSettings = {
         timeframeSelectorPlugin: {
             font: '9px sans-serif',
             fontColor: 'black',
+            fontColorInactive: 'black',
             overlayColor: 'rgba(112, 112, 112, 0.5)',
             graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
             graphFillColor: 'rgb(0, 0, 0, 0.25)',

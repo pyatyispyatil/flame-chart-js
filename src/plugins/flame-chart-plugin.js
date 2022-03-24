@@ -191,7 +191,8 @@ export default class FlameChartPlugin extends UIPlugin {
                 this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
+                    this.positionY
                 );
             } else {
                 const { data: { start, duration, children, name } } = this.hoveredRegion;

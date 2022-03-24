@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/noahsmartin/flame-chart-js.git"
+    "url": "git+https://github.com/EmergeTools/flame-chart-js.git"
   },
   "author": "Nikolay Ryabov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/noahsmartin/flame-chart-js/issues"
+    "url": "https://github.com/EmergeTools/flame-chart-js/issues"
   },
-  "homepage": "https://github.com/noahsmartin/flame-chart-js#readme",
+  "homepage": "https://github.com/EmergeTools/flame-chart-js#readme",
   "dependencies": {
     "color": "^3.1.3",
     "events": "^3.2.0"

@@ -184,10 +184,12 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     renderTooltip() {
+        console.log("Got the tooltip rendering");
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
             } else if (typeof this.renderEngine.settings.tooltip === 'function') {
+                console.log("Got the tooltip rendering calling out to function");
                 this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,

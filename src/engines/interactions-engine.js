@@ -1,5 +1,15 @@
 import { EventEmitter } from 'events';
 
+function findLast(array, predicate) {
+    let l = array.length;
+    while (l--) {
+        if (predicate(array[l], l, array)) {
+            return array[l]
+        }
+    }
+    return null;
+}
+
 export class InteractionsEngine extends EventEmitter {
     constructor(canvas, renderEngine) {
         super();
@@ -175,14 +185,14 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     getHoveredRegion() {
-        const hoveredRegion = this.hitRegions.slice().reverse().find(({ x, y, w, h }) => (
+        const hoveredRegion = findLast(this.hitRegions, ({ x, y, w, h }) => (
             this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h
         ));
 
         if (hoveredRegion) {
             return hoveredRegion;
         } else {
-            const hoveredInstance = this.instances.slice().reverse().find(({ renderEngine }) => (
+            const hoveredInstance = findLast(this.instances, ({ renderEngine }) => (
                 renderEngine.position <= this.mouse.y
             ) && (
                 renderEngine.height + renderEngine.position >= this.mouse.y
@@ -193,7 +203,7 @@ export class InteractionsEngine extends EventEmitter {
             if (hoveredInstance) {
                 const offsetTop = hoveredInstance.renderEngine.position;
 
-                return hoveredInstance.hitRegions.slice().reverse().find(({ x, y, w, h }) => (
+                return findLast(hoveredInstance.hitRegions, ({ x, y, w, h }) => (
                     this.mouse.x >= x
                     && this.mouse.x <= x + w
                     && this.mouse.y >= y + offsetTop

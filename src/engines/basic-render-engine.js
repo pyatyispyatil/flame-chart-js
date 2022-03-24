@@ -86,9 +86,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     reset() {
-        this.textRenderQueue = [];
-        this.strokeRenderQueue = [];
-        this.rectRenderQueue = {};
+        this.renderQueue = [];
     }
 
     setCtxColor(color) {
@@ -159,11 +157,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     addRectToRenderQueue(color, x, y, w) {
-        if (!this.rectRenderQueue[color]) {
-            this.rectRenderQueue[color] = [];
-        }
-
-        this.rectRenderQueue[color].push({ x, y, w });
+        this.renderQueue.push({ type: 'rect', value: { color, x, y, w } });
     }
 
     addTextToRenderQueue(text, x, y, w) {
@@ -171,57 +165,62 @@ export class BasicRenderEngine extends EventEmitter {
             const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
-                this.textRenderQueue.push({ text, x, y, w, textMaxWidth });
+                this.renderQueue.push({ type: 'text', value: { text, x, y, w, textMaxWidth } });
             }
         }
     }
 
     addStrokeToRenderQueue(color, x, y, w, h) {
-        this.strokeRenderQueue.push({ color, x, y, w, h });
+        this.renderQueue.push({ type: 'stroke', value: { color, x, y, w, h } });
     }
 
-    resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
-            this.setCtxColor(color);
+    resolveRenderQueue() {
+        this.renderQueue.forEach(({type, value}) => {
+            switch (type) {
+                case 'rect': 
+                    {
+                        const { color, x, y, w } = value;
+                        this.setCtxColor(color);
+                        this.renderBlock(color, x, y, w);
+                    }
+                    break;
+                case 'text':
+                    {
+                        const { text, x, y, w, textMaxWidth } = value;
+                        let txt = text;
+                        this.setCtxColor(this.styles.fontColor);
+                        
+                        const { width: textWidth } = this.ctx.measureText(text);
 
-            items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
-        });
+                        if (textWidth > textMaxWidth) {
+                            const avgCharWidth = textWidth / (text.length);
+                            const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
+                            const halfChars = (maxChars - 1) / 2;
 
-        this.rectRenderQueue = {};
-    }
+                            if (halfChars > 0) {
+                                txt = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(value.text.length - Math.floor(halfChars), text.length);
+                            } else {
+                                txt = '';
+                            }
+                        }
 
-    resolveTextRenderQueue() {
-        this.setCtxColor(this.styles.fontColor);
-
-        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
-            const { width: textWidth } = this.ctx.measureText(text);
-
-            if (textWidth > textMaxWidth) {
-                const avgCharWidth = textWidth / (text.length);
-                const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
-                const halfChars = (maxChars - 1) / 2;
-
-                if (halfChars > 0) {
-                    text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
-                } else {
-                    text = '';
-                }
+                        if (txt) {
+                            this.ctx.fillText(txt, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                        }
+                    }
+                    break;
+                case 'stroke':
+                    {
+                        const { color, x, y, w, h } = value;
+                        this.renderStroke(color, x, y, w, h);
+                    }
+                    break;
+                default:
+                    console.debug("encountered unhandled render queue case: '%s' value: %o", type, value);
+                    break;
             }
-
-            if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
-            }
         });
-
-        this.textRenderQueue = [];
-    }
-
-    resolveStrokeRenderQueue() {
-        this.strokeRenderQueue.forEach(({ color, x, y, w, h }) => {
-            this.renderStroke(color, x, y, w, h);
-        });
-
-        this.strokeRenderQueue = [];
+        this.renderQueue = [];
     }
 
     setMinMax(min, max) {

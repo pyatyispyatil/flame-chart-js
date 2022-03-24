@@ -229,7 +229,6 @@ export default class WaterfallPlugin extends UiPlugin {
                 const textStart = this.renderEngine.timeToPosition(textBlock.start);
                 const textEnd = this.renderEngine.timeToPosition(textBlock.end);
 
-                this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
                 const { x, w } = intervals.reduce((acc, { color, start, end, type }, index) => {
                     const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
@@ -255,6 +254,7 @@ export default class WaterfallPlugin extends UiPlugin {
                 }
 
                 this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+                this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
             }
         }, 0);
     }

@@ -175,14 +175,14 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     getHoveredRegion() {
-        const hoveredRegion = this.hitRegions.find(({ x, y, w, h }) => (
+        const hoveredRegion = this.hitRegions.slice().reverse().find(({ x, y, w, h }) => (
             this.mouse.x >= x && this.mouse.x <= x + w && this.mouse.y >= y && this.mouse.y <= y + h
         ));
 
         if (hoveredRegion) {
             return hoveredRegion;
         } else {
-            const hoveredInstance = this.instances.find(({ renderEngine }) => (
+            const hoveredInstance = this.instances.slice().reverse().find(({ renderEngine }) => (
                 renderEngine.position <= this.mouse.y
             ) && (
                 renderEngine.height + renderEngine.position >= this.mouse.y
@@ -193,7 +193,7 @@ export class InteractionsEngine extends EventEmitter {
             if (hoveredInstance) {
                 const offsetTop = hoveredInstance.renderEngine.position;
 
-                return hoveredInstance.hitRegions.find(({ x, y, w, h }) => (
+                return hoveredInstance.hitRegions.slice().reverse().find(({ x, y, w, h }) => (
                     this.mouse.x >= x
                     && this.mouse.x <= x + w
                     && this.mouse.y >= y + offsetTop

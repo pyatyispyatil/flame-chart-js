@@ -114,7 +114,11 @@ export const generateRandomTree = ({
                 }
             }
 
-            item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            // randomly create an overlapping frame
+            // https://github.com/pyatyispyatil/flame-chart-js/issues/15
+            const overlap = Math.random() >= 0.9 && index > 0;
+
+            item.start = timestamps[overlap ? index -1 : index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
             item.end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
             item.duration = item.end - item.start;
             item.name = randomString(14);

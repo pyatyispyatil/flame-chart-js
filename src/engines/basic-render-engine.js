@@ -178,42 +178,13 @@ export class BasicRenderEngine extends EventEmitter {
         this.renderQueue.forEach(({type, value}) => {
             switch (type) {
                 case 'rect': 
-                    {
-                        const { color, x, y, w } = value;
-                        this.setCtxColor(color);
-                        this.renderBlock(color, x, y, w);
-                    }
+                    this.resolveRect(value);
                     break;
                 case 'text':
-                    {
-                        const { text, x, y, w, textMaxWidth } = value;
-                        let txt = text;
-                        this.setCtxColor(this.styles.fontColor);
-                        
-                        const { width: textWidth } = this.ctx.measureText(text);
-
-                        if (textWidth > textMaxWidth) {
-                            const avgCharWidth = textWidth / (text.length);
-                            const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
-                            const halfChars = (maxChars - 1) / 2;
-
-                            if (halfChars > 0) {
-                                txt = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(value.text.length - Math.floor(halfChars), text.length);
-                            } else {
-                                txt = '';
-                            }
-                        }
-
-                        if (txt) {
-                            this.ctx.fillText(txt, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
-                        }
-                    }
+                    this.resolveText(value);
                     break;
                 case 'stroke':
-                    {
-                        const { color, x, y, w, h } = value;
-                        this.renderStroke(color, x, y, w, h);
-                    }
+                    this.resolveStroke(value);
                     break;
                 default:
                     console.debug("encountered unhandled render queue case: '%s' value: %o", type, value);
@@ -221,6 +192,42 @@ export class BasicRenderEngine extends EventEmitter {
             }
         });
         this.renderQueue = [];
+    }
+
+    resolveRect(value) {
+        const { color, x, y, w } = value;
+        this.setCtxColor(color);
+        this.renderBlock(color, x, y, w);
+    }
+
+    resolveText(value) {
+        const { text, x, y, w, textMaxWidth } = value;
+        const { width: textWidth } = this.ctx.measureText(text);
+        
+        let txt = text;
+        
+        this.setCtxColor(this.styles.fontColor);
+        
+        if (textWidth > textMaxWidth) {
+            const avgCharWidth = textWidth / (text.length);
+            const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
+            const halfChars = (maxChars - 1) / 2;
+
+            if (halfChars > 0) {
+                txt = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(value.text.length - Math.floor(halfChars), text.length);
+            } else {
+                txt = '';
+            }
+        }
+
+        if (txt) {
+            this.ctx.fillText(txt, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+        }
+    }
+
+    resolveStroke(value) {
+        const { color, x, y, w, h } = value;
+        this.renderStroke(color, x, y, w, h);
     }
 
     setMinMax(min, max) {

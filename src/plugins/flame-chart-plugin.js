@@ -184,12 +184,10 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     renderTooltip() {
-        console.log("Got the tooltip rendering");
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
             } else if (typeof this.renderEngine.settings.tooltip === 'function') {
-                console.log("Got the tooltip rendering calling out to function");
                 this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
@@ -258,6 +256,9 @@ export default class FlameChartPlugin extends UIPlugin {
 
             if (w >= 0.25) {
                 this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+                if (nodes[0].outline) {
+                  this.renderEngine.addStrokeToRenderQueue(nodes[0].outline, x, y , w, blockHeight);
+                }
             }
 
             if (w >= minTextWidth && nodes.length === 1) {

@@ -1,20 +1,24 @@
-import FlameChartContainer from './flame-chart-container.js';
-import FlameChartPlugin from './plugins/flame-chart-plugin.js';
-import TimeGridPlugin from './plugins/time-grid-plugin.js';
-import MarksPlugin from './plugins/marks-plugin.js';
-import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin.js';
-import WaterfallPlugin from './plugins/waterfall-plugin.js';
-import TogglePlugin from './plugins/toggle-plugin.js';
+import FlameChartContainer from './flame-chart-container';
+import FlameChartPlugin from './plugins/flame-chart-plugin';
+import TimeGridPlugin from './plugins/time-grid-plugin';
+import MarksPlugin from './plugins/marks-plugin';
+import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin';
+import WaterfallPlugin from './plugins/waterfall-plugin';
+import TogglePlugin from './plugins/toggle-plugin';
 
-export { default as FlameChartContainer } from './flame-chart-container.js';
-export { default as FlameChartPlugin } from './plugins/flame-chart-plugin.js';
-export { default as TimeGridPlugin } from './plugins/time-grid-plugin.js';
-export { default as MarksPlugin } from './plugins/marks-plugin.js';
-export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin.js';
-export { default as WaterfallPlugin } from './plugins/waterfall-plugin.js';
-export { default as TogglePlugin } from './plugins/toggle-plugin.js';
+export { default as FlameChartContainer } from './flame-chart-container';
+export { default as FlameChartPlugin } from './plugins/flame-chart-plugin';
+export { default as TimeGridPlugin } from './plugins/time-grid-plugin';
+export { default as MarksPlugin } from './plugins/marks-plugin';
+export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector-plugin';
+export { default as WaterfallPlugin } from './plugins/waterfall-plugin';
+export { default as TogglePlugin } from './plugins/toggle-plugin';
 
 export default class FlameChart extends FlameChartContainer {
+    setData: (data) => void;
+    setMarks: (data) => void;
+    setWaterfall: (data) => void;
+    setFlameChartPosition;
     constructor({
                     canvas,
                     data,
@@ -30,7 +34,7 @@ export default class FlameChart extends FlameChartContainer {
                 waterfall: waterfallName = 'waterfall',
                 flameChart: flameChartName = 'flame chart'
             } = {}
-        } = settings;
+        } = settings as Record<string, any>;
 
         let timeGridPlugin;
         let marksPlugin;

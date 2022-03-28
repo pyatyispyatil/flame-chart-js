@@ -1,4 +1,4 @@
-import { deepMerge } from '../utils.js';
+import { deepMerge } from '../utils';
 
 const MIN_PIXEL_DELTA = 85;
 
@@ -11,6 +11,13 @@ export const defaultTimeGridSettings = {
 };
 
 export class TimeGrid {
+    renderEngine;
+    start: number;
+    end: number;
+    accuracy;
+    delta: number;
+    styles;
+    timeUnits;
     constructor(renderEngine, settings) {
         this.renderEngine = renderEngine;
         this.start = 0;
@@ -22,7 +29,7 @@ export class TimeGrid {
     }
 
     setSettings(data) {
-        const settings = deepMerge(defaultTimeGridSettings, data);
+        const settings: Record<string, any> = deepMerge(defaultTimeGridSettings, data);
 
         this.styles = settings.styles.timeGrid;
         this.timeUnits = this.renderEngine.getTimeUnits();

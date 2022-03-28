@@ -1,11 +1,18 @@
-import { TimeGrid } from './time-grid.js';
-import { BasicRenderEngine } from './basic-render-engine.js';
-import { OffscreenRenderEngine } from './offscreen-render-engine.js';
-import { isNumber } from '../utils.js';
+import { TimeGrid } from './time-grid';
+import { BasicRenderEngine } from './basic-render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { isNumber } from '../utils';
 
 const MAX_ACCURACY = 6;
 
 export class RenderEngine extends BasicRenderEngine {
+    plugins;
+    children;
+    requestedRenders;
+    timeGrid;
+    freeSpace;
+    lastPartialAnimationFrame;
+    lastGlobalAnimationFrame;
     constructor(canvas, settings, plugins) {
         super(canvas, settings);
 
@@ -23,7 +30,6 @@ export class RenderEngine extends BasicRenderEngine {
             height: 0,
             id: this.children.length,
             parent: this,
-            settings: this.settings
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
@@ -74,7 +80,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    resize(width, height) {
+    resize(width, height): boolean {
         const currentWidth = this.width;
 
         super.resize(width, height);
@@ -85,6 +91,8 @@ export class RenderEngine extends BasicRenderEngine {
         } else if (this.positionX > this.min) {
             this.tryToChangePosition(-this.pixelToTime((width - currentWidth) / 2));
         }
+
+        return true;
     }
 
     recalcChildrenSizes() {

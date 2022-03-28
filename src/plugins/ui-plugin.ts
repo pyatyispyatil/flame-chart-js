@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 
 export default class UIPlugin extends EventEmitter {
+    interactionsEngine;
+    renderEngine;
     constructor() {
         super();
     }
@@ -14,7 +16,7 @@ export default class UIPlugin extends EventEmitter {
 
     render() {}
 
-    setSettings() {}
+    setSettings(...args) {}
 
     renderTooltip() {}
 

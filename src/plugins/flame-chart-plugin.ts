@@ -4,13 +4,30 @@ import {
     metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
     getFlatTreeMinMax
-} from './utils/tree-clusters.js';
+} from './utils/tree-clusters';
 import Color from 'color';
-import UIPlugin from './ui-plugin.js';
+import UIPlugin from './ui-plugin';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
+    data;
+    userColors;
+    flatTree;
+    interactionsEngine;
+    positionY;
+    renderEngine;
+    colors;
+    selectedRegion;
+    lastRandomColor;
+    min: number;
+    max: number;
+    hoveredRegion;
+    metaClusterizedFlatTree;
+    actualClusterizedFlatTree;
+    initialClusterizedFlatTree;
+    lastUsedColor;
+    renderChartTimeout;
     constructor({
                     data,
                     colors
@@ -20,7 +37,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.data = data;
         this.userColors = colors;
 
-        this.parseData(this.data);
+        this.parseData();
         this.reset();
     }
 
@@ -80,8 +97,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleSelect(region) {
-        const mouse = this.interactionsEngine.getMouse();
-        const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
+        const selectedRegion = region ? this.findNodeInCluster(region) : null;
 
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;

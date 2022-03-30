@@ -1,23 +1,27 @@
 import { EventEmitter } from 'events';
 import { deepMerge } from '../utils';
 
+// eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
+    // eslint-disable-next-line prettier/prettier -- TODO: prettier wants to simplify this line
     return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
-}
+};
 
 const getPixelRatio = (ctx) => {
     const dpr = window.devicePixelRatio || 1;
-    const bsr = ctx.webkitBackingStorePixelRatio ||
+    const bsr =
+        ctx.webkitBackingStorePixelRatio ||
         ctx.mozBackingStorePixelRatio ||
         ctx.msBackingStorePixelRatio ||
         ctx.oBackingStorePixelRatio ||
-        ctx.backingStorePixelRatio || 1;
+        ctx.backingStorePixelRatio ||
+        1;
 
     return dpr / bsr;
-}
+};
 
 export const defaultRenderSettings = {
     timeUnits: 'ms',
@@ -34,10 +38,10 @@ export const defaultRenderSettings = {
             headerHeight: 14,
             headerColor: 'rgba(112, 112, 112, 0.25)',
             headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
-            headerTitleLeftPadding: 16
-        }
+            headerTitleLeftPadding: 16,
+        },
     },
-    tooltip: undefined
+    tooltip: undefined,
 };
 
 export class BasicRenderEngine extends EventEmitter {
@@ -97,13 +101,13 @@ export class BasicRenderEngine extends EventEmitter {
         const {
             actualBoundingBoxAscent: fontAscent,
             actualBoundingBoxDescent: fontDescent,
-            width: allCharsWidth
+            width: allCharsWidth,
         } = this.ctx.measureText(allChars);
         const { width: placeholderWidth } = this.ctx.measureText('…');
         const fontHeight = fontAscent + fontDescent;
 
         this.blockPaddingLeftRight = this.styles.blockPaddingLeftRight;
-        this.blockPaddingTopBottom = Math.ceil((this.blockHeight - (fontHeight)) / 2);
+        this.blockPaddingTopBottom = Math.ceil((this.blockHeight - fontHeight) / 2);
         this.charHeight = fontHeight + 1;
         this.placeholderWidth = placeholderWidth;
         this.avgCharWidth = allCharsWidth / allChars.length;
@@ -164,7 +168,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     timeToPosition(time) {
-        return time * this.zoom - this.positionX * this.zoom
+        return time * this.zoom - this.positionX * this.zoom;
     }
 
     pixelToTime(width) {
@@ -222,19 +226,26 @@ export class BasicRenderEngine extends EventEmitter {
             const { width: textWidth } = this.ctx.measureText(text);
 
             if (textWidth > textMaxWidth) {
-                const avgCharWidth = textWidth / (text.length);
+                const avgCharWidth = textWidth / text.length;
                 const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
                 const halfChars = (maxChars - 1) / 2;
 
                 if (halfChars > 0) {
-                    text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
+                    text =
+                        text.slice(0, Math.ceil(halfChars)) +
+                        '…' +
+                        text.slice(text.length - Math.floor(halfChars), text.length);
                 } else {
                     text = '';
                 }
             }
 
             if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                this.ctx.fillText(
+                    text,
+                    (x < 0 ? 0 : x) + this.blockPaddingLeftRight,
+                    y + this.blockHeight - this.blockPaddingTopBottom
+                );
             }
         });
 
@@ -344,7 +355,8 @@ export class BasicRenderEngine extends EventEmitter {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
-        const maxWidth = fields.map(({ text }) => text)
+        const maxWidth = fields
+            .map(({ text }) => text)
             .map((text) => this.ctx.measureText(text))
             .reduce((acc, { width }) => Math.max(acc, width), 0);
         const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;

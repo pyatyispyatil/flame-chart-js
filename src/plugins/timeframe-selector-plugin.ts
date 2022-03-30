@@ -3,7 +3,7 @@ import {
     flatTree,
     clusterizeFlatTree,
     getFlatTreeMinMax,
-    reclusterizeClusteredFlatTree
+    reclusterizeClusteredFlatTree,
 } from './utils/tree-clusters';
 import { deepMerge } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
@@ -16,7 +16,7 @@ const walk = (treeList, cb, parent = null, level = 0) => {
             walk(child.children, cb, res || child, level + 1);
         }
     });
-}
+};
 
 export const defaultTimeframeSelectorPluginSettings = {
     styles: {
@@ -31,10 +31,10 @@ export const defaultTimeframeSelectorPluginSettings = {
             knobStrokeColor: 'white',
             knobSize: 6,
             height: 60,
-            backgroundColor: 'white'
-        }
-    }
-}
+            backgroundColor: 'white',
+        },
+    },
+};
 
 export default class TimeframeSelectorPlugin {
     private data;
@@ -100,7 +100,7 @@ export default class TimeframeSelectorPlugin {
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => this.timeout = null, 300);
+        this.timeout = setTimeout(() => (this.timeout = null), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();
@@ -171,7 +171,7 @@ export default class TimeframeSelectorPlugin {
             this.offscreenRender();
         });
 
-        this.offscreenRenderEngine.on('min-max-change', () => this.shouldRender = true);
+        this.offscreenRenderEngine.on('min-max-change', () => (this.shouldRender = true));
 
         this.setData(this.data);
     }
@@ -181,7 +181,9 @@ export default class TimeframeSelectorPlugin {
 
         if (mouseX < maxPosition - 1) {
             const realView = this.renderEngine.getRealView();
-            const delta = this.renderEngine.setPositionX(this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
+            const delta = this.renderEngine.setPositionX(
+                this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min
+            );
             const zoom = this.renderEngine.width / (realView - delta);
 
             this.renderEngine.setZoom(zoom);
@@ -193,7 +195,10 @@ export default class TimeframeSelectorPlugin {
 
         if (mouseX > minPosition + 1) {
             const realView = this.renderEngine.getRealView();
-            const delta = (this.renderEngine.positionX + realView) - (this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
+            const delta =
+                this.renderEngine.positionX +
+                realView -
+                (this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
             const zoom = this.renderEngine.width / (realView - delta);
 
             this.renderEngine.setZoom(zoom);
@@ -205,7 +210,10 @@ export default class TimeframeSelectorPlugin {
     }
 
     getRightKnobPosition() {
-        return (this.renderEngine.positionX - this.renderEngine.min + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
+        return (
+            (this.renderEngine.positionX - this.renderEngine.min + this.renderEngine.getRealView()) *
+            this.renderEngine.getInitialZoom()
+        );
     }
 
     applyChanges() {
@@ -263,51 +271,55 @@ export default class TimeframeSelectorPlugin {
                 maxLevel = level + 1;
             }
 
-            dots.push({
-                pos: start,
-                sort: 0,
-                level: level,
-                index,
-                type: 'start'
-            }, {
-                pos: start,
-                sort: 1,
-                level: level + 1,
-                index,
-                type: 'start'
-            }, {
-                pos: end,
-                sort: 2,
-                level: level + 1,
-                index,
-                type: 'end'
-            }, {
-                pos: end,
-                sort: 3,
-                level: level,
-                index,
-                type: 'end'
-            });
+            dots.push(
+                {
+                    pos: start,
+                    sort: 0,
+                    level: level,
+                    index,
+                    type: 'start',
+                },
+                {
+                    pos: start,
+                    sort: 1,
+                    level: level + 1,
+                    index,
+                    type: 'start',
+                },
+                {
+                    pos: end,
+                    sort: 2,
+                    level: level + 1,
+                    index,
+                    type: 'end',
+                },
+                {
+                    pos: end,
+                    sort: 3,
+                    level: level,
+                    index,
+                    type: 'end',
+                }
+            );
         });
 
-        this.dots = dots
-            .sort((a, b) => {
-                if (a.pos !== b.pos) {
-                    return a.pos - b.pos;
+        this.dots = dots.sort((a, b) => {
+            if (a.pos !== b.pos) {
+                return a.pos - b.pos;
+            } else {
+                if (a.index === b.index) {
+                    return a.sort - b.sort;
                 } else {
-                    if (a.index === b.index) {
-                        return a.sort - b.sort;
+                    if (a.type === 'start' && b.type === 'start') {
+                        return a.level - b.level;
+                    } else if (a.type === 'end' && b.type === 'end') {
+                        return b.level - a.level;
                     } else {
-                        if (a.type === 'start' && b.type === 'start') {
-                            return a.level - b.level;
-                        } else if (a.type === 'end' && b.type === 'end') {
-                            return b.level - a.level;
-                        } else {
-                            return 0;
-                        }
+                        return 0;
                     }
                 }
-            })
+            }
+        });
 
         this.maxLevel = maxLevel;
 
@@ -332,12 +344,18 @@ export default class TimeframeSelectorPlugin {
         const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
 
         if (this.dots.length) {
-            this.offscreenRenderEngine.ctx.moveTo((this.dots[0].pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(this.dots[0].level, levelHeight));
+            this.offscreenRenderEngine.ctx.moveTo(
+                (this.dots[0].pos - this.offscreenRenderEngine.min) * zoom,
+                this.castLevelToHeight(this.dots[0].level, levelHeight)
+            );
 
             this.dots.forEach((dot) => {
                 const { pos, level } = dot;
 
-                this.offscreenRenderEngine.ctx.lineTo((pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(level, levelHeight));
+                this.offscreenRenderEngine.ctx.lineTo(
+                    (pos - this.offscreenRenderEngine.min) * zoom,
+                    this.castLevelToHeight(level, levelHeight)
+                );
             });
         }
 
@@ -351,21 +369,27 @@ export default class TimeframeSelectorPlugin {
     }
 
     castLevelToHeight(level, levelHeight) {
-        return this.height - (level * levelHeight);
+        return this.height - level * levelHeight;
     }
 
     renderTimeframe() {
         const relativePositionX = this.renderEngine.positionX - this.renderEngine.min;
 
         const currentLeftPosition = relativePositionX * this.renderEngine.getInitialZoom();
-        const currentRightPosition = (relativePositionX + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
+        const currentRightPosition =
+            (relativePositionX + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
         const currentLeftKnobPosition = currentLeftPosition - this.styles.knobSize / 2;
         const currentRightKnobPosition = currentRightPosition - this.styles.knobSize / 2;
         const knobHeight = this.renderEngine.height / 3;
 
         this.renderEngine.setCtxColor(this.styles.overlayColor);
         this.renderEngine.fillRect(0, 0, currentLeftPosition, this.renderEngine.height);
-        this.renderEngine.fillRect(currentRightPosition, 0, this.renderEngine.width - currentRightPosition, this.renderEngine.height);
+        this.renderEngine.fillRect(
+            currentRightPosition,
+            0,
+            this.renderEngine.width - currentRightPosition,
+            this.renderEngine.height
+        );
 
         this.renderEngine.setCtxColor(this.styles.overlayColor);
         this.renderEngine.fillRect(currentLeftPosition - 1, 0, 1, this.renderEngine.height);
@@ -375,12 +399,48 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.fillRect(currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
         this.renderEngine.fillRect(currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 
-        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
-        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
+        this.renderEngine.renderStroke(
+            this.styles.knobStrokeColor,
+            currentLeftKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight
+        );
+        this.renderEngine.renderStroke(
+            this.styles.knobStrokeColor,
+            currentRightKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight
+        );
 
-        this.interactionsEngine.addHitRegion('timeframeKnob', 'left', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
-        this.interactionsEngine.addHitRegion('timeframeKnob', 'right', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
-        this.interactionsEngine.addHitRegion('timeframeArea', null, 0, 0, this.renderEngine.width, this.renderEngine.height, 'text');
+        this.interactionsEngine.addHitRegion(
+            'timeframeKnob',
+            'left',
+            currentLeftKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight,
+            'ew-resize'
+        );
+        this.interactionsEngine.addHitRegion(
+            'timeframeKnob',
+            'right',
+            currentRightKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight,
+            'ew-resize'
+        );
+        this.interactionsEngine.addHitRegion(
+            'timeframeArea',
+            null,
+            0,
+            0,
+            this.renderEngine.width,
+            this.renderEngine.height,
+            'text'
+        );
     }
 
     render() {

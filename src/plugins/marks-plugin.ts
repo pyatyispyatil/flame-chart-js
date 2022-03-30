@@ -20,8 +20,8 @@ export default class MarksPlugin extends UIPlugin {
         const { marks } = this;
 
         if (marks.length) {
-            this.min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
-            this.max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
+            this.min = marks.reduce((acc, { timestamp }) => (timestamp < acc ? timestamp : acc), marks[0].timestamp);
+            this.max = marks.reduce((acc, { timestamp }) => (timestamp > acc ? timestamp : acc), marks[0].timestamp);
         }
     }
 
@@ -31,7 +31,6 @@ export default class MarksPlugin extends UIPlugin {
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
     }
-
 
     handleHover(region) {
         this.hoveredRegion = region;
@@ -57,7 +56,7 @@ export default class MarksPlugin extends UIPlugin {
         return marks
             .map(({ color, ...rest }) => ({
                 ...rest,
-                color: new Color(color).alpha(0.7).rgb().toString()
+                color: new Color(color).alpha(0.7).rgb().toString(),
             }))
             .sort((a, b) => a.timestamp - b.timestamp);
     }
@@ -94,7 +93,14 @@ export default class MarksPlugin extends UIPlugin {
             this.renderEngine.addRectToRenderQueue(color, blockPosition, 0, fullWidth);
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);
 
-            this.interactionsEngine.addHitRegion('timestamp', node, blockPosition, 0, fullWidth, this.renderEngine.blockHeight);
+            this.interactionsEngine.addHitRegion(
+                'timestamp',
+                node,
+                blockPosition,
+                0,
+                fullWidth,
+                this.renderEngine.blockHeight
+            );
 
             return blockPosition + fullWidth;
         }, 0);
@@ -118,13 +124,16 @@ export default class MarksPlugin extends UIPlugin {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === "function") {
+            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
                 this.renderEngine.settings.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse())
+                    this.interactionsEngine.getGlobalMouse()
+                );
             } else {
-                const { data: { fullName, timestamp } } = this.hoveredRegion;
+                const {
+                    data: { fullName, timestamp },
+                } = this.hoveredRegion;
 
                 const marksAccuracy = this.renderEngine.getAccuracy() + 2;
                 const header = `${fullName}`;

@@ -1,7 +1,14 @@
 import Color from 'color';
-import UIPlugin from './ui-plugin.js';
+import UIPlugin from './ui-plugin';
 
 export default class MarksPlugin extends UIPlugin {
+    marks;
+    min;
+    max;
+    interactionsEngine;
+    hoveredRegion;
+    selectedRegion;
+    renderEngine;
     constructor(marks) {
         super();
         this.marks = this.prepareMarks(marks);
@@ -82,7 +89,7 @@ export default class MarksPlugin extends UIPlugin {
             const { width } = this.renderEngine.ctx.measureText(shortName);
             const fullWidth = width + this.renderEngine.blockPaddingLeftRight * 2;
             const position = this.renderEngine.timeToPosition(timestamp);
-            const blockPosition = this.calcMarksBlockPosition(position, prevEnding, width);
+            const blockPosition = this.calcMarksBlockPosition(position, prevEnding);
 
             this.renderEngine.addRectToRenderQueue(color, blockPosition, 0, fullWidth);
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);

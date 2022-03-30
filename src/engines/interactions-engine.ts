@@ -1,6 +1,18 @@
 import { EventEmitter } from 'events';
 
 export class InteractionsEngine extends EventEmitter {
+    private renderEngine;
+    private readonly canvas;
+    private hitRegions;
+    private instances;
+    private mouse: { x: number; y: number };
+    private selectedRegion;
+    private hoveredRegion;
+    private moveActive;
+    private mouseDownPosition: { x: number; y: number };
+    private mouseDownHoveredInstance;
+    private hoveredInstance;
+    private currentCursor;
     constructor(canvas, renderEngine) {
         super();
 
@@ -113,7 +125,7 @@ export class InteractionsEngine extends EventEmitter {
         const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
 
         if (isClick) {
-            this.handleRegionHit(this.mouse.x, this.mouse.y);
+            this.handleRegionHit();
         }
 
         this.emit('up', this.hoveredRegion, this.mouse, isClick);
@@ -151,7 +163,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     checkRegionHover() {
-        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        const hoveredRegion = this.getHoveredRegion();
 
         if (hoveredRegion) {
             if (!this.currentCursor && hoveredRegion.cursor) {
@@ -220,7 +232,7 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     clearCursor() {
-        const hoveredRegion = this.getHoveredRegion(this.mouse.x, this.mouse.y);
+        const hoveredRegion = this.getHoveredRegion();
         this.currentCursor = null;
 
         if (hoveredRegion && hoveredRegion.cursor) {
@@ -233,6 +245,10 @@ export class InteractionsEngine extends EventEmitter {
 
 class SeparatedInteractionsEngine extends EventEmitter {
     static count = 0;
+    private parent;
+    private readonly id: number;
+    private renderEngine;
+    private hitRegions;
 
     static getId() {
         return SeparatedInteractionsEngine.count++;
@@ -276,13 +292,13 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    resend(...args) {
+    resend(event, ...args) {
         if ((
             this.renderEngine.position <= this.parent.mouse.y
         ) && (
             this.renderEngine.height + this.renderEngine.position >= this.parent.mouse.y
         )) {
-            this.emit(...args);
+            this.emit(event, ...args);
         }
     }
 

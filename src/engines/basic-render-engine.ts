@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { deepMerge } from './../utils.js';
+import { deepMerge } from '../utils';
 
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
 
@@ -41,6 +41,31 @@ export const defaultRenderSettings = {
 };
 
 export class BasicRenderEngine extends EventEmitter {
+    width;
+    height;
+    isSafari;
+    canvas;
+    ctx;
+    pixelRatio;
+    settings;
+    timeUnits;
+    styles;
+    blockPaddingLeftRight: number;
+    blockHeight: number;
+    blockPaddingTopBottom: number;
+    charHeight: number;
+    placeholderWidth: number;
+    avgCharWidth: number;
+    minTextWidth: number;
+    textRenderQueue;
+    strokeRenderQueue;
+    rectRenderQueue;
+    lastUsedColor;
+    lastUsedStrokeColor;
+    zoom;
+    positionX;
+    min;
+    max;
     constructor(canvas, settings) {
         super();
 
@@ -59,7 +84,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     setSettings(data) {
-        const settings = deepMerge(defaultRenderSettings, data);
+        const settings: Record<string, any> = deepMerge(defaultRenderSettings, data);
 
         this.settings = settings;
 
@@ -181,7 +206,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
+        Object.entries(this.rectRenderQueue).forEach(([color, items]: [string, any[]]) => {
             this.setCtxColor(color);
 
             items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));

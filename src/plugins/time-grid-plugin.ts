@@ -1,4 +1,4 @@
-import { deepMerge } from '../utils.js';
+import { deepMerge } from '../utils';
 
 export const defaultTimeGridPluginSettings = {
     styles: {
@@ -10,6 +10,9 @@ export const defaultTimeGridPluginSettings = {
 };
 
 export default class TimeGridPlugin {
+    styles;
+    renderEngine;
+    height: number;
     constructor(settings = {}) {
         this.setSettings(settings);
     }

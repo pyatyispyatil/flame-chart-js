@@ -151,7 +151,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
         });
 }
 
-export const reclusterizeClusteredFlatTree = (clusteredFlatTree, zoom, start, end, stickDistance, minBlockSize) => {
+export const reclusterizeClusteredFlatTree = (clusteredFlatTree, zoom, start, end, stickDistance?, minBlockSize?) => {
     return clusteredFlatTree
         .reduce((acc, cluster) => {
             if (checkTimeboundNesting(cluster, start, end)) {

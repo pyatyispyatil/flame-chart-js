@@ -1,4 +1,4 @@
-import { deepMerge } from '../utils.js';
+import { deepMerge } from '../utils';
 
 export const defaultTogglePluginSettings = {
     styles: {
@@ -18,6 +18,15 @@ export const defaultTogglePluginSettings = {
 };
 
 export default class TogglePlugin {
+    title: string;
+    settings;
+    styles;
+    height: number;
+    renderEngine;
+    interactionsEngine;
+    resizeActive: boolean;
+    resizeStartHeight: number;
+    resizeStartPosition: number;
     constructor(title, settings) {
         this.setSettings(settings);
         this.title = title;

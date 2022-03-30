@@ -1,5 +1,5 @@
-import { RenderEngine } from './engines/render-engine.js';
-import { InteractionsEngine } from './engines/interactions-engine.js';
+import { RenderEngine } from './engines/render-engine';
+import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 
 const defaultSettings = {
@@ -8,6 +8,9 @@ const defaultSettings = {
 }
 
 export default class FlameChartContainer extends EventEmitter {
+    renderEngine: RenderEngine;
+    interactionsEngine: InteractionsEngine;
+    plugins;
     constructor({ canvas, plugins, settings }) {
         super();
 

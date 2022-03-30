@@ -1,12 +1,18 @@
-import { deepMerge } from '../utils.js';
-import { BasicRenderEngine } from './basic-render-engine.js';
+import { deepMerge } from '../utils';
+import { BasicRenderEngine } from './basic-render-engine';
 
 export class OffscreenRenderEngine extends BasicRenderEngine {
+    parent;
+    id;
+    children;
+    flexible: boolean;
+    collapsed: boolean;
+    position;
     constructor({
                     width,
                     height,
                     parent,
-                    id
+                    id,
                 }) {
         const canvas = document.createElement('canvas');
 
@@ -28,7 +34,8 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         const child = new OffscreenRenderEngine({
             width: this.width,
             height: this.height,
-            parent: this.parent
+            parent: this.parent,
+            id: void 0
         });
 
         this.children.push(child);
@@ -57,6 +64,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
+    // @ts-ignore - overrides a parent function which has different signature
     resize({ width, height, position }, isParentCall) {
         const isHeightChanged = super.resize(width, height);
 

@@ -1,7 +1,7 @@
-import { deepMerge } from '../utils.js';
-import UiPlugin from './ui-plugin.js';
+import { deepMerge } from '../utils';
+import UiPlugin from './ui-plugin';
 
-const getValueByChoice = (array, property, fn) => (
+const getValueByChoice = (array: any[], property, fn) => (
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null
 )
 
@@ -14,6 +14,18 @@ export const defaultWaterfallPluginSettings = {
 }
 
 export default class WaterfallPlugin extends UiPlugin {
+    interactionsEngine;
+    renderEngine;
+    positionY;
+    settings;
+    hoveredRegion;
+    selectedRegion;
+    initialData;
+    styles;
+    height;
+    data;
+    min: number;
+    max: number;
     constructor({ items, intervals }, settings = {}) {
         super();
         this.setData({ items, intervals });
@@ -167,7 +179,7 @@ export default class WaterfallPlugin extends UiPlugin {
                 const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
                 const timingTexts = Object.entries(timing)
                     .filter(([, time]) => typeof time === 'number')
-                    .map(([name, time]) => ({
+                    .map(([name, time]: [string, number]) => ({
                         text: `${name}: ${(time).toFixed(nodeAccuracy)} ${timeUnits}`
                     }));
                 const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };

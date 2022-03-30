@@ -4,9 +4,9 @@ import {
     clusterizeFlatTree,
     getFlatTreeMinMax,
     reclusterizeClusteredFlatTree
-} from './utils/tree-clusters.js';
-import { deepMerge } from '../utils.js';
-import { TimeGrid } from '../engines/time-grid.js';
+} from './utils/tree-clusters';
+import { deepMerge } from '../utils';
+import { TimeGrid } from '../engines/time-grid';
 
 const walk = (treeList, cb, parent = null, level = 0) => {
     treeList.forEach((child) => {
@@ -22,7 +22,7 @@ export const defaultTimeframeSelectorPluginSettings = {
     styles: {
         timeframeSelectorPlugin: {
             font: '9px sans-serif',
-            fontColor: 'black',            
+            fontColor: 'black',
             overlayColor: 'rgba(112, 112, 112, 0.5)',
             graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
             graphFillColor: 'rgb(0, 0, 0, 0.25)',
@@ -37,6 +37,27 @@ export const defaultTimeframeSelectorPluginSettings = {
 }
 
 export default class TimeframeSelectorPlugin {
+    private data;
+    private settings;
+    private shouldRender: boolean;
+    private renderEngine;
+    private interactionsEngine;
+    private leftKnobMoving: boolean;
+    private rightKnobMoving: boolean;
+    private selectingActive: boolean;
+    private startSelectingPosition: number;
+    private timeout;
+    private offscreenRenderEngine;
+    private timeGrid;
+    private styles;
+    private actualClusters;
+    private min;
+    private max;
+    private height;
+    private clusters;
+    private maxLevel;
+    private dots;
+    private actualClusterizedFlatTree;
     constructor(data, settings = {}) {
         this.data = data;
         this.settings = settings;

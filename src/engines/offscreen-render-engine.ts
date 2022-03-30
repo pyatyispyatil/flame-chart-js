@@ -8,12 +8,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     flexible: boolean;
     collapsed: boolean;
     position;
-    constructor({
-                    width,
-                    height,
-                    parent,
-                    id,
-                }) {
+    constructor({ width, height, parent, id }) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
@@ -35,7 +30,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
             width: this.width,
             height: this.height,
             parent: this.parent,
-            id: void 0
+            id: void 0,
         });
 
         this.children.push(child);

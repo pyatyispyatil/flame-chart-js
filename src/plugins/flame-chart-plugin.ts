@@ -3,7 +3,7 @@ import {
     clusterizeFlatTree,
     metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
-    getFlatTreeMinMax
+    getFlatTreeMinMax,
 } from './utils/tree-clusters';
 import Color from 'color';
 import UIPlugin from './ui-plugin';
@@ -28,10 +28,7 @@ export default class FlameChartPlugin extends UIPlugin {
     initialClusterizedFlatTree;
     lastUsedColor;
     renderChartTimeout;
-    constructor({
-                    data,
-                    colors
-                }) {
+    constructor({ data, colors }) {
         super();
 
         this.data = data;
@@ -64,7 +61,7 @@ export default class FlameChartPlugin extends UIPlugin {
             this.setPositionY(0);
         }
 
-        this.renderEngine.tryToChangePosition(deltaX)
+        this.renderEngine.tryToChangePosition(deltaX);
 
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
@@ -125,7 +122,7 @@ export default class FlameChartPlugin extends UIPlugin {
             if (hoveredNode) {
                 return {
                     data: hoveredNode,
-                    type: 'node'
+                    type: 'node',
                 };
             }
         }
@@ -190,13 +187,13 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     calcRect(start, duration, level) {
-        const w = (duration * this.renderEngine.zoom);
+        const w = duration * this.renderEngine.zoom;
 
         return {
             x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.blockHeight + 1)) - this.positionY,
-            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
-        }
+            y: level * (this.renderEngine.blockHeight + 1) - this.positionY,
+            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3,
+        };
     }
 
     renderTooltip() {
@@ -210,14 +207,18 @@ export default class FlameChartPlugin extends UIPlugin {
                     this.interactionsEngine.getGlobalMouse()
                 );
             } else {
-                const { data: { start, duration, children, name } } = this.hoveredRegion;
+                const {
+                    data: { start, duration, children, name },
+                } = this.hoveredRegion;
                 const timeUnits = this.renderEngine.getTimeUnits();
 
                 const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
                 const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
                 const header = `${name}`;
-                const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
+                const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${
+                    children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''
+                }`;
                 const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
                 this.renderEngine.renderTooltipFromData(
@@ -231,38 +232,22 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     render() {
-        const {
-            width,
-            blockHeight,
-            height,
-            minTextWidth
-        } = this.renderEngine;
+        const { width, blockHeight, height, minTextWidth } = this.renderEngine;
         this.lastUsedColor = null;
 
         this.reclusterizeClusteredFlatTree();
 
         const processCluster = (cb) => (cluster) => {
-            const {
-                start,
-                duration,
-                level,
-            } = cluster;
+            const { start, duration, level } = cluster;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            if (x + w > 0
-                && x < width
-                && y + blockHeight > 0
-                && y < height) {
+            if (x + w > 0 && x < width && y + blockHeight > 0 && y < height) {
                 cb(cluster, x, y, w);
             }
         };
 
         const renderCluster = (cluster, x, y, w) => {
-            const {
-                type,
-                nodes,
-                color
-            } = cluster;
+            const { type, nodes, color } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
@@ -276,11 +261,11 @@ export default class FlameChartPlugin extends UIPlugin {
             if (w >= minTextWidth && nodes.length === 1) {
                 this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
             }
-        }
+        };
 
         const addHitRegion = (cluster, x, y, w) => {
             this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
-        }
+        };
 
         this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));
 

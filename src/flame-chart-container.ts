@@ -4,8 +4,8 @@ import { EventEmitter } from 'events';
 
 const defaultSettings = {
     performance: true,
-    timeUnits: 'ms'
-}
+    timeUnits: 'ms',
+};
 
 export default class FlameChartContainer extends EventEmitter {
     renderEngine: RenderEngine;
@@ -18,18 +18,17 @@ export default class FlameChartContainer extends EventEmitter {
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
 
-        const children = Array(this.plugins.length).fill(null).map(() => {
-            const renderEngine = this.renderEngine.makeInstance();
-            const interactionsEngine = this.interactionsEngine.makeInstance(renderEngine);
+        const children = Array(this.plugins.length)
+            .fill(null)
+            .map(() => {
+                const renderEngine = this.renderEngine.makeInstance();
+                const interactionsEngine = this.interactionsEngine.makeInstance(renderEngine);
 
-            return {renderEngine, interactionsEngine};
-        })
+                return { renderEngine, interactionsEngine };
+            });
 
         this.plugins.forEach((plugin, index) => {
-            plugin.init(
-                children[index].renderEngine,
-                children[index].interactionsEngine
-            );
+            plugin.init(children[index].renderEngine, children[index].interactionsEngine);
         });
 
         this.renderEngine.calcMinMax();
@@ -74,5 +73,5 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.setPositionX(start);
         this.renderEngine.setZoom(zoom);
         this.renderEngine.render();
-    };
+    }
 }

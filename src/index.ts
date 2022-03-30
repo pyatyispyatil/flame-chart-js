@@ -19,22 +19,10 @@ export default class FlameChart extends FlameChartContainer {
     setMarks: (data) => void;
     setWaterfall: (data) => void;
     setFlameChartPosition;
-    constructor({
-                    canvas,
-                    data,
-                    marks,
-                    waterfall,
-                    colors,
-                    settings = {},
-                    plugins = []
-                }) {
+    constructor({ canvas, data, marks, waterfall, colors, settings = {}, plugins = [] }) {
         const activePlugins = [];
-        const {
-            headers: {
-                waterfall: waterfallName = 'waterfall',
-                flameChart: flameChartName = 'flame chart'
-            } = {}
-        } = settings as Record<string, any>;
+        const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
+            settings as Record<string, any>;
 
         let timeGridPlugin;
         let marksPlugin;
@@ -79,10 +67,7 @@ export default class FlameChart extends FlameChartContainer {
         super({
             canvas,
             settings,
-            plugins: [
-                ...activePlugins,
-                ...plugins
-            ]
+            plugins: [...activePlugins, ...plugins],
         });
 
         if (flameChartPlugin && timeframeSelectorPlugin) {
@@ -101,7 +86,7 @@ export default class FlameChart extends FlameChartContainer {
                 }
 
                 this.renderEngine.render();
-            }
+            };
         }
 
         if (marksPlugin) {
@@ -113,7 +98,7 @@ export default class FlameChart extends FlameChartContainer {
         if (waterfallPlugin) {
             this.setWaterfall = (data) => {
                 waterfallPlugin.setData(data);
-            }
+            };
         }
     }
 }

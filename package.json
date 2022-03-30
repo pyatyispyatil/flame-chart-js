@@ -8,7 +8,8 @@
     "build": "rollup -c",
     "watch": "rollup -c -w -m",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:tsc": "tsc"
+    "build:tsc": "tsc",
+	"lint": "eslint src/**/*.ts && echo 'no lint problems found!'"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,12 @@
     "@rollup/plugin-html": "^0.2.3",
     "@rollup/plugin-json": "^4.1.0",
     "@types/color": "^3.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "2.6.1",
     "rollup": "^2.39.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",

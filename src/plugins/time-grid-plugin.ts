@@ -4,9 +4,9 @@ export const defaultTimeGridPluginSettings = {
     styles: {
         timeGridPlugin: {
             font: '10px sans-serif',
-            fontColor: 'black'
-        }
-    }
+            fontColor: 'black',
+        },
+    },
 };
 
 export default class TimeGridPlugin {

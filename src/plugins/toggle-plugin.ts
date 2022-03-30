@@ -12,9 +12,9 @@ export const defaultTogglePluginSettings = {
             triangleWidth: 10,
             triangleHeight: 7,
             triangleColor: 'black',
-            leftPadding: 10
-        }
-    }
+            leftPadding: 10,
+        },
+    },
 };
 
 export default class TogglePlugin {
@@ -99,7 +99,7 @@ export default class TogglePlugin {
         this.interactionsEngine.parent.on('up', () => {
             this.interactionsEngine.clearCursor();
             this.resizeActive = false;
-        })
+        });
     }
 
     getPrevEngine() {
@@ -114,8 +114,8 @@ export default class TogglePlugin {
         const nextEngine = this.getNextEngine();
         const prevEngine = this.getPrevEngine();
         const triangleFullWidth = this.styles.leftPadding + this.styles.triangleWidth;
-        const centerW = this.renderEngine.width/2;
-        const centerH = this.styles.height/2;
+        const centerW = this.renderEngine.width / 2;
+        const centerH = this.styles.height / 2;
 
         this.renderEngine.setCtxFont(this.styles.font);
 
@@ -125,19 +125,42 @@ export default class TogglePlugin {
 
         this.renderEngine.setCtxColor(this.styles.fontColor);
         this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
-        this.renderEngine.renderTriangle(this.styles.triangleColor, this.styles.leftPadding, 0 + this.styles.height / 2, this.styles.triangleWidth, this.styles.triangleHeight, nextEngine.collapsed ? 'right' : 'bottom');
+        this.renderEngine.renderTriangle(
+            this.styles.triangleColor,
+            this.styles.leftPadding,
+            0 + this.styles.height / 2,
+            this.styles.triangleWidth,
+            this.styles.triangleHeight,
+            nextEngine.collapsed ? 'right' : 'bottom'
+        );
 
-        const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title)
+        const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title);
         const buttonWidth = titleWidth + triangleFullWidth;
 
-        this.interactionsEngine.addHitRegion('toggle', this.renderEngine.id, 0, 0, buttonWidth, this.styles.height, 'pointer');
+        this.interactionsEngine.addHitRegion(
+            'toggle',
+            this.renderEngine.id,
+            0,
+            0,
+            buttonWidth,
+            this.styles.height,
+            'pointer'
+        );
 
         if (prevEngine.flexible) {
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW, centerH, 1.5);
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW - 10, centerH, 1.5);
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW + 10, centerH, 1.5);
 
-            this.interactionsEngine.addHitRegion('knob-resize', this.renderEngine.id, buttonWidth, 0, this.renderEngine.width - buttonWidth, this.styles.height, 'row-resize');
+            this.interactionsEngine.addHitRegion(
+                'knob-resize',
+                this.renderEngine.id,
+                buttonWidth,
+                0,
+                this.renderEngine.width - buttonWidth,
+                this.styles.height,
+                'row-resize'
+            );
         }
     }
 }

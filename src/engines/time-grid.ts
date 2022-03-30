@@ -5,9 +5,9 @@ const MIN_PIXEL_DELTA = 85;
 export const defaultTimeGridSettings = {
     styles: {
         timeGrid: {
-            color: 'rgba(90,90,90,0.20)'
-        }
-    }
+            color: 'rgba(90,90,90,0.20)',
+        },
+    },
 };
 
 export class TimeGrid {

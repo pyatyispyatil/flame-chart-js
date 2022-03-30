@@ -141,8 +141,8 @@ export class RenderEngine extends BasicRenderEngine {
 
         const freeSpacePart = Math.floor(freeSpace / flexibleGrowingCount);
 
-        return enginesTypes
-            .reduce((acc, type, index) => {
+        return enginesTypes.reduce(
+            (acc, type, index) => {
                 const engine = this.children[index];
                 const plugin = this.plugins[index];
                 let height;
@@ -166,16 +166,18 @@ export class RenderEngine extends BasicRenderEngine {
                 acc.result.push({
                     width: this.width,
                     position: acc.position,
-                    height
+                    height,
                 });
 
                 acc.position += height;
 
                 return acc;
-            }, {
+            },
+            {
                 position: 0,
-                result: []
-            }).result;
+                result: [],
+            }
+        ).result;
     }
 
     getAccuracy() {
@@ -254,7 +256,7 @@ export class RenderEngine extends BasicRenderEngine {
             }
         });
 
-        if (!tooltipRendered && typeof this.settings.tooltip === "function"){
+        if (!tooltipRendered && typeof this.settings.tooltip === 'function') {
             // notify tooltip of nothing to render
             this.settings.tooltip(null, this, null);
         }

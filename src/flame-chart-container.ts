@@ -2,11 +2,6 @@ import { RenderEngine } from './engines/render-engine';
 import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 
-const defaultSettings = {
-    performance: true,
-    timeUnits: 'ms',
-};
-
 export default class FlameChartContainer extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;

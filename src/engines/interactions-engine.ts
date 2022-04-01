@@ -229,7 +229,7 @@ export class InteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor) {
+    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor) {
         this.hitRegions.push({
             type,
             data,

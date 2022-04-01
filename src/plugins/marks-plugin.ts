@@ -5,8 +5,8 @@ export default class MarksPlugin extends UIPlugin {
     override renderEngine;
     override interactionsEngine;
     marks;
-    min;
-    max;
+    min: number;
+    max: number;
     hoveredRegion;
     selectedRegion;
     constructor(marks) {

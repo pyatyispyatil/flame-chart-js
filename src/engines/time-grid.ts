@@ -75,10 +75,10 @@ export class TimeGrid {
         }
     }
 
-    renderLines(start, height, renderEngine = this.renderEngine) {
+    renderLines(start: number, height: number, renderEngine = this.renderEngine) {
         renderEngine.setCtxColor(this.styles.color);
 
-        this.forEachTime((pixelPosition) => {
+        this.forEachTime((pixelPosition: number) => {
             renderEngine.fillRect(pixelPosition, start, 1, height);
         });
     }

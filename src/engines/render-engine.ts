@@ -8,11 +8,11 @@ const MAX_ACCURACY = 6;
 export class RenderEngine extends BasicRenderEngine {
     plugins;
     children;
-    requestedRenders;
-    timeGrid;
-    freeSpace;
-    lastPartialAnimationFrame;
-    lastGlobalAnimationFrame;
+    requestedRenders: number[];
+    timeGrid: TimeGrid;
+    freeSpace: number;
+    lastPartialAnimationFrame: number;
+    lastGlobalAnimationFrame: number;
     constructor(canvas, settings, plugins) {
         super(canvas, settings);
 
@@ -58,7 +58,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.timeGrid.recalc();
     }
 
-    override setMinMax(min, max) {
+    override setMinMax(min: number, max: number) {
         super.setMinMax(min, max);
 
         this.children.forEach((engine) => engine.setMinMax(min, max));
@@ -184,7 +184,7 @@ export class RenderEngine extends BasicRenderEngine {
         return this.timeGrid.accuracy;
     }
 
-    override setZoom(zoom) {
+    override setZoom(zoom: number) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
             this.children.forEach((engine) => engine.setZoom(zoom));
@@ -195,7 +195,7 @@ export class RenderEngine extends BasicRenderEngine {
         return false;
     }
 
-    override setPositionX(x) {
+    override setPositionX(x: number) {
         const res = super.setPositionX(x);
         this.children.forEach((engine) => engine.setPositionX(x));
 
@@ -217,7 +217,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    partialRender(id) {
+    partialRender(id: number) {
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }

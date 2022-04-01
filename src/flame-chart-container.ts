@@ -62,7 +62,7 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.render();
     }
 
-    setZoom(start, end) {
+    setZoom(start: number, end: number) {
         const zoom = this.renderEngine.width / (end - start);
 
         this.renderEngine.setPositionX(start);

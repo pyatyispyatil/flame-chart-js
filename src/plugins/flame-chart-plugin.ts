@@ -16,7 +16,7 @@ export default class FlameChartPlugin extends UIPlugin {
     data;
     userColors;
     flatTree;
-    positionY;
+    positionY: number;
     colors;
     selectedRegion;
     lastRandomColor;
@@ -27,7 +27,7 @@ export default class FlameChartPlugin extends UIPlugin {
     actualClusterizedFlatTree;
     initialClusterizedFlatTree;
     lastUsedColor;
-    renderChartTimeout;
+    renderChartTimeout: number;
     constructor({ data, colors }) {
         super();
 
@@ -49,7 +49,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.initData();
     }
 
-    handlePositionChange({ deltaX, deltaY }) {
+    handlePositionChange({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
 
@@ -72,7 +72,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.clearCursor();
     }
 
-    setPositionY(y) {
+    setPositionY(y: number) {
         this.positionY = y;
     }
 
@@ -186,7 +186,7 @@ export default class FlameChartPlugin extends UIPlugin {
         );
     }
 
-    calcRect(start, duration, level) {
+    calcRect(start: number, duration: number, level: number) {
         const w = duration * this.renderEngine.zoom;
 
         return {
@@ -246,7 +246,7 @@ export default class FlameChartPlugin extends UIPlugin {
             }
         };
 
-        const renderCluster = (cluster, x, y, w) => {
+        const renderCluster = (cluster, x: number, y: number, w: number) => {
             const { type, nodes, color } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
@@ -263,7 +263,7 @@ export default class FlameChartPlugin extends UIPlugin {
             }
         };
 
-        const addHitRegion = (cluster, x, y, w) => {
+        const addHitRegion = (cluster, x: number, y: number, w: number) => {
             this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
         };
 

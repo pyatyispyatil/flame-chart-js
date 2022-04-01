@@ -74,7 +74,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.resize({ width, height, position }));
     }
 
-    override setMinMax(min, max) {
+    override setMinMax(min: number, max: number) {
         super.setMinMax(min, max);
         this.children.forEach((child) => child.setMinMax(min, max));
     }
@@ -87,7 +87,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         }
     }
 
-    override tryToChangePosition(positionDelta) {
+    override tryToChangePosition(positionDelta: number) {
         this.parent.tryToChangePosition(positionDelta);
     }
 

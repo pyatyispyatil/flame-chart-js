@@ -15,13 +15,13 @@ export const defaultWaterfallPluginSettings = {
 export default class WaterfallPlugin extends UiPlugin {
     override interactionsEngine;
     override renderEngine;
-    positionY;
+    positionY: number;
     settings;
     hoveredRegion;
     selectedRegion;
     initialData;
     styles;
-    height;
+    height: number;
     data;
     min: number;
     max: number;
@@ -40,7 +40,7 @@ export default class WaterfallPlugin extends UiPlugin {
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
     }
 
-    handlePositionChange({ deltaX, deltaY }) {
+    handlePositionChange({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
 
@@ -79,7 +79,7 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    setPositionY(y) {
+    setPositionY(y: number) {
         this.positionY = y;
     }
 
@@ -143,7 +143,7 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    calcRect(start, duration, isEnd) {
+    calcRect(start: number, duration: number, isEnd: boolean) {
         const w = duration * this.renderEngine.zoom;
 
         return {

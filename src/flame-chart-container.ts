@@ -2,11 +2,6 @@ import { RenderEngine } from './engines/render-engine';
 import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 
-const defaultSettings = {
-    performance: true,
-    timeUnits: 'ms',
-};
-
 export default class FlameChartContainer extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;
@@ -67,7 +62,7 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.render();
     }
 
-    setZoom(start, end) {
+    setZoom(start: number, end: number) {
         const zoom = this.renderEngine.width / (end - start);
 
         this.renderEngine.setPositionX(start);

@@ -27,7 +27,7 @@ export default class TogglePlugin {
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;
-    constructor(title, settings) {
+    constructor(title: string, settings) {
         this.setSettings(settings);
         this.title = title;
     }
@@ -125,14 +125,14 @@ export default class TogglePlugin {
 
         this.renderEngine.setCtxColor(this.styles.fontColor);
         this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
-        this.renderEngine.renderTriangle(
-            this.styles.triangleColor,
-            this.styles.leftPadding,
-            0 + this.styles.height / 2,
-            this.styles.triangleWidth,
-            this.styles.triangleHeight,
-            nextEngine.collapsed ? 'right' : 'bottom'
-        );
+        this.renderEngine.renderTriangle({
+            color: this.styles.triangleColor,
+            x: this.styles.leftPadding,
+            y: 0 + this.styles.height / 2,
+            width: this.styles.triangleWidth,
+            height: this.styles.triangleHeight,
+            direction: nextEngine.collapsed ? 'right' : 'bottom',
+        });
 
         const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title);
         const buttonWidth = titleWidth + triangleFullWidth;

@@ -1,7 +1,8 @@
 import { deepMerge } from '../utils';
 import UiPlugin from './ui-plugin';
+import { Waterfall } from '../types';
 
-const getValueByChoice = (array: any[], property, fn) =>
+const getValueByChoice = (array: any[], property: 'start' | 'end', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
 
 export const defaultWaterfallPluginSettings = {
@@ -13,25 +14,25 @@ export const defaultWaterfallPluginSettings = {
 };
 
 export default class WaterfallPlugin extends UiPlugin {
-    interactionsEngine;
-    renderEngine;
-    positionY;
+    override interactionsEngine;
+    override renderEngine;
+    positionY: number;
     settings;
     hoveredRegion;
     selectedRegion;
     initialData;
     styles;
-    height;
+    height: number;
     data;
     min: number;
     max: number;
-    constructor({ items, intervals }, settings = {}) {
+    constructor({ items, intervals }: Waterfall, settings = {}) {
         super();
         this.setData({ items, intervals });
         this.setSettings(settings);
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine, interactionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
@@ -40,7 +41,7 @@ export default class WaterfallPlugin extends UiPlugin {
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
     }
 
-    handlePositionChange({ deltaX, deltaY }) {
+    handlePositionChange({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
 
@@ -79,11 +80,11 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    setPositionY(y) {
+    setPositionY(y: number) {
         this.positionY = y;
     }
 
-    setSettings(data) {
+    override setSettings(data) {
         this.settings = deepMerge(defaultWaterfallPluginSettings, data);
         this.styles = this.settings.styles.waterfallPlugin;
 
@@ -143,7 +144,7 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    calcRect(start, duration, isEnd) {
+    calcRect(start: number, duration: number, isEnd: boolean) {
         const w = duration * this.renderEngine.zoom;
 
         return {
@@ -152,7 +153,7 @@ export default class WaterfallPlugin extends UiPlugin {
         };
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
@@ -204,7 +205,7 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    render() {
+    override render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
         const blockHeight = this.renderEngine.blockHeight + 1;

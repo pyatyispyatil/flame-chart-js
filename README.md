@@ -12,6 +12,10 @@
 
 https://pyatyispyatil.github.io/flame-chart-js
 
+### Roadmap
+
+You can find some [plans on the wiki](https://github.com/pyatyispyatil/flame-chart-js/wiki/Roadmap)
+
 ### Usage
 
 #### Initialization

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { deepMerge } from '../utils';
+import { Dots, Mouse } from '../types';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
@@ -351,7 +352,7 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    renderTooltipFromData(fields, mouse) {
+    renderTooltipFromData(fields, mouse: Mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
@@ -394,7 +395,7 @@ export class BasicRenderEngine extends EventEmitter {
         });
     }
 
-    renderShape(color, dots, posX: number, posY: number) {
+    renderShape(color: string, dots: Dots, posX: number, posY: number) {
         this.setCtxColor(color);
 
         this.ctx.beginPath();
@@ -408,10 +409,17 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fill();
     }
 
-    renderTriangle(color, x, y, width: number, height: number, direction) {
+    renderTriangle(
+        color: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        direction: 'top' | 'right' | 'bottom' | 'left'
+    ) {
         const halfHeight = height / 2;
         const halfWidth = width / 2;
-        let dots;
+        let dots: Dots;
 
         switch (direction) {
             case 'top':
@@ -447,7 +455,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.renderShape(color, dots, x, y);
     }
 
-    renderCircle(color, x: number, y: number, radius: number) {
+    renderCircle(color: string, x: number, y: number, radius: number) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
         this.setCtxColor(color);

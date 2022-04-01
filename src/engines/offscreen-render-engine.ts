@@ -1,14 +1,22 @@
 import { deepMerge } from '../utils';
 import { BasicRenderEngine } from './basic-render-engine';
+import { RenderEngine } from './render-engine';
+
+interface OffscreenRenderEngineOptions {
+    width: number;
+    height: number;
+    parent: RenderEngine;
+    id: number;
+}
 
 export class OffscreenRenderEngine extends BasicRenderEngine {
     parent;
-    id;
+    id: number;
     children;
     flexible: boolean;
     collapsed: boolean;
-    position;
-    constructor({ width, height, parent, id }) {
+    position: number;
+    constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;

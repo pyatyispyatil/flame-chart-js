@@ -1,7 +1,8 @@
 import { deepMerge } from '../utils';
 import UiPlugin from './ui-plugin';
+import { Waterfall } from '../types';
 
-const getValueByChoice = (array: any[], property, fn) =>
+const getValueByChoice = (array: any[], property: 'start' | 'end', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
 
 export const defaultWaterfallPluginSettings = {
@@ -25,7 +26,7 @@ export default class WaterfallPlugin extends UiPlugin {
     data;
     min: number;
     max: number;
-    constructor({ items, intervals }, settings = {}) {
+    constructor({ items, intervals }: Waterfall, settings = {}) {
         super();
         this.setData({ items, intervals });
         this.setSettings(settings);

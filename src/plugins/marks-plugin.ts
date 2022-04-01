@@ -1,15 +1,16 @@
 import Color from 'color';
 import UIPlugin from './ui-plugin';
+import { Marks } from '../types';
 
 export default class MarksPlugin extends UIPlugin {
     override renderEngine;
     override interactionsEngine;
-    marks;
+    marks: Marks;
     min: number;
     max: number;
     hoveredRegion;
     selectedRegion;
-    constructor(marks) {
+    constructor(marks: Marks) {
         super();
         this.marks = this.prepareMarks(marks);
 
@@ -52,7 +53,7 @@ export default class MarksPlugin extends UIPlugin {
         return this.renderEngine.blockHeight + 1;
     }
 
-    prepareMarks(marks) {
+    prepareMarks(marks: Marks) {
         return marks
             .map(({ color, ...rest }) => ({
                 ...rest,
@@ -61,7 +62,7 @@ export default class MarksPlugin extends UIPlugin {
             .sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    setMarks(marks) {
+    setMarks(marks: Marks) {
         this.marks = this.prepareMarks(marks);
 
         this.calcMinMax();
@@ -70,7 +71,7 @@ export default class MarksPlugin extends UIPlugin {
         this.renderEngine.resetParentView();
     }
 
-    calcMarksBlockPosition(position, prevEnding) {
+    calcMarksBlockPosition(position: number, prevEnding: number) {
         if (position > 0) {
             if (prevEnding > position) {
                 return prevEnding;

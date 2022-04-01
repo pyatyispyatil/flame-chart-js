@@ -13,8 +13,8 @@ export const defaultWaterfallPluginSettings = {
 };
 
 export default class WaterfallPlugin extends UiPlugin {
-    interactionsEngine;
-    renderEngine;
+    override interactionsEngine;
+    override renderEngine;
     positionY;
     settings;
     hoveredRegion;
@@ -31,7 +31,7 @@ export default class WaterfallPlugin extends UiPlugin {
         this.setSettings(settings);
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine, interactionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
@@ -83,7 +83,7 @@ export default class WaterfallPlugin extends UiPlugin {
         this.positionY = y;
     }
 
-    setSettings(data) {
+    override setSettings(data) {
         this.settings = deepMerge(defaultWaterfallPluginSettings, data);
         this.styles = this.settings.styles.waterfallPlugin;
 
@@ -152,7 +152,7 @@ export default class WaterfallPlugin extends UiPlugin {
         };
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
@@ -204,7 +204,7 @@ export default class WaterfallPlugin extends UiPlugin {
         }
     }
 
-    render() {
+    override render() {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
         const blockHeight = this.renderEngine.blockHeight + 1;

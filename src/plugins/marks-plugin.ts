@@ -2,13 +2,13 @@ import Color from 'color';
 import UIPlugin from './ui-plugin';
 
 export default class MarksPlugin extends UIPlugin {
+    override renderEngine;
+    override interactionsEngine;
     marks;
     min;
     max;
-    interactionsEngine;
     hoveredRegion;
     selectedRegion;
-    renderEngine;
     constructor(marks) {
         super();
         this.marks = this.prepareMarks(marks);
@@ -25,7 +25,7 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine, interactionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
@@ -82,7 +82,7 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    render() {
+    override render() {
         this.marks.reduce((prevEnding, node) => {
             const { timestamp, color, shortName } = node;
             const { width } = this.renderEngine.ctx.measureText(shortName);
@@ -106,7 +106,7 @@ export default class MarksPlugin extends UIPlugin {
         }, 0);
     }
 
-    postRender() {
+    override postRender() {
         this.marks.forEach((node) => {
             const { timestamp, color } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
@@ -120,7 +120,7 @@ export default class MarksPlugin extends UIPlugin {
         });
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;

@@ -58,13 +58,13 @@ export class RenderEngine extends BasicRenderEngine {
         this.timeGrid.recalc();
     }
 
-    setMinMax(min, max) {
+    override setMinMax(min, max) {
         super.setMinMax(min, max);
 
         this.children.forEach((engine) => engine.setMinMax(min, max));
     }
 
-    setSettings(data) {
+    override setSettings(data) {
         super.setSettings(data);
 
         this.settings = data;
@@ -80,7 +80,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    resize(width, height): boolean {
+    override resize(width, height): boolean {
         const currentWidth = this.width;
 
         super.resize(width, height);
@@ -184,7 +184,7 @@ export class RenderEngine extends BasicRenderEngine {
         return this.timeGrid.accuracy;
     }
 
-    setZoom(zoom) {
+    override setZoom(zoom) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
             this.children.forEach((engine) => engine.setZoom(zoom));
@@ -195,7 +195,7 @@ export class RenderEngine extends BasicRenderEngine {
         return false;
     }
 
-    setPositionX(x) {
+    override setPositionX(x) {
         const res = super.setPositionX(x);
         this.children.forEach((engine) => engine.setPositionX(x));
 

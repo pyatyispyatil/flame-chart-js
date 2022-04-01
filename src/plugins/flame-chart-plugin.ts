@@ -11,12 +11,12 @@ import UIPlugin from './ui-plugin';
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
+    override interactionsEngine;
+    override renderEngine;
     data;
     userColors;
     flatTree;
-    interactionsEngine;
     positionY;
-    renderEngine;
     colors;
     selectedRegion;
     lastRandomColor;
@@ -38,7 +38,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.reset();
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine, interactionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
@@ -196,7 +196,7 @@ export default class FlameChartPlugin extends UIPlugin {
         };
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion) {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;
@@ -231,7 +231,7 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    render() {
+    override render() {
         const { width, blockHeight, height, minTextWidth } = this.renderEngine;
         this.lastUsedColor = null;
 

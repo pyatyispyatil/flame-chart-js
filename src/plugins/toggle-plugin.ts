@@ -1,4 +1,5 @@
 import { deepMerge } from '../utils';
+import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 export const defaultTogglePluginSettings = {
     styles: {
@@ -23,7 +24,7 @@ export default class TogglePlugin {
     styles;
     height: number;
     renderEngine;
-    interactionsEngine;
+    interactionsEngine: SeparatedInteractionsEngine;
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;

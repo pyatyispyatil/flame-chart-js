@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
+import { RenderEngine } from './render-engine';
 
 export class InteractionsEngine extends EventEmitter {
-    private renderEngine;
-    private readonly canvas;
+    private renderEngine: RenderEngine;
+    private readonly canvas: HTMLCanvasElement;
     private hitRegions;
     private instances;
     private mouse: { x: number; y: number };
@@ -13,7 +14,7 @@ export class InteractionsEngine extends EventEmitter {
     private mouseDownHoveredInstance;
     private hoveredInstance;
     private currentCursor;
-    constructor(canvas, renderEngine) {
+    constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine) {
         super();
 
         this.renderEngine = renderEngine;
@@ -258,12 +259,12 @@ export class InteractionsEngine extends EventEmitter {
     }
 }
 
-class SeparatedInteractionsEngine extends EventEmitter {
+export class SeparatedInteractionsEngine extends EventEmitter {
     static count = 0;
-    private parent;
+    parent;
     private readonly id: number;
     private renderEngine;
-    private hitRegions;
+    hitRegions;
 
     static getId() {
         return SeparatedInteractionsEngine.count++;
@@ -329,7 +330,7 @@ class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor) {
+    addHitRegion(type, data, x, y, w, h, cursor?) {
         this.hitRegions.push({
             type,
             data,

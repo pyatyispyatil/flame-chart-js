@@ -87,9 +87,9 @@ export const metaClusterizeFlatTree = (flatTree, condition = defaultClusterizeCo
 
 export const clusterizeFlatTree = (
     metaClusterizedFlatTree,
-    zoom,
-    start,
-    end,
+    zoom: number,
+    start: number,
+    end: number,
     stickDistance = STICK_DISTANCE,
     minBlockSize = MIN_BLOCK_SIZE
 ) => {

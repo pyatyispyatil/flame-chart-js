@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { deepMerge } from '../utils';
-import { Dots, Mouse } from '../types';
+import { Dots, Mouse, RectRenderQueue, Stroke, Text } from '../types';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
@@ -62,15 +62,15 @@ export class BasicRenderEngine extends EventEmitter {
     placeholderWidth: number;
     avgCharWidth: number;
     minTextWidth: number;
-    textRenderQueue;
-    strokeRenderQueue;
-    rectRenderQueue;
-    lastUsedColor;
-    lastUsedStrokeColor;
-    zoom;
-    positionX;
-    min;
-    max;
+    textRenderQueue: Text[];
+    strokeRenderQueue: Stroke[];
+    rectRenderQueue: RectRenderQueue;
+    lastUsedColor: string;
+    lastUsedStrokeColor: string;
+    zoom: number;
+    positionX: number;
+    min: number;
+    max: number;
     constructor(canvas, settings) {
         super();
 
@@ -121,40 +121,40 @@ export class BasicRenderEngine extends EventEmitter {
         this.rectRenderQueue = {};
     }
 
-    setCtxColor(color) {
+    setCtxColor(color: string) {
         if (color && this.lastUsedColor !== color) {
             this.ctx.fillStyle = color;
             this.lastUsedColor = color;
         }
     }
 
-    setStrokeColor(color) {
+    setStrokeColor(color: string) {
         if (color && this.lastUsedStrokeColor !== color) {
             this.ctx.strokeStyle = color;
             this.lastUsedStrokeColor = color;
         }
     }
 
-    setCtxFont(font) {
+    setCtxFont(font: string) {
         if (font && this.ctx.font !== font) {
             this.ctx.font = font;
         }
     }
 
-    fillRect(x, y, w, h) {
+    fillRect(x: number, y: number, w: number, h: number) {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    fillText(text, x, y) {
+    fillText(text: string, x: number, y) {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(color, x, y, w) {
+    renderBlock(color: string, x: number, y: number, w: number) {
         this.setCtxColor(color);
         this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
-    renderStroke(color, x, y, w, h) {
+    renderStroke(color: string, x: number, y: number, w: number, h: number) {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
         this.ctx.strokeRect(x, y, w, h);
@@ -211,7 +211,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items]: [string, any[]]) => {
+        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
 
             items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));

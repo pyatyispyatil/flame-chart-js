@@ -1,6 +1,8 @@
 import { deepMerge } from '../utils';
 import UiPlugin from './ui-plugin';
 import { Waterfall } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 const getValueByChoice = (array: any[], property: 'start' | 'end', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
@@ -14,8 +16,8 @@ export const defaultWaterfallPluginSettings = {
 };
 
 export default class WaterfallPlugin extends UiPlugin {
-    override interactionsEngine;
-    override renderEngine;
+    override interactionsEngine: SeparatedInteractionsEngine;
+    override renderEngine: OffscreenRenderEngine;
     positionY: number;
     settings;
     hoveredRegion;
@@ -32,7 +34,7 @@ export default class WaterfallPlugin extends UiPlugin {
         this.setSettings(settings);
     }
 
-    override init(renderEngine, interactionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));

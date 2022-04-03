@@ -54,3 +54,28 @@ interface Dot {
     y: number;
 }
 export type Dots = [Dot, Dot, Dot];
+
+interface Rect {
+    x: number;
+    y: number;
+    w: number;
+}
+export interface RectRenderQueue {
+    [color: string]: Rect[];
+}
+
+export interface Text {
+    text: string;
+    x: number;
+    y: number;
+    w: number;
+    textMaxWidth: number;
+}
+
+export interface Stroke {
+    color: string;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}

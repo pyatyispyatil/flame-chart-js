@@ -217,7 +217,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    partialRender(id: number) {
+    partialRender(id?: number) {
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }

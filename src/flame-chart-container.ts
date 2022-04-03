@@ -2,11 +2,17 @@ import { RenderEngine } from './engines/render-engine';
 import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 
+interface FlameChartContainerOptions {
+    canvas: HTMLCanvasElement;
+    plugins: any[];
+    settings: Record<string, any>;
+}
+
 export default class FlameChartContainer extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;
     plugins;
-    constructor({ canvas, plugins, settings }) {
+    constructor({ canvas, plugins, settings }: FlameChartContainerOptions) {
         super();
 
         this.renderEngine = new RenderEngine(canvas, settings, plugins);

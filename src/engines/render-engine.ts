@@ -76,7 +76,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (this.children) {
             this.children.forEach((engine) => engine.setSettings(data));
-            this.plugins.forEach((plugin) => plugin.setSettings && plugin.setSettings(data));
+            this.plugins.forEach((plugin) => plugin.setSettings?.(data));
             this.recalcChildrenSizes();
         }
     }
@@ -116,9 +116,8 @@ export class RenderEngine extends BasicRenderEngine {
                 return 'flexibleStatic';
             } else if (!plugin.height) {
                 return 'flexibleGrowing';
-            } else {
-                return 'static';
             }
+            return 'static';
         });
 
         const freeSpace = enginesTypes.reduce((acc, type, index) => {
@@ -133,9 +132,8 @@ export class RenderEngine extends BasicRenderEngine {
                 return acc - (engine.height || plugin.height);
             } else if (type === 'static') {
                 return acc - this.plugins[index].height;
-            } else {
-                return acc;
             }
+            return acc;
         }, this.height);
 
         const flexibleGrowingCount = enginesTypes.filter((type) => type === 'flexibleGrowing').length;
@@ -253,7 +251,7 @@ export class RenderEngine extends BasicRenderEngine {
             }
 
             if (plugin.renderTooltip) {
-                tooltipRendered = tooltipRendered || !!plugin.renderTooltip();
+                tooltipRendered = tooltipRendered || Boolean(plugin.renderTooltip());
             }
         });
 

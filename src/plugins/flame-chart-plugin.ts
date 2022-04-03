@@ -104,7 +104,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            this.emit('select', this.selectedRegion?.data, 'flame-chart-node');
         }
     }
 
@@ -142,12 +142,11 @@ export default class FlameChartPlugin extends UIPlugin {
             this.colors[type] = color.rgb().toString();
 
             return this.colors[type];
-        } else {
-            this.lastRandomColor = this.lastRandomColor.rotate(27);
-            this.colors[type] = this.lastRandomColor.rgb().toString();
-
-            return this.colors[type];
         }
+        this.lastRandomColor = this.lastRandomColor.rotate(27);
+        this.colors[type] = this.lastRandomColor.rgb().toString();
+
+        return this.colors[type];
     }
 
     setData(data: Data) {
@@ -220,7 +219,7 @@ export default class FlameChartPlugin extends UIPlugin {
                 const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
                 const header = `${name}`;
                 const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${
-                    children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''
+                    children?.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''
                 }`;
                 const st = `start: ${start.toFixed(nodeAccuracy)}`;
 

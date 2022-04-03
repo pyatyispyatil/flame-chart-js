@@ -8,8 +8,7 @@ const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
-    // eslint-disable-next-line prettier/prettier -- TODO: prettier wants to simplify this line
-    return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
+    return ua.indexOf('safari') !== -1 ? ua.indexOf('chrome') <= -1 : false;
 };
 
 const getPixelRatio = (ctx) => {
@@ -224,7 +223,7 @@ export class BasicRenderEngine extends EventEmitter {
     resolveTextRenderQueue() {
         this.setCtxColor(this.styles.fontColor);
 
-        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
+        this.textRenderQueue.forEach(({ text, x, y, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
 
             if (textWidth > textMaxWidth) {
@@ -292,9 +291,8 @@ export class BasicRenderEngine extends EventEmitter {
     getInitialZoom() {
         if (this.max - this.min > 0) {
             return this.width / (this.max - this.min);
-        } else {
-            return 1;
         }
+        return 1;
     }
 
     getRealView() {
@@ -380,12 +378,10 @@ export class BasicRenderEngine extends EventEmitter {
         fields.forEach(({ text, color }, index) => {
             if (color) {
                 this.setCtxColor(color);
+            } else if (!index) {
+                this.setCtxColor(this.styles.tooltipHeaderFontColor);
             } else {
-                if (!index) {
-                    this.setCtxColor(this.styles.tooltipHeaderFontColor);
-                } else {
-                    this.setCtxColor(this.styles.tooltipBodyFontColor);
-                }
+                this.setCtxColor(this.styles.tooltipBodyFontColor);
             }
 
             this.ctx.fillText(

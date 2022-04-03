@@ -211,7 +211,7 @@ export default class WaterfallPlugin extends UiPlugin {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
         const blockHeight = this.renderEngine.blockHeight + 1;
-        let stack = [];
+        const stack = [];
         const viewedData = this.data
             .filter(({ min, max }) => !((rightSide < min && rightSide < max) || (leftSide > max && rightSide > min)))
             .map((entry) => {

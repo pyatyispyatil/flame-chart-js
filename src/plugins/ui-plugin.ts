@@ -18,7 +18,10 @@ export default class UIPlugin extends EventEmitter {
 
     render() {}
 
-    setSettings(...args) {}
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars --
+     unused argument, to keep signature compatible with children
+     */
+    setSettings(settings) {}
 
     renderTooltip() {}
 

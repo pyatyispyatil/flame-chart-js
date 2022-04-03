@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { deepMerge } from '../utils';
-import { Dots, Mouse, RectRenderQueue, Stroke, Text } from '../types';
+import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
@@ -46,12 +47,12 @@ export const defaultRenderSettings = {
 };
 
 export class BasicRenderEngine extends EventEmitter {
-    width;
-    height;
-    isSafari;
-    canvas;
-    ctx;
-    pixelRatio;
+    width: number;
+    height: number;
+    isSafari: boolean;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    pixelRatio: number;
     settings;
     timeUnits;
     styles;
@@ -71,7 +72,7 @@ export class BasicRenderEngine extends EventEmitter {
     positionX: number;
     min: number;
     max: number;
-    constructor(canvas, settings) {
+    constructor(canvas: HTMLCanvasElement, settings) {
         super();
 
         this.width = canvas.width;
@@ -188,7 +189,7 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x: number, y: number, w: number) {
+    addRectToRenderQueue(color: string, x: number, y: number, w: number) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
@@ -305,7 +306,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.setPositionX(this.min);
     }
 
-    resize(width: number, height: number) {
+    resize(width?: number, height?: number) {
         const isWidthChanged = typeof width === 'number' && this.width !== width;
         const isHeightChanged = typeof height === 'number' && this.height !== height;
 
@@ -334,7 +335,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.lastUsedStrokeColor = null;
     }
 
-    copy(engine) {
+    copy(engine: OffscreenRenderEngine) {
         const ratio = this.isSafari ? 1 : engine.pixelRatio;
 
         if (engine.canvas.height) {
@@ -352,7 +353,7 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    renderTooltipFromData(fields, mouse: Mouse) {
+    renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 

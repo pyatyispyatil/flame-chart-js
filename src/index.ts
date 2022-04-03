@@ -30,10 +30,11 @@ export default class FlameChart extends FlameChartContainer {
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
     setFlameChartPosition: ({ x, y }: { x: number; y: number }) => void;
+
     constructor({ canvas, data, marks, waterfall, colors, settings = {}, plugins = [] }: FlameChartOptions) {
         const activePlugins = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
-            settings as Record<string, any>;
+            settings;
 
         let timeGridPlugin: TimeGridPlugin;
         let marksPlugin: MarksPlugin;

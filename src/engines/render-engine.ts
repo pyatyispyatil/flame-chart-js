@@ -7,12 +7,13 @@ const MAX_ACCURACY = 6;
 
 export class RenderEngine extends BasicRenderEngine {
     plugins;
-    children;
+    children: OffscreenRenderEngine[];
     requestedRenders: number[];
     timeGrid: TimeGrid;
     freeSpace: number;
     lastPartialAnimationFrame: number;
     lastGlobalAnimationFrame: number;
+
     constructor(canvas, settings, plugins) {
         super(canvas, settings);
 

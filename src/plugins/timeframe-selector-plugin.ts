@@ -7,16 +7,9 @@ import {
 } from './utils/tree-clusters';
 import { deepMerge } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
-
-const walk = (treeList, cb, parent = null, level = 0) => {
-    treeList.forEach((child) => {
-        const res = cb(child, parent, level);
-
-        if (child.children) {
-            walk(child.children, cb, res || child, level + 1);
-        }
-    });
-};
+import { Data, Mouse } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 export const defaultTimeframeSelectorPluginSettings = {
     styles: {
@@ -37,18 +30,18 @@ export const defaultTimeframeSelectorPluginSettings = {
 };
 
 export default class TimeframeSelectorPlugin {
-    private data;
+    private data: Data;
     private settings;
     private shouldRender: boolean;
-    private renderEngine;
-    private interactionsEngine;
+    private renderEngine: OffscreenRenderEngine;
+    private interactionsEngine: SeparatedInteractionsEngine;
     private leftKnobMoving: boolean;
     private rightKnobMoving: boolean;
     private selectingActive: boolean;
     private startSelectingPosition: number;
     private timeout: number | null;
-    private offscreenRenderEngine;
-    private timeGrid;
+    private offscreenRenderEngine: OffscreenRenderEngine;
+    private timeGrid: TimeGrid;
     private styles;
     private actualClusters;
     private min: number;
@@ -58,13 +51,14 @@ export default class TimeframeSelectorPlugin {
     private maxLevel: number;
     private dots;
     private actualClusterizedFlatTree;
-    constructor(data, settings = {}) {
+
+    constructor(data: Data, settings = {}) {
         this.data = data;
         this.settings = settings;
         this.shouldRender = true;
     }
 
-    init(renderEngine, interactionsEngine) {
+    init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
@@ -75,7 +69,7 @@ export default class TimeframeSelectorPlugin {
         this.setSettings(this.settings);
     }
 
-    handleMouseDown(region, mouse) {
+    handleMouseDown(region, mouse: Mouse) {
         if (region) {
             if (region.type === 'timeframeKnob') {
                 if (region.data === 'left') {
@@ -92,7 +86,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    handleMouseUp(region, mouse, isClick: boolean) {
+    handleMouseUp(region, mouse: Mouse, isClick: boolean) {
         let isDoubleClick = false;
 
         if (this.timeout) {
@@ -137,7 +131,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    handleMouseMove(region, mouse) {
+    handleMouseMove(region, mouse: Mouse) {
         if (this.leftKnobMoving) {
             this.setLeftKnobPosition(mouse.x);
             this.applyChanges();
@@ -236,7 +230,7 @@ export default class TimeframeSelectorPlugin {
         this.shouldRender = true;
     }
 
-    setData(data) {
+    setData(data: Data) {
         this.data = data;
 
         const dots = [];

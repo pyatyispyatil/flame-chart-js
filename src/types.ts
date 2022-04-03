@@ -18,7 +18,7 @@ export interface Node {
 
 export type Data = Array<Node>;
 
-type WaterfallItems = Array<{
+export type WaterfallItems = Array<{
     name: string;
     intervals: string | WaterfallInterval;
     timing: {
@@ -78,4 +78,28 @@ export interface Stroke {
     y: number;
     w: number;
     h: number;
+}
+
+export type FlatTreeNode = Node & {
+    end: number;
+    parent: Node;
+    level: number;
+    index: number;
+};
+
+export type FlatTree = FlatTreeNode[];
+export interface TooltipField {
+    color?: string;
+    text: string;
+}
+
+export interface HitRegion {
+    type: string;
+    data: any;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    cursor?: string;
+    id?: number;
 }

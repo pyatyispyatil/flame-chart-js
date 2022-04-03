@@ -1,6 +1,7 @@
 import { deepMerge } from '../utils';
 import { BasicRenderEngine } from './basic-render-engine';
 import { RenderEngine } from './render-engine';
+import { Mouse, TooltipField } from '../types';
 
 interface OffscreenRenderEngineOptions {
     width: number;
@@ -12,10 +13,11 @@ interface OffscreenRenderEngineOptions {
 export class OffscreenRenderEngine extends BasicRenderEngine {
     parent: RenderEngine;
     id: number;
-    children;
+    children: OffscreenRenderEngine[];
     flexible: boolean;
     collapsed: boolean;
     position: number;
+
     constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');
 
@@ -62,13 +64,16 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.collapsed = false;
     }
 
-    setSettingsOverrides(settings) {
+    setSettingsOverrides(settings: Record<string, any>) {
         this.setSettings(deepMerge(this.settings, settings));
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
     // @ts-ignore - overrides a parent function which has different signature
-    resize({ width, height, position }, isParentCall) {
+    override resize(
+        { width, height, position }: { width?: number; height?: number; position?: number },
+        isParentCall?: boolean
+    ) {
         const isHeightChanged = super.resize(width, height);
 
         if (!isParentCall && isHeightChanged) {
@@ -87,7 +92,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.setMinMax(min, max));
     }
 
-    override setSettings(settings) {
+    override setSettings(settings: Record<string, any>) {
         super.setSettings(settings);
 
         if (this.children) {
@@ -126,7 +131,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.renderTimeGrid();
     }
 
-    override renderTooltipFromData(fields, mouse) {
+    override renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {
         this.parent.renderTooltipFromData(fields, mouse);
     }
 

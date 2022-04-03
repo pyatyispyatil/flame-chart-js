@@ -16,4 +16,4 @@ export const deepMerge = (target, object): Record<string, any> => {
     }, {});
 };
 
-export const isNumber = (val) => typeof val === 'number';
+export const isNumber = (val: unknown): val is number => typeof val === 'number';

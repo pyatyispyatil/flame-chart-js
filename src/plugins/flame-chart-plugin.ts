@@ -7,19 +7,22 @@ import {
 } from './utils/tree-clusters';
 import Color from 'color';
 import UIPlugin from './ui-plugin';
+import { Colors, Data, FlatTree } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
-    override interactionsEngine;
-    override renderEngine;
-    data;
-    userColors;
-    flatTree;
+    override interactionsEngine: SeparatedInteractionsEngine;
+    override renderEngine: OffscreenRenderEngine;
+    data: Data;
+    userColors: Colors;
+    flatTree: FlatTree;
     positionY: number;
-    colors;
+    colors: Colors;
     selectedRegion;
-    lastRandomColor;
+    lastRandomColor: typeof DEFAULT_COLOR;
     min: number;
     max: number;
     hoveredRegion;
@@ -128,7 +131,7 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    getColor(type, defaultColor) {
+    getColor(type: string, defaultColor: string) {
         if (defaultColor) {
             return defaultColor;
         } else if (this.colors[type]) {
@@ -147,7 +150,7 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    setData(data) {
+    setData(data: Data) {
         this.data = data;
 
         this.parseData();

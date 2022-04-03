@@ -1,4 +1,5 @@
 import { deepMerge } from '../utils';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export const defaultTimeGridPluginSettings = {
     styles: {
@@ -11,8 +12,9 @@ export const defaultTimeGridPluginSettings = {
 
 export default class TimeGridPlugin {
     styles;
-    renderEngine;
+    renderEngine: OffscreenRenderEngine;
     height: number;
+
     constructor(settings = {}) {
         this.setSettings(settings);
     }
@@ -30,7 +32,7 @@ export default class TimeGridPlugin {
         this.height = Math.round(this.renderEngine.charHeight + 10);
     }
 
-    init(renderEngine) {
+    init(renderEngine: OffscreenRenderEngine) {
         this.renderEngine = renderEngine;
 
         this.overrideEngineSettings();

@@ -1,15 +1,18 @@
 import Color from 'color';
 import UIPlugin from './ui-plugin';
 import { Marks } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 export default class MarksPlugin extends UIPlugin {
-    override renderEngine;
-    override interactionsEngine;
+    override renderEngine: OffscreenRenderEngine;
+    override interactionsEngine: SeparatedInteractionsEngine;
     marks: Marks;
     min: number;
     max: number;
     hoveredRegion;
     selectedRegion;
+
     constructor(marks: Marks) {
         super();
         this.marks = this.prepareMarks(marks);

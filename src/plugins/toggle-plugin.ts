@@ -1,5 +1,6 @@
 import { deepMerge } from '../utils';
 import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export const defaultTogglePluginSettings = {
     styles: {
@@ -23,11 +24,12 @@ export default class TogglePlugin {
     settings;
     styles;
     height: number;
-    renderEngine;
+    renderEngine: OffscreenRenderEngine;
     interactionsEngine: SeparatedInteractionsEngine;
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;
+
     constructor(title: string, settings) {
         this.setSettings(settings);
         this.title = title;
@@ -40,7 +42,7 @@ export default class TogglePlugin {
         this.height = this.styles.height + 1;
     }
 
-    init(renderEngine, interactionsEngine) {
+    init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 

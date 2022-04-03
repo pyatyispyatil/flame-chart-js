@@ -1,6 +1,6 @@
 import { deepMerge } from '../utils';
 import UiPlugin from './ui-plugin';
-import { Waterfall } from '../types';
+import { Waterfall, WaterfallItems } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
@@ -22,7 +22,7 @@ export default class WaterfallPlugin extends UiPlugin {
     settings;
     hoveredRegion;
     selectedRegion;
-    initialData;
+    initialData: WaterfallItems;
     styles;
     height: number;
     data;

@@ -1,4 +1,6 @@
 import { deepMerge } from '../utils';
+import { RenderEngine } from './render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
 
 const MIN_PIXEL_DELTA = 85;
 
@@ -11,14 +13,14 @@ export const defaultTimeGridSettings = {
 };
 
 export class TimeGrid {
-    renderEngine;
+    renderEngine: RenderEngine | OffscreenRenderEngine;
     start: number;
     end: number;
-    accuracy;
+    accuracy: number;
     delta: number;
     styles;
     timeUnits;
-    constructor(renderEngine, settings) {
+    constructor(renderEngine: RenderEngine | OffscreenRenderEngine, settings) {
         this.renderEngine = renderEngine;
         this.start = 0;
         this.end = 0;
@@ -29,7 +31,7 @@ export class TimeGrid {
     }
 
     setSettings(data) {
-        const settings: Record<string, any> = deepMerge(defaultTimeGridSettings, data);
+        const settings = deepMerge(defaultTimeGridSettings, data);
 
         this.styles = settings.styles.timeGrid;
         this.timeUnits = this.renderEngine.getTimeUnits();
@@ -54,7 +56,7 @@ export class TimeGrid {
         const strTimelineDelta = (this.delta / 2).toString();
 
         if (strTimelineDelta.includes('e')) {
-            return strTimelineDelta.match(/\d+$/)[0];
+            return +strTimelineDelta.match(/\d+$/)[0];
         } else {
             const zeros = strTimelineDelta.match(/(0\.0*)/);
 
@@ -66,16 +68,16 @@ export class TimeGrid {
         return this.accuracy;
     }
 
-    forEachTime(cb) {
+    forEachTime(cb: (pixelPosition: number, timePosition: number) => void) {
         for (let i = this.start; i <= this.end; i++) {
             const timePosition = i * this.delta + this.renderEngine.min;
-            const pixelPosition = this.renderEngine.timeToPosition(timePosition.toFixed(this.accuracy));
+            const pixelPosition = this.renderEngine.timeToPosition(+timePosition.toFixed(this.accuracy));
 
             cb(pixelPosition, timePosition);
         }
     }
 
-    renderLines(start: number, height: number, renderEngine = this.renderEngine) {
+    renderLines(start: number, height: number, renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(this.styles.color);
 
         this.forEachTime((pixelPosition: number) => {
@@ -83,7 +85,7 @@ export class TimeGrid {
         });
     }
 
-    renderTimes(renderEngine = this.renderEngine) {
+    renderTimes(renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 

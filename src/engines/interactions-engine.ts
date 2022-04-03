@@ -1,19 +1,22 @@
 import { EventEmitter } from 'events';
 import { RenderEngine } from './render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { HitRegion, Mouse } from '../types';
 
 export class InteractionsEngine extends EventEmitter {
     private renderEngine: RenderEngine;
     private readonly canvas: HTMLCanvasElement;
-    private hitRegions;
-    private instances;
-    private mouse: { x: number; y: number };
-    private selectedRegion;
-    private hoveredRegion;
-    private moveActive;
-    private mouseDownPosition: { x: number; y: number };
-    private mouseDownHoveredInstance;
-    private hoveredInstance;
-    private currentCursor;
+    private hitRegions: HitRegion[];
+    private instances: SeparatedInteractionsEngine[];
+    mouse: Mouse;
+    private selectedRegion: HitRegion;
+    private hoveredRegion: HitRegion;
+    private moveActive: boolean;
+    private mouseDownPosition: Mouse;
+    private mouseDownHoveredInstance: SeparatedInteractionsEngine;
+    private hoveredInstance: SeparatedInteractionsEngine;
+    private currentCursor: string | null;
+
     constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine) {
         super();
 
@@ -37,7 +40,7 @@ export class InteractionsEngine extends EventEmitter {
         this.reset();
     }
 
-    makeInstance(renderEngine) {
+    makeInstance(renderEngine: OffscreenRenderEngine) {
         const separatedInteractionsEngine = new SeparatedInteractionsEngine(this, renderEngine);
 
         this.instances.push(separatedInteractionsEngine);
@@ -230,7 +233,7 @@ export class InteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor) {
+    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor: string) {
         this.hitRegions.push({
             type,
             data,
@@ -242,7 +245,7 @@ export class InteractionsEngine extends EventEmitter {
         });
     }
 
-    setCursor(cursor) {
+    setCursor(cursor: string) {
         this.renderEngine.canvas.style.cursor = cursor;
         this.currentCursor = cursor;
     }
@@ -261,16 +264,16 @@ export class InteractionsEngine extends EventEmitter {
 
 export class SeparatedInteractionsEngine extends EventEmitter {
     static count = 0;
-    parent;
+    parent: InteractionsEngine;
+    renderEngine: OffscreenRenderEngine;
     private readonly id: number;
-    private renderEngine;
-    hitRegions;
+    hitRegions: HitRegion[];
 
     static getId() {
         return SeparatedInteractionsEngine.count++;
     }
 
-    constructor(parent, renderEngine) {
+    constructor(parent: InteractionsEngine, renderEngine: OffscreenRenderEngine) {
         super();
 
         this.id = SeparatedInteractionsEngine.getId();
@@ -330,7 +333,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x, y, w, h, cursor?) {
+    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor?: string) {
         this.hitRegions.push({
             type,
             data,
@@ -343,7 +346,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
         });
     }
 
-    setCursor(cursor) {
+    setCursor(cursor: string) {
         this.parent.setCursor(cursor);
     }
 

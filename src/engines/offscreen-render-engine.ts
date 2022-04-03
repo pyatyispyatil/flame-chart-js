@@ -1,14 +1,22 @@
 import { deepMerge } from '../utils';
 import { BasicRenderEngine } from './basic-render-engine';
+import { RenderEngine } from './render-engine';
+
+interface OffscreenRenderEngineOptions {
+    width: number;
+    height: number;
+    parent: RenderEngine;
+    id: number;
+}
 
 export class OffscreenRenderEngine extends BasicRenderEngine {
     parent;
-    id;
+    id: number;
     children;
     flexible: boolean;
     collapsed: boolean;
-    position;
-    constructor({ width, height, parent, id }) {
+    position: number;
+    constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
@@ -74,12 +82,12 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.resize({ width, height, position }));
     }
 
-    setMinMax(min, max) {
+    override setMinMax(min: number, max: number) {
         super.setMinMax(min, max);
         this.children.forEach((child) => child.setMinMax(min, max));
     }
 
-    setSettings(settings) {
+    override setSettings(settings) {
         super.setSettings(settings);
 
         if (this.children) {
@@ -87,7 +95,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         }
     }
 
-    tryToChangePosition(positionDelta) {
+    override tryToChangePosition(positionDelta: number) {
         this.parent.tryToChangePosition(positionDelta);
     }
 
@@ -95,7 +103,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.parent.calcMinMax();
     }
 
-    getTimeUnits() {
+    override getTimeUnits() {
         return this.parent.getTimeUnits();
     }
 
@@ -118,7 +126,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.renderTimeGrid();
     }
 
-    renderTooltipFromData(fields, mouse) {
+    override renderTooltipFromData(fields, mouse) {
         this.parent.renderTooltipFromData(fields, mouse);
     }
 

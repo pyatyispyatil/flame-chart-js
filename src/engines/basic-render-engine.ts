@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { deepMerge } from '../utils';
+import { Dots, Mouse } from '../types';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
@@ -167,19 +168,19 @@ export class BasicRenderEngine extends EventEmitter {
         this.emit('clear');
     }
 
-    timeToPosition(time) {
+    timeToPosition(time: number) {
         return time * this.zoom - this.positionX * this.zoom;
     }
 
-    pixelToTime(width) {
+    pixelToTime(width: number) {
         return width / this.zoom;
     }
 
-    setZoom(zoom) {
+    setZoom(zoom: number) {
         this.zoom = zoom;
     }
 
-    setPositionX(x) {
+    setPositionX(x: number) {
         const currentPos = this.positionX;
 
         this.positionX = x;
@@ -187,7 +188,7 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x, y, w) {
+    addRectToRenderQueue(color, x: number, y: number, w: number) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
@@ -195,7 +196,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.rectRenderQueue[color].push({ x, y, w });
     }
 
-    addTextToRenderQueue(text, x, y, w) {
+    addTextToRenderQueue(text: string, x: number, y: number, w: number) {
         if (text) {
             const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
@@ -205,7 +206,7 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    addStrokeToRenderQueue(color, x, y, w, h) {
+    addStrokeToRenderQueue(color: string, x: number, y: number, w: number, h: number) {
         this.strokeRenderQueue.push({ color, x, y, w, h });
     }
 
@@ -260,7 +261,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.strokeRenderQueue = [];
     }
 
-    setMinMax(min, max) {
+    setMinMax(min: number, max: number) {
         const hasChanges = min !== this.min || max !== this.max;
 
         this.min = min;
@@ -275,7 +276,7 @@ export class BasicRenderEngine extends EventEmitter {
         return this.timeUnits;
     }
 
-    tryToChangePosition(positionDelta) {
+    tryToChangePosition(positionDelta: number) {
         const realView = this.getRealView();
 
         if (this.positionX + positionDelta + realView <= this.max && this.positionX + positionDelta >= this.min) {
@@ -304,7 +305,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.setPositionX(this.min);
     }
 
-    resize(width, height) {
+    resize(width: number, height: number) {
         const isWidthChanged = typeof width === 'number' && this.width !== width;
         const isHeightChanged = typeof height === 'number' && this.height !== height;
 
@@ -351,7 +352,7 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    renderTooltipFromData(fields, mouse) {
+    renderTooltipFromData(fields, mouse: Mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
@@ -394,7 +395,7 @@ export class BasicRenderEngine extends EventEmitter {
         });
     }
 
-    renderShape(color, dots, posX, posY) {
+    renderShape(color: string, dots: Dots, posX: number, posY: number) {
         this.setCtxColor(color);
 
         this.ctx.beginPath();
@@ -408,10 +409,17 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fill();
     }
 
-    renderTriangle(color, x, y, width, height, direction) {
+    renderTriangle(
+        color: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        direction: 'top' | 'right' | 'bottom' | 'left'
+    ) {
         const halfHeight = height / 2;
         const halfWidth = width / 2;
-        let dots;
+        let dots: Dots;
 
         switch (direction) {
             case 'top':
@@ -447,7 +455,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.renderShape(color, dots, x, y);
     }
 
-    renderCircle(color, x, y, radius) {
+    renderCircle(color: string, x: number, y: number, radius: number) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
         this.setCtxColor(color);

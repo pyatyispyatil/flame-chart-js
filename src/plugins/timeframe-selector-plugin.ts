@@ -46,16 +46,16 @@ export default class TimeframeSelectorPlugin {
     private rightKnobMoving: boolean;
     private selectingActive: boolean;
     private startSelectingPosition: number;
-    private timeout;
+    private timeout: number | null;
     private offscreenRenderEngine;
     private timeGrid;
     private styles;
     private actualClusters;
-    private min;
-    private max;
-    private height;
+    private min: number;
+    private max: number;
+    private height: number;
     private clusters;
-    private maxLevel;
+    private maxLevel: number;
     private dots;
     private actualClusterizedFlatTree;
     constructor(data, settings = {}) {
@@ -92,7 +92,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    handleMouseUp(region, mouse, isClick) {
+    handleMouseUp(region, mouse, isClick: boolean) {
         let isDoubleClick = false;
 
         if (this.timeout) {
@@ -176,7 +176,7 @@ export default class TimeframeSelectorPlugin {
         this.setData(this.data);
     }
 
-    setLeftKnobPosition(mouseX) {
+    setLeftKnobPosition(mouseX: number) {
         const maxPosition = this.getRightKnobPosition();
 
         if (mouseX < maxPosition - 1) {
@@ -190,7 +190,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    setRightKnobPosition(mouseX) {
+    setRightKnobPosition(mouseX: number) {
         const minPosition = this.getLeftKnobPosition();
 
         if (mouseX > minPosition + 1) {
@@ -368,7 +368,7 @@ export default class TimeframeSelectorPlugin {
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
     }
 
-    castLevelToHeight(level, levelHeight) {
+    castLevelToHeight(level: number, levelHeight: number) {
         return this.height - level * levelHeight;
     }
 

@@ -9,7 +9,7 @@
     "watch": "rollup -c -w -m",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:tsc": "tsc",
-	"lint": "eslint src/**/*.ts && echo 'no lint problems found!'"
+    "lint": "eslint src/**/*.ts && echo 'no lint problems found!'"
   },
   "repository": {
     "type": "git",
@@ -33,6 +33,7 @@
     "@rollup/plugin-html": "^0.2.3",
     "@rollup/plugin-json": "^4.1.0",
     "@types/color": "^3.0.3",
+    "@types/events": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "eslint": "^8.12.0",

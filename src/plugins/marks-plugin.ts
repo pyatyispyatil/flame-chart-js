@@ -1,15 +1,16 @@
 import Color from 'color';
 import UIPlugin from './ui-plugin';
+import { Marks } from '../types';
 
 export default class MarksPlugin extends UIPlugin {
-    marks;
-    min;
-    max;
-    interactionsEngine;
+    override renderEngine;
+    override interactionsEngine;
+    marks: Marks;
+    min: number;
+    max: number;
     hoveredRegion;
     selectedRegion;
-    renderEngine;
-    constructor(marks) {
+    constructor(marks: Marks) {
         super();
         this.marks = this.prepareMarks(marks);
 
@@ -25,7 +26,7 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine, interactionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
@@ -52,7 +53,7 @@ export default class MarksPlugin extends UIPlugin {
         return this.renderEngine.blockHeight + 1;
     }
 
-    prepareMarks(marks) {
+    prepareMarks(marks: Marks) {
         return marks
             .map(({ color, ...rest }) => ({
                 ...rest,
@@ -61,7 +62,7 @@ export default class MarksPlugin extends UIPlugin {
             .sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    setMarks(marks) {
+    setMarks(marks: Marks) {
         this.marks = this.prepareMarks(marks);
 
         this.calcMinMax();
@@ -70,7 +71,7 @@ export default class MarksPlugin extends UIPlugin {
         this.renderEngine.resetParentView();
     }
 
-    calcMarksBlockPosition(position, prevEnding) {
+    calcMarksBlockPosition(position: number, prevEnding: number) {
         if (position > 0) {
             if (prevEnding > position) {
                 return prevEnding;
@@ -82,7 +83,7 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    render() {
+    override render() {
         this.marks.reduce((prevEnding, node) => {
             const { timestamp, color, shortName } = node;
             const { width } = this.renderEngine.ctx.measureText(shortName);
@@ -106,7 +107,7 @@ export default class MarksPlugin extends UIPlugin {
         }, 0);
     }
 
-    postRender() {
+    override postRender() {
         this.marks.forEach((node) => {
             const { timestamp, color } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
@@ -120,7 +121,7 @@ export default class MarksPlugin extends UIPlugin {
         });
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
             if (this.renderEngine.settings.tooltip === false) {
                 return true;

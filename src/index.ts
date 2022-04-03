@@ -5,6 +5,7 @@ import MarksPlugin from './plugins/marks-plugin';
 import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin';
 import WaterfallPlugin from './plugins/waterfall-plugin';
 import TogglePlugin from './plugins/toggle-plugin';
+import { Colors, Data, Marks, Waterfall } from './types';
 
 export { default as FlameChartContainer } from './flame-chart-container';
 export { default as FlameChartPlugin } from './plugins/flame-chart-plugin';
@@ -14,21 +15,31 @@ export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector
 export { default as WaterfallPlugin } from './plugins/waterfall-plugin';
 export { default as TogglePlugin } from './plugins/toggle-plugin';
 
+interface FlameChartOptions {
+    canvas: HTMLCanvasElement;
+    data: Data;
+    marks?: Marks;
+    waterfall?: Waterfall;
+    colors: Colors;
+    settings: Record<string, any>;
+    plugins: any[];
+}
+
 export default class FlameChart extends FlameChartContainer {
-    setData: (data) => void;
-    setMarks: (data) => void;
-    setWaterfall: (data) => void;
-    setFlameChartPosition;
-    constructor({ canvas, data, marks, waterfall, colors, settings = {}, plugins = [] }) {
+    setData: (data: Data) => void;
+    setMarks: (data: Marks) => void;
+    setWaterfall: (data: Waterfall) => void;
+    setFlameChartPosition: ({ x, y }: { x: number; y: number }) => void;
+    constructor({ canvas, data, marks, waterfall, colors, settings = {}, plugins = [] }: FlameChartOptions) {
         const activePlugins = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
             settings as Record<string, any>;
 
-        let timeGridPlugin;
-        let marksPlugin;
-        let waterfallPlugin;
-        let timeframeSelectorPlugin;
-        let flameChartPlugin;
+        let timeGridPlugin: TimeGridPlugin;
+        let marksPlugin: MarksPlugin;
+        let waterfallPlugin: WaterfallPlugin;
+        let timeframeSelectorPlugin: TimeframeSelectorPlugin;
+        let flameChartPlugin: FlameChartPlugin;
 
         timeGridPlugin = new TimeGridPlugin(settings);
         activePlugins.push(timeGridPlugin);

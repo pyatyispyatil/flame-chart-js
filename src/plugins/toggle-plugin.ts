@@ -27,7 +27,7 @@ export default class TogglePlugin {
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;
-    constructor(title, settings) {
+    constructor(title: string, settings) {
         this.setSettings(settings);
         this.title = title;
     }

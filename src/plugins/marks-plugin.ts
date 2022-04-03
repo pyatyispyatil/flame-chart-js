@@ -78,12 +78,10 @@ export default class MarksPlugin extends UIPlugin {
         if (position > 0) {
             if (prevEnding > position) {
                 return prevEnding;
-            } else {
-                return position;
             }
-        } else {
             return position;
         }
+        return position;
     }
 
     override render() {

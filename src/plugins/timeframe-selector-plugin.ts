@@ -300,19 +300,16 @@ export default class TimeframeSelectorPlugin {
         this.dots = dots.sort((a, b) => {
             if (a.pos !== b.pos) {
                 return a.pos - b.pos;
-            } else {
-                if (a.index === b.index) {
-                    return a.sort - b.sort;
-                } else {
-                    if (a.type === 'start' && b.type === 'start') {
-                        return a.level - b.level;
-                    } else if (a.type === 'end' && b.type === 'end') {
-                        return b.level - a.level;
-                    } else {
-                        return 0;
-                    }
-                }
             }
+            if (a.index === b.index) {
+                return a.sort - b.sort;
+            }
+            if (a.type === 'start' && b.type === 'start') {
+                return a.level - b.level;
+            } else if (a.type === 'end' && b.type === 'end') {
+                return b.level - a.level;
+            }
+            return 0;
         });
 
         this.maxLevel = maxLevel;

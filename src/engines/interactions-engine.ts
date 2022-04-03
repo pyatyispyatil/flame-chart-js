@@ -207,25 +207,24 @@ export class InteractionsEngine extends EventEmitter {
 
         if (hoveredRegion) {
             return hoveredRegion;
-        } else {
-            const hoveredInstance = this.instances.find(
-                ({ renderEngine }) =>
-                    renderEngine.position <= this.mouse.y && renderEngine.height + renderEngine.position >= this.mouse.y
+        }
+        const hoveredInstance = this.instances.find(
+            ({ renderEngine }) =>
+                renderEngine.position <= this.mouse.y && renderEngine.height + renderEngine.position >= this.mouse.y
+        );
+
+        this.hoveredInstance = hoveredInstance;
+
+        if (hoveredInstance) {
+            const offsetTop = hoveredInstance.renderEngine.position;
+
+            return hoveredInstance.hitRegions.find(
+                ({ x, y, w, h }) =>
+                    this.mouse.x >= x &&
+                    this.mouse.x <= x + w &&
+                    this.mouse.y >= y + offsetTop &&
+                    this.mouse.y <= y + h + offsetTop
             );
-
-            this.hoveredInstance = hoveredInstance;
-
-            if (hoveredInstance) {
-                const offsetTop = hoveredInstance.renderEngine.position;
-
-                return hoveredInstance.hitRegions.find(
-                    ({ x, y, w, h }) =>
-                        this.mouse.x >= x &&
-                        this.mouse.x <= x + w &&
-                        this.mouse.y >= y + offsetTop &&
-                        this.mouse.y <= y + h + offsetTop
-                );
-            }
         }
     }
 
@@ -254,7 +253,7 @@ export class InteractionsEngine extends EventEmitter {
         const hoveredRegion = this.getHoveredRegion();
         this.currentCursor = null;
 
-        if (hoveredRegion && hoveredRegion.cursor) {
+        if (hoveredRegion?.cursor) {
             this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
         } else {
             this.renderEngine.canvas.style.cursor = null;

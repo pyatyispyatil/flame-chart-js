@@ -56,12 +56,10 @@ export class TimeGrid {
         const strTimelineDelta = (this.delta / 2).toString();
 
         if (strTimelineDelta.includes('e')) {
-            return +strTimelineDelta.match(/\d+$/)[0];
-        } else {
-            const zeros = strTimelineDelta.match(/(0\.0*)/);
-
-            return zeros ? zeros[0].length - 1 : 0;
+            return Number(strTimelineDelta.match(/\d+$/)[0]);
         }
+        const zeros = strTimelineDelta.match(/(0\.0*)/);
+        return zeros ? zeros[0].length - 1 : 0;
     }
 
     getTimelineAccuracy() {
@@ -71,7 +69,7 @@ export class TimeGrid {
     forEachTime(cb: (pixelPosition: number, timePosition: number) => void) {
         for (let i = this.start; i <= this.end; i++) {
             const timePosition = i * this.delta + this.renderEngine.min;
-            const pixelPosition = this.renderEngine.timeToPosition(+timePosition.toFixed(this.accuracy));
+            const pixelPosition = this.renderEngine.timeToPosition(Number(timePosition.toFixed(this.accuracy)));
 
             cb(pixelPosition, timePosition);
         }

@@ -20,7 +20,7 @@ export type Data = Array<Node>;
 
 export type WaterfallItems = Array<{
     name: string;
-    intervals: string | WaterfallInterval;
+    intervals: WaterfallInterval | string;
     timing: {
         [key: string]: number;
     };

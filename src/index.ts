@@ -5,7 +5,7 @@ import MarksPlugin from './plugins/marks-plugin';
 import TimeframeSelectorPlugin from './plugins/timeframe-selector-plugin';
 import WaterfallPlugin from './plugins/waterfall-plugin';
 import TogglePlugin from './plugins/toggle-plugin';
-import { Colors, Data, Marks, Waterfall } from './types';
+import type { Colors, Data, Marks, Waterfall } from './types';
 
 export { default as FlameChartContainer } from './flame-chart-container';
 export { default as FlameChartPlugin } from './plugins/flame-chart-plugin';
@@ -36,14 +36,14 @@ export default class FlameChart extends FlameChartContainer {
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
             settings;
 
-        let timeGridPlugin: TimeGridPlugin;
+        const timeGridPlugin = new TimeGridPlugin(settings);
+
+        activePlugins.push(timeGridPlugin);
+
         let marksPlugin: MarksPlugin;
         let waterfallPlugin: WaterfallPlugin;
         let timeframeSelectorPlugin: TimeframeSelectorPlugin;
         let flameChartPlugin: FlameChartPlugin;
-
-        timeGridPlugin = new TimeGridPlugin(settings);
-        activePlugins.push(timeGridPlugin);
 
         if (marks) {
             marksPlugin = new MarksPlugin(marks);

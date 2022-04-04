@@ -1,5 +1,5 @@
 import { deepMerge } from '../utils';
-import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export const defaultTimeGridPluginSettings = {
     styles: {

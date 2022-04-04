@@ -1,8 +1,8 @@
 import Color from 'color';
 import UIPlugin from './ui-plugin';
-import { Marks } from '../types';
-import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { Marks } from '../types';
+import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 export default class MarksPlugin extends UIPlugin {
     override renderEngine: OffscreenRenderEngine;

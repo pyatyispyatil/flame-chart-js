@@ -1,6 +1,6 @@
 import { deepMerge } from '../utils';
-import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
-import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export const defaultTogglePluginSettings = {
     styles: {

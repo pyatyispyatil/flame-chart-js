@@ -9,7 +9,6 @@ export class InteractionsEngine extends EventEmitter {
     private hitRegions: HitRegion[];
     private instances: SeparatedInteractionsEngine[];
     mouse: Mouse;
-    private selectedRegion: HitRegion;
     private hoveredRegion: HitRegion;
     private moveActive: boolean;
     private mouseDownPosition: Mouse;
@@ -49,7 +48,6 @@ export class InteractionsEngine extends EventEmitter {
     }
 
     reset() {
-        this.selectedRegion = null;
         this.hoveredRegion = null;
         this.hitRegions = [];
     }

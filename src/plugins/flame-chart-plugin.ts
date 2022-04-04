@@ -7,7 +7,7 @@ import {
 } from './utils/tree-clusters';
 import Color from 'color';
 import UIPlugin from './ui-plugin';
-import type { Colors, Data, FlatTree } from '../types';
+import type { ClusterizedFlatTree, Colors, Data, FlatTree, MetaClusterizedFlatTree } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
@@ -26,10 +26,10 @@ export default class FlameChartPlugin extends UIPlugin {
     min: number;
     max: number;
     hoveredRegion;
-    metaClusterizedFlatTree;
-    actualClusterizedFlatTree;
-    initialClusterizedFlatTree;
-    lastUsedColor;
+    metaClusterizedFlatTree: MetaClusterizedFlatTree;
+    actualClusterizedFlatTree: ClusterizedFlatTree;
+    initialClusterizedFlatTree: ClusterizedFlatTree;
+    lastUsedColor: string | null;
     renderChartTimeout: number;
     constructor({ data, colors }) {
         super();

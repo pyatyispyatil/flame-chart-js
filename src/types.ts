@@ -82,12 +82,31 @@ export interface Stroke {
 
 export type FlatTreeNode = Node & {
     end: number;
-    parent: Node;
+    parent: FlatTreeNode | null;
     level: number;
     index: number;
 };
 
 export type FlatTree = FlatTreeNode[];
+
+export interface MetaClusterizedFlatTreeNode {
+    nodes: FlatTreeNode[];
+}
+
+export type MetaClusterizedFlatTree = MetaClusterizedFlatTreeNode[];
+
+export interface ClusterizedFlatTreeNode {
+    start: number;
+    end: number;
+    duration: number;
+    type: string;
+    color: string;
+    level: number;
+    nodes: FlatTreeNode[];
+}
+
+export type ClusterizedFlatTree = ClusterizedFlatTreeNode[];
+
 export interface TooltipField {
     color?: string;
     text: string;

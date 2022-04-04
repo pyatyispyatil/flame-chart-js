@@ -1,4 +1,12 @@
-import type { Data, FlatTree, FlatTreeNode, Node } from '../../types';
+import type {
+    ClusterizedFlatTree,
+    MetaClusterizedFlatTree,
+    ClusterizedFlatTreeNode,
+    Data,
+    FlatTree,
+    FlatTreeNode,
+    Node,
+} from '../../types';
 
 const MIN_BLOCK_SIZE = 1;
 const STICK_DISTANCE = 0.25;
@@ -59,21 +67,25 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
     return { min, max };
 };
 
-const calcClusterDuration = (nodes) => {
+const calcClusterDuration = (nodes: FlatTreeNode[]) => {
     const firstNode = nodes[0];
     const lastNode = nodes[nodes.length - 1];
 
     return lastNode.start + lastNode.duration - firstNode.start;
 };
 
-const checkTimeboundNesting = (node, start, end) =>
+const checkTimeboundNesting = (node: FlatTreeNode | ClusterizedFlatTreeNode, start: number, end: number) =>
     (node.start < end && node.end > start) || (node.start > start && node.end < end);
 
-const defaultClusterizeCondition = (prevNode, node) => prevNode.color === node.color && prevNode.type === node.type;
+const defaultClusterizeCondition = (prevNode: FlatTreeNode, node: FlatTreeNode) =>
+    prevNode.color === node.color && prevNode.type === node.type;
 
-export const metaClusterizeFlatTree = (flatTree: FlatTree, condition = defaultClusterizeCondition) => {
+export function metaClusterizeFlatTree(
+    flatTree: FlatTree,
+    condition = defaultClusterizeCondition
+): MetaClusterizedFlatTree {
     return flatTree
-        .reduce((acc, node) => {
+        .reduce<FlatTreeNode[][]>((acc, node) => {
             const lastCluster = acc[acc.length - 1];
             const lastNode = lastCluster && lastCluster[lastCluster.length - 1];
 
@@ -88,25 +100,23 @@ export const metaClusterizeFlatTree = (flatTree: FlatTree, condition = defaultCl
         .filter((nodes) => nodes.length)
         .map((nodes) => ({
             nodes,
-            parents: [...new Set(nodes.map(({ parent }) => parent))],
         }));
-};
+}
 
 export const clusterizeFlatTree = (
-    metaClusterizedFlatTree,
+    metaClusterizedFlatTree: MetaClusterizedFlatTree,
     zoom: number,
     start: number,
     end: number,
     stickDistance = STICK_DISTANCE,
     minBlockSize = MIN_BLOCK_SIZE
-) => {
+): ClusterizedFlatTree => {
     let lastCluster = null;
     let lastNode = null;
     let index = 0;
-    const clusters = [];
 
     return metaClusterizedFlatTree
-        .reduce((acc, { nodes }) => {
+        .reduce<FlatTreeNode[][]>((acc, { nodes }) => {
             lastCluster = null;
             lastNode = null;
             index = 0;
@@ -136,7 +146,7 @@ export const clusterizeFlatTree = (
             }
 
             return acc;
-        }, clusters)
+        }, [])
         .map((nodes) => {
             const node = nodes[0];
             const duration = calcClusterDuration(nodes);
@@ -153,8 +163,15 @@ export const clusterizeFlatTree = (
         });
 };
 
-export const reclusterizeClusteredFlatTree = (clusteredFlatTree, zoom, start, end, stickDistance?, minBlockSize?) => {
-    return clusteredFlatTree.reduce((acc, cluster) => {
+export const reclusterizeClusteredFlatTree = (
+    clusteredFlatTree: ClusterizedFlatTree,
+    zoom: number,
+    start: number,
+    end: number,
+    stickDistance?: number,
+    minBlockSize?: number
+): ClusterizedFlatTree => {
+    return clusteredFlatTree.reduce<ClusterizedFlatTree>((acc, cluster) => {
         if (checkTimeboundNesting(cluster, start, end)) {
             if (cluster.duration * zoom <= MIN_CLUSTER_SIZE) {
                 acc.push(cluster);

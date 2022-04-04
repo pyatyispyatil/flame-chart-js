@@ -7,7 +7,7 @@ import {
 } from './utils/tree-clusters';
 import { deepMerge } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
-import type { Data, Mouse } from '../types';
+import type { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
@@ -43,14 +43,14 @@ export default class TimeframeSelectorPlugin {
     private offscreenRenderEngine: OffscreenRenderEngine;
     private timeGrid: TimeGrid;
     private styles;
-    private actualClusters;
+    private actualClusters: ClusterizedFlatTree;
     private min: number;
     private max: number;
     private height: number;
-    private clusters;
+    private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
     private dots;
-    private actualClusterizedFlatTree;
+    private actualClusterizedFlatTree: ClusterizedFlatTree;
 
     constructor(data: Data, settings = {}) {
         this.data = data;

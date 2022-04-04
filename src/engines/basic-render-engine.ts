@@ -8,7 +8,7 @@ const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
-    return ua.indexOf('safari') !== -1 ? ua.indexOf('chrome') <= -1 : false;
+    return ua.includes('safari') ? !ua.includes('chrome') : false;
 };
 
 const getPixelRatio = (ctx) => {

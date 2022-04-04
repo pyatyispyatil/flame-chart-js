@@ -205,6 +205,7 @@ export default class WaterfallPlugin extends UiPlugin {
             }
             return true;
         }
+        return false;
     }
 
     override render() {

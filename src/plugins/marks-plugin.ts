@@ -148,5 +148,6 @@ export default class MarksPlugin extends UIPlugin {
             }
             return true;
         }
+        return false;
     }
 }

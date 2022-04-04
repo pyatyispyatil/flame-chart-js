@@ -226,6 +226,7 @@ export class InteractionsEngine extends EventEmitter {
                     this.mouse.y <= y + h + offsetTop
             );
         }
+        return null;
     }
 
     clearHitRegions() {

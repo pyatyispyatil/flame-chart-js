@@ -97,7 +97,7 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleSelect(region) {
-        const selectedRegion = region ? this.findNodeInCluster(region) : null;
+        const selectedRegion = this.findNodeInCluster(region);
 
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;
@@ -129,6 +129,7 @@ export default class FlameChartPlugin extends UIPlugin {
                 };
             }
         }
+        return null;
     }
 
     getColor(type: string, defaultColor: string) {
@@ -231,6 +232,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
             return true;
         }
+        return false;
     }
 
     override render() {

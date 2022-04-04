@@ -2,9 +2,10 @@ import { EventEmitter } from 'events';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
-export default class UIPlugin extends EventEmitter {
+export default abstract class UIPlugin extends EventEmitter {
     interactionsEngine: SeparatedInteractionsEngine;
     renderEngine: OffscreenRenderEngine;
+
     constructor() {
         super();
     }
@@ -18,10 +19,7 @@ export default class UIPlugin extends EventEmitter {
 
     render() {}
 
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars --
-     unused argument, to keep signature compatible with children
-     */
-    setSettings(settings) {}
+    setSettings?(settings: Record<string, any>): void;
 
     renderTooltip() {}
 

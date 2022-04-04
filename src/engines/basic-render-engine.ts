@@ -413,7 +413,7 @@ export class BasicRenderEngine extends EventEmitter {
         y: number,
         width: number,
         height: number,
-        direction: 'top' | 'right' | 'bottom' | 'left'
+        direction: 'bottom' | 'left' | 'right' | 'top'
     ) {
         const halfHeight = height / 2;
         const halfWidth = width / 2;

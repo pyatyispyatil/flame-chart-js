@@ -3,13 +3,13 @@ export const deepMerge = (target, object): Record<string, any> => {
         const type = typeof value;
 
         if (type === 'object' && value !== null) {
-            if (object && object[key]) {
+            if (object?.[key]) {
                 acc[key] = deepMerge(target[key], object[key]);
             } else {
                 acc[key] = target[key];
             }
         } else {
-            acc[key] = (object && object[key]) || target[key];
+            acc[key] = object?.[key] || target[key];
         }
 
         return acc;

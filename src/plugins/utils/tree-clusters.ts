@@ -1,4 +1,4 @@
-import { Data, FlatTree, FlatTreeNode, Node } from '../../types';
+import type { Data, FlatTree, FlatTreeNode, Node } from '../../types';
 
 const MIN_BLOCK_SIZE = 1;
 const STICK_DISTANCE = 0.25;
@@ -103,7 +103,7 @@ export const clusterizeFlatTree = (
     let lastCluster = null;
     let lastNode = null;
     let index = 0;
-    let clusters = [];
+    const clusters = [];
 
     return metaClusterizedFlatTree
         .reduce((acc, { nodes }) => {
@@ -111,7 +111,7 @@ export const clusterizeFlatTree = (
             lastNode = null;
             index = 0;
 
-            for (let node of nodes) {
+            for (const node of nodes) {
                 if (checkTimeboundNesting(node, start, end)) {
                     if (lastCluster && !lastNode) {
                         lastCluster[index] = node;

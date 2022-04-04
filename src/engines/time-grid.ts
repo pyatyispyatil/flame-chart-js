@@ -13,14 +13,14 @@ export const defaultTimeGridSettings = {
 };
 
 export class TimeGrid {
-    renderEngine: RenderEngine | OffscreenRenderEngine;
+    renderEngine: OffscreenRenderEngine | RenderEngine;
     start: number;
     end: number;
     accuracy: number;
     delta: number;
     styles;
     timeUnits;
-    constructor(renderEngine: RenderEngine | OffscreenRenderEngine, settings) {
+    constructor(renderEngine: OffscreenRenderEngine | RenderEngine, settings) {
         this.renderEngine = renderEngine;
         this.start = 0;
         this.end = 0;
@@ -75,7 +75,7 @@ export class TimeGrid {
         }
     }
 
-    renderLines(start: number, height: number, renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
+    renderLines(start: number, height: number, renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(this.styles.color);
 
         this.forEachTime((pixelPosition: number) => {
@@ -83,7 +83,7 @@ export class TimeGrid {
         });
     }
 
-    renderTimes(renderEngine: RenderEngine | OffscreenRenderEngine = this.renderEngine) {
+    renderTimes(renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 

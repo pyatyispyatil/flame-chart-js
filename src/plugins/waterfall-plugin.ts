@@ -4,7 +4,7 @@ import type { Waterfall, WaterfallItems } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
-const getValueByChoice = (array: any[], property: 'start' | 'end', fn) =>
+const getValueByChoice = (array: any[], property: 'end' | 'start', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
 
 export const defaultWaterfallPluginSettings = {

@@ -15,13 +15,13 @@ export default abstract class UIPlugin extends EventEmitter {
         this.interactionsEngine = interactionsEngine;
     }
 
-    postInit() {}
+    postInit?();
 
-    render() {}
+    render?();
 
     setSettings?(settings: Record<string, any>): void;
 
-    renderTooltip() {}
+    renderTooltip?();
 
-    postRender() {}
+    postRender?();
 }

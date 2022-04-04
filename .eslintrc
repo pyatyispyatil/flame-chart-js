@@ -1,5 +1,8 @@
 {
 	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"project": "./tsconfig.json"
+	},
 	"plugins": ["prettier", "@typescript-eslint"],
 	"extends": [
 		"prettier"
@@ -48,6 +51,14 @@
 		"@typescript-eslint/prefer-optional-chain": "error",
 		"@typescript-eslint/no-unused-vars": "error",
 		"@typescript-eslint/no-unused-expressions": "error",
+		"@typescript-eslint/no-unnecessary-type-arguments": "error",
+		"@typescript-eslint/no-unnecessary-type-assertion": "error",
+		"@typescript-eslint/no-unnecessary-type-constraint": "error",
+		"@typescript-eslint/no-useless-constructor": "error",
+		"@typescript-eslint/no-useless-empty-export": "error",
+		"@typescript-eslint/prefer-enum-initializers": "error",
+		"@typescript-eslint/no-unnecessary-qualifier": "error",
+		"@typescript-eslint/prefer-for-of": "error",
 		"@typescript-eslint/consistent-type-imports": ["error", {
 			"prefer": "type-imports"
 		}]

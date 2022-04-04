@@ -6,7 +6,7 @@ export default abstract class UIPlugin extends EventEmitter {
     interactionsEngine: SeparatedInteractionsEngine;
     renderEngine: OffscreenRenderEngine;
 
-    constructor() {
+    protected constructor() {
         super();
     }
 

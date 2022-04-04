@@ -1,7 +1,7 @@
 import { deepMerge } from '../utils';
 import { BasicRenderEngine } from './basic-render-engine';
-import { RenderEngine } from './render-engine';
-import { Mouse, TooltipField } from '../types';
+import type { RenderEngine } from './render-engine';
+import type { Mouse, TooltipField } from '../types';
 
 interface OffscreenRenderEngineOptions {
     width: number;

@@ -7,9 +7,9 @@ import {
 } from './utils/tree-clusters';
 import { deepMerge } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
-import { Data, Mouse } from '../types';
-import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { Data, Mouse } from '../types';
+import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 export const defaultTimeframeSelectorPluginSettings = {
     styles: {

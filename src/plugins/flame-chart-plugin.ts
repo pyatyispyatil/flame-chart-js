@@ -7,9 +7,9 @@ import {
 } from './utils/tree-clusters';
 import Color from 'color';
 import UIPlugin from './ui-plugin';
-import { Colors, Data, FlatTree } from '../types';
-import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { Colors, Data, FlatTree } from '../types';
+import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 

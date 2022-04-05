@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w -m",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build:tsc": "tsc",
     "lint": "eslint 'src/**/*.ts' && echo 'no lint problems found!'"
   },

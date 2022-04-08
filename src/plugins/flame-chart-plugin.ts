@@ -9,13 +9,16 @@ import Color from 'color';
 import UIPlugin from './ui-plugin';
 import type { ClusterizedFlatTree, Colors, Data, FlatTree, MetaClusterizedFlatTree } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
     override interactionsEngine: SeparatedInteractionsEngine;
     override renderEngine: OffscreenRenderEngine;
+
+    height: number
+
     data: Data;
     userColors: Colors;
     flatTree: FlatTree;
@@ -23,14 +26,13 @@ export default class FlameChartPlugin extends UIPlugin {
     colors: Colors;
     selectedRegion;
     lastRandomColor: typeof DEFAULT_COLOR;
-    min: number;
-    max: number;
     hoveredRegion;
     metaClusterizedFlatTree: MetaClusterizedFlatTree;
     actualClusterizedFlatTree: ClusterizedFlatTree;
     initialClusterizedFlatTree: ClusterizedFlatTree;
     lastUsedColor: string | null;
     renderChartTimeout: number;
+
     constructor({ data, colors }) {
         super();
 
@@ -41,7 +43,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.reset();
     }
 
-    override init(renderEngine, interactionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
@@ -201,10 +203,10 @@ export default class FlameChartPlugin extends UIPlugin {
 
     override renderTooltip() {
         if (this.hoveredRegion) {
-            if (this.renderEngine.settings.tooltip === false) {
+            if (this.renderEngine.options.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
-                this.renderEngine.settings.tooltip(
+            } else if (typeof this.renderEngine.options.tooltip === 'function') {
+                this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
                     this.interactionsEngine.getGlobalMouse()

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { deepMerge } from '../utils';
+import { mergeStyles } from '../utils';
 import type { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
 import type { OffscreenRenderEngine } from './offscreen-render-engine';
 
@@ -24,25 +24,49 @@ const getPixelRatio = (ctx) => {
     return dpr / bsr;
 };
 
-export const defaultRenderSettings = {
-    timeUnits: 'ms',
-    styles: {
-        main: {
-            blockHeight: 16,
-            blockPaddingLeftRight: 4,
-            backgroundColor: 'white',
-            font: `10px sans-serif`,
-            fontColor: 'black',
-            tooltipHeaderFontColor: 'black',
-            tooltipBodyFontColor: '#688f45',
-            tooltipBackgroundColor: 'white',
-            headerHeight: 14,
-            headerColor: 'rgba(112, 112, 112, 0.25)',
-            headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
-            headerTitleLeftPadding: 16,
-        },
-    },
+export type RenderOptions = {
+    tooltip?: Function | boolean,
+    timeUnits: string
+}
+
+export type RenderStyles = {
+    blockHeight: number,
+    blockPaddingLeftRight: number,
+    backgroundColor: string,
+    font: string,
+    fontColor: string,
+    tooltipHeaderFontColor: string,
+    tooltipBodyFontColor: string,
+    tooltipBackgroundColor: string,
+    headerHeight: number,
+    headerColor: string,
+    headerStrokeColor: string,
+    headerTitleLeftPadding: number,
+};
+
+export type RenderSettings = {
+    options?: Partial<RenderOptions>,
+    styles?: Partial<RenderStyles>,
+}
+
+export const defaultRenderSettings: RenderOptions = {
     tooltip: undefined,
+    timeUnits: 'ms',
+};
+
+export const defaultRenderStyles: RenderStyles = {
+    blockHeight: 16,
+    blockPaddingLeftRight: 4,
+    backgroundColor: 'white',
+    font: `10px sans-serif`,
+    fontColor: 'black',
+    tooltipHeaderFontColor: 'black',
+    tooltipBodyFontColor: '#688f45',
+    tooltipBackgroundColor: 'white',
+    headerHeight: 14,
+    headerColor: 'rgba(112, 112, 112, 0.25)',
+    headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
+    headerTitleLeftPadding: 16,
 };
 
 export class BasicRenderEngine extends EventEmitter {
@@ -52,9 +76,9 @@ export class BasicRenderEngine extends EventEmitter {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     pixelRatio: number;
-    settings;
+    options: RenderOptions;
     timeUnits;
-    styles;
+    styles: RenderStyles;
     blockPaddingLeftRight: number;
     blockHeight: number;
     blockPaddingTopBottom: number;
@@ -71,7 +95,8 @@ export class BasicRenderEngine extends EventEmitter {
     positionX: number;
     min: number;
     max: number;
-    constructor(canvas: HTMLCanvasElement, settings) {
+
+    constructor(canvas: HTMLCanvasElement, settings: RenderSettings) {
         super();
 
         this.width = canvas.width;
@@ -88,13 +113,11 @@ export class BasicRenderEngine extends EventEmitter {
         this.reset();
     }
 
-    setSettings(data) {
-        const settings: Record<string, any> = deepMerge(defaultRenderSettings, data);
+    setSettings({ options, styles }: RenderSettings) {
+        this.options = mergeStyles(defaultRenderSettings, options);
+        this.styles = mergeStyles(defaultRenderStyles, styles);
 
-        this.settings = settings;
-
-        this.timeUnits = settings.timeUnits;
-        this.styles = settings.styles.main;
+        this.timeUnits = this.options.timeUnits;
 
         this.blockHeight = this.styles.blockHeight;
         this.ctx.font = this.styles.font;

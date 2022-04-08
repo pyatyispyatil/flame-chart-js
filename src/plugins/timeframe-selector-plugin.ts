@@ -5,36 +5,51 @@ import {
     getFlatTreeMinMax,
     reclusterizeClusteredFlatTree,
 } from './utils/tree-clusters';
-import { deepMerge } from '../utils';
+import { mergeStyles } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
 import type { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import UIPlugin from './ui-plugin';
 
-export const defaultTimeframeSelectorPluginSettings = {
-    styles: {
-        timeframeSelectorPlugin: {
-            font: '9px sans-serif',
-            fontColor: 'black',
-            overlayColor: 'rgba(112, 112, 112, 0.5)',
-            graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
-            graphFillColor: 'rgb(0, 0, 0, 0.25)',
-            bottomLineColor: 'rgb(0, 0, 0, 0.25)',
-            knobColor: 'rgb(131, 131, 131)',
-            knobStrokeColor: 'white',
-            knobSize: 6,
-            height: 60,
-            backgroundColor: 'white',
-        },
-    },
+export type TimeframeSelectorPluginStyles = {
+    font: string,
+    fontColor: string,
+    overlayColor: string,
+    graphStrokeColor: string,
+    graphFillColor: string,
+    bottomLineColor: string,
+    knobColor: string,
+    knobStrokeColor: string,
+    knobSize: number,
+    height: number,
+    backgroundColor: string,
+}
+
+export type TimeframeSelectorPluginSettings = {
+    styles?: Partial<TimeframeSelectorPluginStyles>
+}
+
+export const defaultTimeframeSelectorPluginStyles = {
+    font: '9px sans-serif',
+    fontColor: 'black',
+    overlayColor: 'rgba(112, 112, 112, 0.5)',
+    graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
+    graphFillColor: 'rgb(0, 0, 0, 0.25)',
+    bottomLineColor: 'rgb(0, 0, 0, 0.25)',
+    knobColor: 'rgb(131, 131, 131)',
+    knobStrokeColor: 'white',
+    knobSize: 6,
+    height: 60,
+    backgroundColor: 'white',
 };
 
-export default class TimeframeSelectorPlugin {
+export default class TimeframeSelectorPlugin extends UIPlugin {
+    override styles: TimeframeSelectorPluginStyles;
+    override height: number;
+
     private data: Data;
-    private settings;
     private shouldRender: boolean;
-    private renderEngine: OffscreenRenderEngine;
-    private interactionsEngine: SeparatedInteractionsEngine;
     private leftKnobMoving: boolean;
     private rightKnobMoving: boolean;
     private selectingActive: boolean;
@@ -42,23 +57,20 @@ export default class TimeframeSelectorPlugin {
     private timeout: number | null;
     private offscreenRenderEngine: OffscreenRenderEngine;
     private timeGrid: TimeGrid;
-    private styles;
     private actualClusters: ClusterizedFlatTree;
-    private min: number;
-    private max: number;
-    private height: number;
     private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
     private dots;
     private actualClusterizedFlatTree: ClusterizedFlatTree;
 
-    constructor(data: Data, settings = {}) {
+    constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
+        super();
         this.data = data;
-        this.settings = settings;
         this.shouldRender = true;
+        this.setSettings(settings);
     }
 
-    init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
@@ -66,7 +78,7 @@ export default class TimeframeSelectorPlugin {
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
 
-        this.setSettings(this.settings);
+        this.setSettings();
     }
 
     handleMouseDown(region, mouse: Mouse) {
@@ -155,10 +167,12 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    postInit() {
+    override postInit() {
         this.offscreenRenderEngine = this.renderEngine.makeChild();
         this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-        this.timeGrid = new TimeGrid(this.offscreenRenderEngine, this.settings);
+
+        this.timeGrid = new TimeGrid({ styles: this.renderEngine.parent.timeGrid.styles });
+        this.timeGrid.setDefaultRenderEngine(this.offscreenRenderEngine);
 
         this.offscreenRenderEngine.on('resize', () => {
             this.offscreenRenderEngine.setZoom(this.renderEngine.getInitialZoom());
@@ -216,15 +230,13 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.parent.render();
     }
 
-    setSettings(settings) {
-        this.settings = deepMerge(defaultTimeframeSelectorPluginSettings, settings);
-        this.styles = this.settings.styles.timeframeSelectorPlugin;
-
+    override setSettings({ styles }: TimeframeSelectorPluginSettings = { styles: this.styles }) {
+        this.styles = mergeStyles(defaultTimeframeSelectorPluginStyles, styles);
         this.height = this.styles.height;
 
         if (this.offscreenRenderEngine) {
             this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-            this.timeGrid.setSettings({ styles: { timeGrid: this.styles } });
+            this.timeGrid.setSettings({ styles: this.renderEngine.parent.timeGrid.styles });
         }
 
         this.shouldRender = true;
@@ -434,7 +446,7 @@ export default class TimeframeSelectorPlugin {
         );
     }
 
-    render() {
+    override render() {
         if (this.shouldRender) {
             this.shouldRender = false;
             this.offscreenRender();

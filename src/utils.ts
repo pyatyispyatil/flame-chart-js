@@ -1,4 +1,4 @@
-export const deepMerge = (target, object): Record<string, any> => {
+export const deepMerge = <T>(target: T, object: T): T => {
     return Object.entries(target).reduce((acc, [key, value]) => {
         const type = typeof value;
 
@@ -13,7 +13,19 @@ export const deepMerge = (target, object): Record<string, any> => {
         }
 
         return acc;
-    }, {});
+    }, ({} as T));
 };
+
+export const mergeStyles = <S>(defaultStyles: S, styles: Partial<S> = {}): S => (
+    Object.keys(defaultStyles).reduce((acc, key) => {
+        if (styles[key]) {
+            acc[key] = styles[key];
+        } else {
+            acc[key] = defaultStyles[key];
+        }
+
+        return acc;
+    }, ({} as S))
+);
 
 export const isNumber = (val: unknown): val is number => typeof val === 'number';

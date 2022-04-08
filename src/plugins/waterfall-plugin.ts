@@ -1,34 +1,41 @@
-import { deepMerge } from '../utils';
-import UiPlugin from './ui-plugin';
+import { mergeStyles } from '../utils';
+import UIPlugin from './ui-plugin';
 import type { Waterfall, WaterfallItems } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 const getValueByChoice = (array: any[], property: 'end' | 'start', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
 
-export const defaultWaterfallPluginSettings = {
-    styles: {
-        waterfallPlugin: {
-            defaultHeight: 68,
-        },
-    },
+export type WaterfallPluginStyles = {
+    defaultHeight: number,
+}
+
+export type WaterfallPluginSettings = {
+    styles?: Partial<WaterfallPluginStyles>
+}
+
+export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
+    defaultHeight: 68,
 };
 
-export default class WaterfallPlugin extends UiPlugin {
+export default class WaterfallPlugin extends UIPlugin {
     override interactionsEngine: SeparatedInteractionsEngine;
     override renderEngine: OffscreenRenderEngine;
+
+    override styles: WaterfallPluginStyles;
+    override height: number;
+    override min: number;
+    override max: number;
+
+    data;
     positionY: number;
     settings;
     hoveredRegion;
     selectedRegion;
     initialData: WaterfallItems;
-    styles;
-    height: number;
-    data;
-    min: number;
-    max: number;
-    constructor({ items, intervals }: Waterfall, settings = {}) {
+
+    constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings) {
         super();
         this.setData({ items, intervals });
         this.setSettings(settings);
@@ -86,9 +93,8 @@ export default class WaterfallPlugin extends UiPlugin {
         this.positionY = y;
     }
 
-    override setSettings(data) {
-        this.settings = deepMerge(defaultWaterfallPluginSettings, data);
-        this.styles = this.settings.styles.waterfallPlugin;
+    override setSettings({ styles }: WaterfallPluginSettings) {
+        this.styles = mergeStyles(defaultWaterfallPluginStyles, styles);
 
         this.height = this.styles.defaultHeight;
         this.positionY = 0;
@@ -157,15 +163,15 @@ export default class WaterfallPlugin extends UiPlugin {
 
     override renderTooltip() {
         if (this.hoveredRegion) {
-            if (this.renderEngine.settings.tooltip === false) {
+            if (this.renderEngine.options.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
+            } else if (typeof this.renderEngine.options.tooltip === 'function') {
                 const { data: index } = this.hoveredRegion;
                 const data = { ...this.hoveredRegion };
 
                 data.data = this.data.find(({ index: i }) => index === i);
 
-                this.renderEngine.settings.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse());
+                this.renderEngine.options.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse());
             } else {
                 const { data: index } = this.hoveredRegion;
                 const { name, intervals, timing, meta = [] } = this.data.find(({ index: i }) => index === i);
@@ -186,9 +192,9 @@ export default class WaterfallPlugin extends UiPlugin {
                 const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
                 const metaTexts = meta
                     ? meta.map(({ name, value, color }) => ({
-                          text: `${name}: ${value}`,
-                          color,
-                      }))
+                        text: `${name}: ${value}`,
+                        color,
+                    }))
                     : [];
 
                 this.renderEngine.renderTooltipFromData(

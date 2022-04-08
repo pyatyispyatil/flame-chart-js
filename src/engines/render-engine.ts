@@ -1,12 +1,20 @@
 import { TimeGrid } from './time-grid';
-import { BasicRenderEngine } from './basic-render-engine';
+import { BasicRenderEngine, RenderSettings } from './basic-render-engine';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
 import { isNumber } from '../utils';
+import UIPlugin from '../plugins/ui-plugin';
 
 const MAX_ACCURACY = 6;
 
+export type RenderEngineArgs = {
+    canvas: HTMLCanvasElement,
+    settings: RenderSettings,
+    timeGrid: TimeGrid,
+    plugins: UIPlugin[]
+}
+
 export class RenderEngine extends BasicRenderEngine {
-    plugins;
+    plugins: UIPlugin[];
     children: OffscreenRenderEngine[];
     requestedRenders: number[];
     timeGrid: TimeGrid;
@@ -14,7 +22,7 @@ export class RenderEngine extends BasicRenderEngine {
     lastPartialAnimationFrame: number;
     lastGlobalAnimationFrame: number;
 
-    constructor(canvas, settings, plugins) {
+    constructor({ canvas, settings, timeGrid, plugins }: RenderEngineArgs) {
         super(canvas, settings);
 
         this.plugins = plugins;
@@ -22,7 +30,8 @@ export class RenderEngine extends BasicRenderEngine {
         this.children = [];
         this.requestedRenders = [];
 
-        this.timeGrid = new TimeGrid(this, settings);
+        this.timeGrid = timeGrid;
+        this.timeGrid.setDefaultRenderEngine(this)
     }
 
     makeInstance() {
@@ -68,11 +77,7 @@ export class RenderEngine extends BasicRenderEngine {
     override setSettings(data) {
         super.setSettings(data);
 
-        this.settings = data;
-
-        if (this.timeGrid) {
-            this.timeGrid.setSettings(data);
-        }
+        this.options = data;
 
         if (this.children) {
             this.children.forEach((engine) => engine.setSettings(data));
@@ -255,9 +260,9 @@ export class RenderEngine extends BasicRenderEngine {
             }
         });
 
-        if (!tooltipRendered && typeof this.settings.tooltip === 'function') {
+        if (!tooltipRendered && typeof this.options.tooltip === 'function') {
             // notify tooltip of nothing to render
-            this.settings.tooltip(null, this, null);
+            this.options.tooltip(null, this, null);
         }
     }
 

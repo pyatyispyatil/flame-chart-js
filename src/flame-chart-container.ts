@@ -1,21 +1,45 @@
 import { RenderEngine } from './engines/render-engine';
 import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
+import { TimeGrid, TimeGridStyles } from './engines/time-grid';
+import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
+import UIPlugin from './plugins/ui-plugin';
 
-interface FlameChartContainerOptions {
-    canvas: HTMLCanvasElement;
-    plugins: any[];
-    settings: Record<string, any>;
+export interface FlameChartContainerSettings<Styles> {
+    options?: Partial<RenderOptions>,
+    styles?: {
+        timeGrid?: Partial<TimeGridStyles>,
+        main?: Partial<RenderStyles>,
+    } & Styles
 }
 
-export default class FlameChartContainer extends EventEmitter {
+export interface FlameChartContainerOptions<Styles> {
+    canvas: HTMLCanvasElement;
+    plugins: any[];
+    settings: FlameChartContainerSettings<Styles>;
+}
+
+export default class FlameChartContainer<Styles> extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;
-    plugins;
-    constructor({ canvas, plugins, settings }: FlameChartContainerOptions) {
+    plugins: UIPlugin[];
+    timeGrid: TimeGrid;
+
+    constructor({ canvas, plugins, settings }: FlameChartContainerOptions<Styles>) {
         super();
 
-        this.renderEngine = new RenderEngine(canvas, settings, plugins);
+        const styles = settings?.styles || ({} as typeof settings.styles)
+
+        this.timeGrid = new TimeGrid({ styles: styles.timeGrid });
+        this.renderEngine = new RenderEngine({
+            canvas,
+            settings: {
+                styles: styles.main,
+                options: settings.options
+            },
+            plugins,
+            timeGrid: this.timeGrid
+        });
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;
 
@@ -64,6 +88,7 @@ export default class FlameChartContainer extends EventEmitter {
     }
 
     setSettings(data) {
+        this.timeGrid.setSettings(data);
         this.renderEngine.setSettings(data);
         this.renderEngine.render();
     }

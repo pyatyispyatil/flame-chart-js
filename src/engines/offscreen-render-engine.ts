@@ -1,5 +1,5 @@
-import { deepMerge } from '../utils';
-import { BasicRenderEngine } from './basic-render-engine';
+import { mergeStyles } from '../utils';
+import { BasicRenderEngine, RenderSettings } from './basic-render-engine';
 import type { RenderEngine } from './render-engine';
 import type { Mouse, TooltipField } from '../types';
 
@@ -64,8 +64,11 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.collapsed = false;
     }
 
-    setSettingsOverrides(settings: Record<string, any>) {
-        this.setSettings(deepMerge(this.options, settings));
+    setSettingsOverrides(settings: RenderSettings) {
+        this.setSettings({
+            styles: mergeStyles(this.styles, settings.styles),
+            options: mergeStyles(this.options, settings.options)
+        });
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
@@ -92,7 +95,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.setMinMax(min, max));
     }
 
-    override setSettings(settings: Record<string, any>) {
+    override setSettings(settings: RenderSettings) {
         super.setSettings(settings);
 
         if (this.children) {

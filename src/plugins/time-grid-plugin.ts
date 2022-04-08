@@ -34,7 +34,7 @@ export default class TimeGridPlugin extends UIPlugin {
     }
 
     overrideEngineSettings() {
-        this.renderEngine.setSettingsOverrides({ styles: { main: this.styles } });
+        this.renderEngine.setSettingsOverrides({ styles: this.styles });
         this.height = Math.round(this.renderEngine.charHeight + 10);
     }
 

@@ -169,7 +169,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin {
 
     override postInit() {
         this.offscreenRenderEngine = this.renderEngine.makeChild();
-        this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
+        this.offscreenRenderEngine.setSettingsOverrides({ styles: this.styles });
 
         this.timeGrid = new TimeGrid({ styles: this.renderEngine.parent.timeGrid.styles });
         this.timeGrid.setDefaultRenderEngine(this.offscreenRenderEngine);
@@ -235,7 +235,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin {
         this.height = this.styles.height;
 
         if (this.offscreenRenderEngine) {
-            this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
+            this.offscreenRenderEngine.setSettingsOverrides({ styles: this.styles });
             this.timeGrid.setSettings({ styles: this.renderEngine.parent.timeGrid.styles });
         }
 

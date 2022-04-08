@@ -1,4 +1,4 @@
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import { BasicRenderEngine, RenderSettings } from './basic-render-engine';
 import type { RenderEngine } from './render-engine';
 import type { Mouse, TooltipField } from '../types';
@@ -66,8 +66,8 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
 
     setSettingsOverrides(settings: RenderSettings) {
         this.setSettings({
-            styles: mergeStyles(this.styles, settings.styles),
-            options: mergeStyles(this.options, settings.options)
+            styles: mergeObjects(this.styles, settings.styles),
+            options: mergeObjects(this.options, settings.options)
         });
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import type { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
 import type { OffscreenRenderEngine } from './offscreen-render-engine';
 
@@ -114,8 +114,8 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     setSettings({ options, styles }: RenderSettings) {
-        this.options = mergeStyles(defaultRenderSettings, options);
-        this.styles = mergeStyles(defaultRenderStyles, styles);
+        this.options = mergeObjects(defaultRenderSettings, options);
+        this.styles = mergeObjects(defaultRenderStyles, styles);
 
         this.timeUnits = this.options.timeUnits;
 

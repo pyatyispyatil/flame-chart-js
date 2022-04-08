@@ -5,7 +5,7 @@ import {
     getFlatTreeMinMax,
     reclusterizeClusteredFlatTree,
 } from './utils/tree-clusters';
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
 import type { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
@@ -231,7 +231,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin {
     }
 
     override setSettings({ styles }: TimeframeSelectorPluginSettings = { styles: this.styles }) {
-        this.styles = mergeStyles(defaultTimeframeSelectorPluginStyles, styles);
+        this.styles = mergeObjects(defaultTimeframeSelectorPluginStyles, styles);
         this.height = this.styles.height;
 
         if (this.offscreenRenderEngine) {

@@ -16,7 +16,7 @@ export const deepMerge = <T>(target: T, object: T): T => {
     }, ({} as T));
 };
 
-export const mergeStyles = <S>(defaultStyles: S, styles: Partial<S> = {}): S => (
+export const mergeObjects = <S>(defaultStyles: S, styles: Partial<S> = {}): S => (
     Object.keys(defaultStyles).reduce((acc, key) => {
         if (styles[key]) {
             acc[key] = styles[key];

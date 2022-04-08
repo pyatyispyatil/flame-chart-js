@@ -1,4 +1,4 @@
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import UIPlugin from './ui-plugin';
 import type { Waterfall, WaterfallItems } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
@@ -94,7 +94,7 @@ export default class WaterfallPlugin extends UIPlugin {
     }
 
     override setSettings({ styles }: WaterfallPluginSettings) {
-        this.styles = mergeStyles(defaultWaterfallPluginStyles, styles);
+        this.styles = mergeObjects(defaultWaterfallPluginStyles, styles);
 
         this.height = this.styles.defaultHeight;
         this.positionY = 0;

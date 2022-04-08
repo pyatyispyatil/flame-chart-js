@@ -1,4 +1,4 @@
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
@@ -50,7 +50,7 @@ export default class TogglePlugin {
     }
 
     setSettings({ styles }: TogglePluginSettings) {
-        this.styles = mergeStyles(defaultTogglePluginStyles, styles);
+        this.styles = mergeObjects(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;
     }

@@ -1,4 +1,4 @@
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import type { RenderEngine } from './render-engine';
 import type { OffscreenRenderEngine } from './offscreen-render-engine';
 
@@ -40,7 +40,7 @@ export class TimeGrid {
     }
 
     setSettings({ styles }: TimeGridSettings) {
-        this.styles = mergeStyles(defaultTimeGridStyles, styles);
+        this.styles = mergeObjects(defaultTimeGridStyles, styles);
 
         if (this.renderEngine) {
             this.timeUnits = this.renderEngine.getTimeUnits();

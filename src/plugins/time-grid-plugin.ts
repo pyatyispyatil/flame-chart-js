@@ -1,4 +1,4 @@
-import { mergeStyles } from '../utils';
+import { mergeObjects } from '../utils';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import UIPlugin from './ui-plugin';
 
@@ -26,7 +26,7 @@ export default class TimeGridPlugin extends UIPlugin {
     }
 
     override setSettings({ styles }: TimeGridPluginSettings) {
-        this.styles = mergeStyles(defaultTimeGridPluginStyles, styles);
+        this.styles = mergeObjects(defaultTimeGridPluginStyles, styles);
 
         if (this.renderEngine) {
             this.overrideEngineSettings();

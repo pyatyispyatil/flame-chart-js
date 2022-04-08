@@ -1,26 +1,32 @@
-import { deepMerge } from '../utils';
+import { mergeStyles } from '../utils';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import UIPlugin from './ui-plugin';
 
-export const defaultTimeGridPluginSettings = {
-    styles: {
-        timeGridPlugin: {
-            font: '10px sans-serif',
-            fontColor: 'black',
-        },
-    },
+export type TimeGridPluginStyles = {
+    font: string,
+    fontColor: string,
+}
+
+export type TimeGridPluginSettings = {
+    styles?: Partial<TimeGridPluginStyles>
+}
+
+export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
+    font: '10px sans-serif',
+    fontColor: 'black',
 };
 
-export default class TimeGridPlugin {
-    styles;
-    renderEngine: OffscreenRenderEngine;
-    height: number;
+export default class TimeGridPlugin extends UIPlugin {
+    override styles: TimeGridPluginStyles;
+    override height: number;
 
-    constructor(settings = {}) {
+    constructor(settings: TimeGridPluginSettings = {}) {
+        super()
         this.setSettings(settings);
     }
 
-    setSettings(settings) {
-        this.styles = deepMerge(defaultTimeGridPluginSettings, settings).styles.timeGridPlugin;
+    override setSettings({ styles }: TimeGridPluginSettings) {
+        this.styles = mergeStyles(defaultTimeGridPluginStyles, styles);
 
         if (this.renderEngine) {
             this.overrideEngineSettings();
@@ -32,13 +38,13 @@ export default class TimeGridPlugin {
         this.height = Math.round(this.renderEngine.charHeight + 10);
     }
 
-    init(renderEngine: OffscreenRenderEngine) {
+    override init(renderEngine: OffscreenRenderEngine) {
         this.renderEngine = renderEngine;
 
         this.overrideEngineSettings();
     }
 
-    render() {
+    override render() {
         this.renderEngine.parent.timeGrid.renderTimes(this.renderEngine);
         this.renderEngine.parent.timeGrid.renderLines(0, this.renderEngine.height, this.renderEngine);
 

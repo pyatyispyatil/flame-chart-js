@@ -1,28 +1,42 @@
-import { deepMerge } from '../utils';
-import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import { mergeStyles } from '../utils';
+import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
-export const defaultTogglePluginSettings = {
-    styles: {
-        togglePlugin: {
-            height: 16,
-            color: 'rgb(202,202,202, 0.25)',
-            strokeColor: 'rgb(138,138,138, 0.50)',
-            dotsColor: 'rgb(97,97,97)',
-            fontColor: 'black',
-            font: '10px sans-serif',
-            triangleWidth: 10,
-            triangleHeight: 7,
-            triangleColor: 'black',
-            leftPadding: 10,
-        },
-    },
+export type TogglePluginStyles = {
+    height: number,
+    color: string,
+    strokeColor: string,
+    dotsColor: string,
+    fontColor: string,
+    font: string,
+    triangleWidth: number,
+    triangleHeight: number,
+    triangleColor: string,
+    leftPadding: number,
+}
+
+export type TogglePluginSettings = {
+    styles?: Partial<TogglePluginStyles>
+}
+
+export const defaultTogglePluginStyles: TogglePluginStyles = {
+    height: 16,
+    color: 'rgb(202,202,202, 0.25)',
+    strokeColor: 'rgb(138,138,138, 0.50)',
+    dotsColor: 'rgb(97,97,97)',
+    fontColor: 'black',
+    font: '10px sans-serif',
+    triangleWidth: 10,
+    triangleHeight: 7,
+    triangleColor: 'black',
+    leftPadding: 10,
 };
 
 export default class TogglePlugin {
+    styles: TogglePluginStyles;
+
     title: string;
     settings;
-    styles;
     height: number;
     renderEngine: OffscreenRenderEngine;
     interactionsEngine: SeparatedInteractionsEngine;
@@ -30,14 +44,13 @@ export default class TogglePlugin {
     resizeStartHeight: number;
     resizeStartPosition: number;
 
-    constructor(title: string, settings) {
+    constructor(title: string, settings: TogglePluginSettings) {
         this.setSettings(settings);
         this.title = title;
     }
 
-    setSettings(data) {
-        this.settings = deepMerge(defaultTogglePluginSettings, data);
-        this.styles = this.settings.styles.togglePlugin;
+    setSettings({ styles }: TogglePluginSettings) {
+        this.styles = mergeStyles(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;
     }
@@ -131,7 +144,7 @@ export default class TogglePlugin {
         this.renderEngine.renderTriangle(
             this.styles.triangleColor,
             this.styles.leftPadding,
-            0 + this.styles.height / 2,
+            this.styles.height / 2,
             this.styles.triangleWidth,
             this.styles.triangleHeight,
             nextEngine.collapsed ? 'right' : 'bottom'

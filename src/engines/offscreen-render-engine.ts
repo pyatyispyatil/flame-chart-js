@@ -24,7 +24,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         canvas.width = width;
         canvas.height = height;
 
-        super(canvas, parent.settings);
+        super(canvas, { options: parent.options, styles: parent.styles });
 
         this.width = width;
         this.height = height;
@@ -65,7 +65,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     setSettingsOverrides(settings: Record<string, any>) {
-        this.setSettings(deepMerge(this.settings, settings));
+        this.setSettings(deepMerge(this.options, settings));
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 

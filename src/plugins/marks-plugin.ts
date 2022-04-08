@@ -2,14 +2,16 @@ import Color from 'color';
 import UIPlugin from './ui-plugin';
 import type { Marks } from '../types';
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/interactions-engine';
+import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 export default class MarksPlugin extends UIPlugin {
     override renderEngine: OffscreenRenderEngine;
     override interactionsEngine: SeparatedInteractionsEngine;
+
+    override min: number;
+    override max: number;
+
     marks: Marks;
-    min: number;
-    max: number;
     hoveredRegion;
     selectedRegion;
 
@@ -52,7 +54,7 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    get height() {
+    override get height() {
         return this.renderEngine.blockHeight + 1;
     }
 
@@ -124,10 +126,10 @@ export default class MarksPlugin extends UIPlugin {
 
     override renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
-            if (this.renderEngine.settings.tooltip === false) {
+            if (this.renderEngine.options.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
-                this.renderEngine.settings.tooltip(
+            } else if (typeof this.renderEngine.options.tooltip === 'function') {
+                this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
                     this.interactionsEngine.getGlobalMouse()

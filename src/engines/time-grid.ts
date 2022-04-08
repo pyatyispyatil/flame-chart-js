@@ -1,15 +1,19 @@
-import { deepMerge } from '../utils';
+import { mergeStyles } from '../utils';
 import type { RenderEngine } from './render-engine';
 import type { OffscreenRenderEngine } from './offscreen-render-engine';
 
 const MIN_PIXEL_DELTA = 85;
 
-export const defaultTimeGridSettings = {
-    styles: {
-        timeGrid: {
-            color: 'rgba(90,90,90,0.20)',
-        },
-    },
+export type TimeGridStyles = {
+    color: string,
+};
+
+export type TimeGridSettings = {
+    styles: Partial<TimeGridStyles>,
+};
+
+export const defaultTimeGridStyles: TimeGridStyles = {
+    color: 'rgba(90,90,90,0.20)',
 };
 
 export class TimeGrid {
@@ -18,10 +22,10 @@ export class TimeGrid {
     end: number;
     accuracy: number;
     delta: number;
-    styles;
+    styles: TimeGridStyles;
     timeUnits;
-    constructor(renderEngine: OffscreenRenderEngine | RenderEngine, settings) {
-        this.renderEngine = renderEngine;
+
+    constructor(settings: TimeGridSettings) {
         this.start = 0;
         this.end = 0;
         this.accuracy = 0;
@@ -30,11 +34,17 @@ export class TimeGrid {
         this.setSettings(settings);
     }
 
-    setSettings(data) {
-        const settings = deepMerge(defaultTimeGridSettings, data);
-
-        this.styles = settings.styles.timeGrid;
+    setDefaultRenderEngine(renderEngine: OffscreenRenderEngine | RenderEngine) {
+        this.renderEngine = renderEngine;
         this.timeUnits = this.renderEngine.getTimeUnits();
+    }
+
+    setSettings({ styles }: TimeGridSettings) {
+        this.styles = mergeStyles(defaultTimeGridStyles, styles);
+
+        if (this.renderEngine) {
+            this.timeUnits = this.renderEngine.getTimeUnits();
+        }
     }
 
     recalc() {

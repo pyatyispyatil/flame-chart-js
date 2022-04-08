@@ -9,6 +9,9 @@ import type { Colors, Data, Marks, Waterfall } from './types';
 import UIPlugin from './plugins/ui-plugin';
 
 export { default as FlameChartContainer } from './flame-chart-container';
+export type { FlameChartContainerSettings, FlameChartContainerOptions } from './flame-chart-container';
+
+export { default as UIPlugin } from './plugins/ui-plugin';
 export { default as FlameChartPlugin } from './plugins/flame-chart-plugin';
 export { default as TimeGridPlugin } from './plugins/time-grid-plugin';
 export { default as MarksPlugin } from './plugins/marks-plugin';
@@ -16,21 +19,21 @@ export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector
 export { default as WaterfallPlugin } from './plugins/waterfall-plugin';
 export { default as TogglePlugin } from './plugins/toggle-plugin';
 
-type FlameChartStyles = {
+export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>,
     timeframeSelectorPlugin?: Partial<TimeframeSelectorPluginStyles>,
     waterfallPlugin?: Partial<WaterfallPluginStyles>,
     togglePlugin?: Partial<TogglePluginStyles>,
 }
 
-type FlameChartSettings = {
+export type FlameChartSettings = {
     headers?: Partial<{
         waterfall: string,
         flameChart: string
     }>
 } & FlameChartContainerSettings<FlameChartStyles>
 
-type FlameChartOptions = {
+export type FlameChartOptions = {
     canvas: HTMLCanvasElement;
     data: Data;
     marks?: Marks;

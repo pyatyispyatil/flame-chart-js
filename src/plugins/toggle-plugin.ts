@@ -3,21 +3,21 @@ import type { SeparatedInteractionsEngine } from '../engines/separated-interacti
 import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export type TogglePluginStyles = {
-    height: number,
-    color: string,
-    strokeColor: string,
-    dotsColor: string,
-    fontColor: string,
-    font: string,
-    triangleWidth: number,
-    triangleHeight: number,
-    triangleColor: string,
-    leftPadding: number,
-}
+    height: number;
+    color: string;
+    strokeColor: string;
+    dotsColor: string;
+    fontColor: string;
+    font: string;
+    triangleWidth: number;
+    triangleHeight: number;
+    triangleColor: string;
+    leftPadding: number;
+};
 
 export type TogglePluginSettings = {
-    styles?: Partial<TogglePluginStyles>
-}
+    styles?: Partial<TogglePluginStyles>;
+};
 
 export const defaultTogglePluginStyles: TogglePluginStyles = {
     height: 16,

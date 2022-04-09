@@ -67,7 +67,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     setSettingsOverrides(settings: RenderSettings) {
         this.setSettings({
             styles: mergeObjects(this.styles, settings.styles),
-            options: mergeObjects(this.options, settings.options)
+            options: mergeObjects(this.options, settings.options),
         });
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }

@@ -13,10 +13,10 @@ export const deepMerge = <T>(target: T, object: T): T => {
         }
 
         return acc;
-    }, ({} as T));
+    }, {} as T);
 };
 
-export const mergeObjects = <S>(defaultStyles: S, styles: Partial<S> = {}): S => (
+export const mergeObjects = <S>(defaultStyles: S, styles: Partial<S> = {}): S =>
     Object.keys(defaultStyles).reduce((acc, key) => {
         if (styles[key]) {
             acc[key] = styles[key];
@@ -25,7 +25,6 @@ export const mergeObjects = <S>(defaultStyles: S, styles: Partial<S> = {}): S =>
         }
 
         return acc;
-    }, ({} as S))
-);
+    }, {} as S);
 
 export const isNumber = (val: unknown): val is number => typeof val === 'number';

@@ -6,11 +6,11 @@ import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
 export interface FlameChartContainerSettings<Styles> {
-    options?: Partial<RenderOptions>,
+    options?: Partial<RenderOptions>;
     styles?: {
-        timeGrid?: Partial<TimeGridStyles>,
-        main?: Partial<RenderStyles>,
-    } & Styles
+        timeGrid?: Partial<TimeGridStyles>;
+        main?: Partial<RenderStyles>;
+    } & Styles;
 }
 
 export interface FlameChartContainerOptions<Styles> {
@@ -28,17 +28,17 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
     constructor({ canvas, plugins, settings }: FlameChartContainerOptions<Styles>) {
         super();
 
-        const styles = settings?.styles || ({} as typeof settings.styles)
+        const styles = settings?.styles || ({} as typeof settings.styles);
 
         this.timeGrid = new TimeGrid({ styles: styles.timeGrid });
         this.renderEngine = new RenderEngine({
             canvas,
             settings: {
                 styles: styles.main,
-                options: settings.options
+                options: settings.options,
             },
             plugins,
-            timeGrid: this.timeGrid
+            timeGrid: this.timeGrid,
         });
         this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
         this.plugins = plugins;

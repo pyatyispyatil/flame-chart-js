@@ -5,11 +5,11 @@ import type { OffscreenRenderEngine } from './offscreen-render-engine';
 const MIN_PIXEL_DELTA = 85;
 
 export type TimeGridStyles = {
-    color: string,
+    color: string;
 };
 
 export type TimeGridSettings = {
-    styles: Partial<TimeGridStyles>,
+    styles: Partial<TimeGridStyles>;
 };
 
 export const defaultTimeGridStyles: TimeGridStyles = {

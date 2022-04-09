@@ -17,7 +17,7 @@ export default class FlameChartPlugin extends UIPlugin {
     override interactionsEngine: SeparatedInteractionsEngine;
     override renderEngine: OffscreenRenderEngine;
 
-    height: number
+    height: number;
 
     data: Data;
     userColors: Colors;

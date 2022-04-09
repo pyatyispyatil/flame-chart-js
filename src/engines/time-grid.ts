@@ -1,6 +1,6 @@
 import { mergeObjects } from '../utils';
-import type { RenderEngine } from './render-engine';
-import type { OffscreenRenderEngine } from './offscreen-render-engine';
+import { RenderEngine } from './render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
 
 const MIN_PIXEL_DELTA = 85;
 

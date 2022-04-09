@@ -1,7 +1,7 @@
 import { mergeObjects } from '../utils';
-import { BasicRenderEngine, RenderSettings } from './basic-render-engine';
-import type { RenderEngine } from './render-engine';
-import type { Mouse, TooltipField } from '../types';
+import { RenderSettings, BasicRenderEngine } from './basic-render-engine';
+import { RenderEngine } from './render-engine';
+import { Mouse, TooltipField } from '../types';
 
 interface OffscreenRenderEngineOptions {
     width: number;

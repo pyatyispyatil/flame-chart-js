@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import type { RenderEngine } from './render-engine';
-import type { OffscreenRenderEngine } from './offscreen-render-engine';
-import type { HitRegion, Mouse } from '../types';
+import { RenderEngine } from './render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { HitRegion, Mouse } from '../types';
 import { SeparatedInteractionsEngine } from './separated-interactions-engine';
 
 export class InteractionsEngine extends EventEmitter {

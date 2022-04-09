@@ -1,8 +1,8 @@
 import { mergeObjects } from '../utils';
 import UIPlugin from './ui-plugin';
-import type { Waterfall, WaterfallItems } from '../types';
-import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import { Waterfall, WaterfallItems } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 const getValueByChoice = (array: any[], property: 'end' | 'start', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;

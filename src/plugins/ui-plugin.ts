@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 export default abstract class UIPlugin<S = {}> extends EventEmitter {
     interactionsEngine: SeparatedInteractionsEngine;

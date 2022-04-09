@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { mergeObjects } from '../utils';
-import type { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
-import type { OffscreenRenderEngine } from './offscreen-render-engine';
+import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';

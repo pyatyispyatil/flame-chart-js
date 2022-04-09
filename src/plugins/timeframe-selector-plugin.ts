@@ -7,9 +7,9 @@ import {
 } from './utils/tree-clusters';
 import { mergeObjects } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
-import type { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
-import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
-import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
 
 export type TimeframeSelectorPluginStyles = {

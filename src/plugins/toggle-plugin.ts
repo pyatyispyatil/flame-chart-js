@@ -1,6 +1,6 @@
 import { mergeObjects } from '../utils';
-import type { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
-import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 
 export type TogglePluginStyles = {
     height: number;

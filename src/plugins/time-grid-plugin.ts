@@ -1,5 +1,5 @@
 import { mergeObjects } from '../utils';
-import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import UIPlugin from './ui-plugin';
 
 export type TimeGridPluginStyles = {

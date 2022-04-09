@@ -7,11 +7,11 @@ import UIPlugin from '../plugins/ui-plugin';
 const MAX_ACCURACY = 6;
 
 export type RenderEngineArgs = {
-    canvas: HTMLCanvasElement,
-    settings: RenderSettings,
-    timeGrid: TimeGrid,
-    plugins: UIPlugin[]
-}
+    canvas: HTMLCanvasElement;
+    settings: RenderSettings;
+    timeGrid: TimeGrid;
+    plugins: UIPlugin[];
+};
 
 export class RenderEngine extends BasicRenderEngine {
     plugins: UIPlugin[];
@@ -31,7 +31,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.requestedRenders = [];
 
         this.timeGrid = timeGrid;
-        this.timeGrid.setDefaultRenderEngine(this)
+        this.timeGrid.setDefaultRenderEngine(this);
     }
 
     makeInstance() {

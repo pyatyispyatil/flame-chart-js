@@ -13,22 +13,22 @@ import type { SeparatedInteractionsEngine } from '../engines/separated-interacti
 import UIPlugin from './ui-plugin';
 
 export type TimeframeSelectorPluginStyles = {
-    font: string,
-    fontColor: string,
-    overlayColor: string,
-    graphStrokeColor: string,
-    graphFillColor: string,
-    bottomLineColor: string,
-    knobColor: string,
-    knobStrokeColor: string,
-    knobSize: number,
-    height: number,
-    backgroundColor: string,
-}
+    font: string;
+    fontColor: string;
+    overlayColor: string;
+    graphStrokeColor: string;
+    graphFillColor: string;
+    bottomLineColor: string;
+    knobColor: string;
+    knobStrokeColor: string;
+    knobSize: number;
+    height: number;
+    backgroundColor: string;
+};
 
 export type TimeframeSelectorPluginSettings = {
-    styles?: Partial<TimeframeSelectorPluginStyles>
-}
+    styles?: Partial<TimeframeSelectorPluginStyles>;
+};
 
 export const defaultTimeframeSelectorPluginStyles = {
     font: '9px sans-serif',

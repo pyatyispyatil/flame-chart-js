@@ -4,7 +4,7 @@ import type { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '.
 import type { OffscreenRenderEngine } from './offscreen-render-engine';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
-const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
+const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
@@ -25,29 +25,29 @@ const getPixelRatio = (ctx) => {
 };
 
 export type RenderOptions = {
-    tooltip?: Function | boolean,
-    timeUnits: string
-}
+    tooltip?: Function | boolean;
+    timeUnits: string;
+};
 
 export type RenderStyles = {
-    blockHeight: number,
-    blockPaddingLeftRight: number,
-    backgroundColor: string,
-    font: string,
-    fontColor: string,
-    tooltipHeaderFontColor: string,
-    tooltipBodyFontColor: string,
-    tooltipBackgroundColor: string,
-    headerHeight: number,
-    headerColor: string,
-    headerStrokeColor: string,
-    headerTitleLeftPadding: number,
+    blockHeight: number;
+    blockPaddingLeftRight: number;
+    backgroundColor: string;
+    font: string;
+    fontColor: string;
+    tooltipHeaderFontColor: string;
+    tooltipBodyFontColor: string;
+    tooltipBackgroundColor: string;
+    headerHeight: number;
+    headerColor: string;
+    headerStrokeColor: string;
+    headerTitleLeftPadding: number;
 };
 
 export type RenderSettings = {
-    options?: Partial<RenderOptions>,
-    styles?: Partial<RenderStyles>,
-}
+    options?: Partial<RenderOptions>;
+    styles?: Partial<RenderStyles>;
+};
 
 export const defaultRenderSettings: RenderOptions = {
     tooltip: undefined,

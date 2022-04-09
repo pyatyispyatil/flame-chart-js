@@ -20,18 +20,18 @@ export { default as WaterfallPlugin } from './plugins/waterfall-plugin';
 export { default as TogglePlugin } from './plugins/toggle-plugin';
 
 export type FlameChartStyles = {
-    timeGridPlugin?: Partial<TimeGridPluginStyles>,
-    timeframeSelectorPlugin?: Partial<TimeframeSelectorPluginStyles>,
-    waterfallPlugin?: Partial<WaterfallPluginStyles>,
-    togglePlugin?: Partial<TogglePluginStyles>,
-}
+    timeGridPlugin?: Partial<TimeGridPluginStyles>;
+    timeframeSelectorPlugin?: Partial<TimeframeSelectorPluginStyles>;
+    waterfallPlugin?: Partial<WaterfallPluginStyles>;
+    togglePlugin?: Partial<TogglePluginStyles>;
+};
 
 export type FlameChartSettings = {
     headers?: Partial<{
-        waterfall: string,
-        flameChart: string
-    }>
-} & FlameChartContainerSettings<FlameChartStyles>
+        waterfall: string;
+        flameChart: string;
+    }>;
+} & FlameChartContainerSettings<FlameChartStyles>;
 
 export type FlameChartOptions = {
     canvas: HTMLCanvasElement;
@@ -41,7 +41,7 @@ export type FlameChartOptions = {
     colors: Colors;
     settings: FlameChartSettings;
     plugins: UIPlugin[];
-}
+};
 
 const defaultSettings: FlameChartSettings = {};
 
@@ -52,21 +52,17 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setFlameChartPosition: ({ x, y }: { x: number; y: number }) => void;
 
     constructor({
-                    canvas,
-                    data,
-                    marks,
-                    waterfall,
-                    colors,
-                    settings = defaultSettings,
-                    plugins = []
-                }: FlameChartOptions) {
+        canvas,
+        data,
+        marks,
+        waterfall,
+        colors,
+        settings = defaultSettings,
+        plugins = [],
+    }: FlameChartOptions) {
         const activePlugins = [];
-        const {
-            headers: {
-                waterfall: waterfallName = 'waterfall',
-                flameChart: flameChartName = 'flame chart'
-            } = {}
-        } = settings;
+        const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
+            settings;
         const styles = settings?.styles || ({} as FlameChartSettings['styles']);
 
         const timeGridPlugin = new TimeGridPlugin({ styles: styles.timeGridPlugin });

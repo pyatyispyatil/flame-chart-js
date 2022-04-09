@@ -8,12 +8,12 @@ const getValueByChoice = (array: any[], property: 'end' | 'start', fn) =>
     array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
 
 export type WaterfallPluginStyles = {
-    defaultHeight: number,
-}
+    defaultHeight: number;
+};
 
 export type WaterfallPluginSettings = {
-    styles?: Partial<WaterfallPluginStyles>
-}
+    styles?: Partial<WaterfallPluginStyles>;
+};
 
 export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
     defaultHeight: 68,
@@ -192,9 +192,9 @@ export default class WaterfallPlugin extends UIPlugin {
                 const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
                 const metaTexts = meta
                     ? meta.map(({ name, value, color }) => ({
-                        text: `${name}: ${value}`,
-                        color,
-                    }))
+                          text: `${name}: ${value}`,
+                          color,
+                      }))
                     : [];
 
                 this.renderEngine.renderTooltipFromData(

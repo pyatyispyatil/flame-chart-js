@@ -3,13 +3,13 @@ import type { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import UIPlugin from './ui-plugin';
 
 export type TimeGridPluginStyles = {
-    font: string,
-    fontColor: string,
-}
+    font: string;
+    fontColor: string;
+};
 
 export type TimeGridPluginSettings = {
-    styles?: Partial<TimeGridPluginStyles>
-}
+    styles?: Partial<TimeGridPluginStyles>;
+};
 
 export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
     font: '10px sans-serif',
@@ -21,7 +21,7 @@ export default class TimeGridPlugin extends UIPlugin {
     override height: number;
 
     constructor(settings: TimeGridPluginSettings = {}) {
-        super()
+        super();
         this.setSettings(settings);
     }
 

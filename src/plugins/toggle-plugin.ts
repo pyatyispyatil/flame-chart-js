@@ -1,6 +1,7 @@
 import { mergeObjects } from '../utils';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import UIPlugin from './ui-plugin';
 
 export type TogglePluginStyles = {
     height: number;
@@ -32,30 +33,31 @@ export const defaultTogglePluginStyles: TogglePluginStyles = {
     leftPadding: 10,
 };
 
-export default class TogglePlugin {
-    styles: TogglePluginStyles;
+export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
+    name = 'togglePlugin';
+
+    override styles: TogglePluginStyles;
 
     title: string;
     settings;
     height: number;
-    renderEngine: OffscreenRenderEngine;
-    interactionsEngine: SeparatedInteractionsEngine;
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;
 
     constructor(title: string, settings: TogglePluginSettings) {
+        super();
         this.setSettings(settings);
         this.title = title;
     }
 
-    setSettings({ styles }: TogglePluginSettings) {
+    override setSettings({ styles }: TogglePluginSettings) {
         this.styles = mergeObjects(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;
     }
 
-    init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         this.renderEngine = renderEngine;
         this.interactionsEngine = interactionsEngine;
 
@@ -126,7 +128,7 @@ export default class TogglePlugin {
         return this.renderEngine.parent.children[this.renderEngine.id + 1];
     }
 
-    render() {
+    override render() {
         const nextEngine = this.getNextEngine();
         const prevEngine = this.getPrevEngine();
         const triangleFullWidth = this.styles.leftPadding + this.styles.triangleWidth;

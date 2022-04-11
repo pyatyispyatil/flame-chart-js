@@ -6,7 +6,7 @@ export { default as TimeframeSelectorPlugin } from './plugins/timeframe-selector
 export { default as WaterfallPlugin } from './plugins/waterfall-plugin';
 export { default as TogglePlugin } from './plugins/toggle-plugin';
 
-export { default as FlameChart } from './flame-chart';
+export { default as default } from './flame-chart';
 export type { FlameChartStyles, FlameChartSettings, FlameChartOptions } from './flame-chart';
 
 export { default as FlameChartContainer } from './flame-chart-container';

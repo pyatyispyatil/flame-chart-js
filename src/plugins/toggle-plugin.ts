@@ -37,10 +37,9 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     name = 'togglePlugin';
 
     override styles: TogglePluginStyles;
+    height: number;
 
     title: string;
-    settings;
-    height: number;
     resizeActive: boolean;
     resizeStartHeight: number;
     resizeStartPosition: number;
@@ -58,8 +57,7 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     }
 
     override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+        super.init(renderEngine, interactionsEngine);
 
         const nextEngine = this.getNextEngine();
         nextEngine.setFlexible();

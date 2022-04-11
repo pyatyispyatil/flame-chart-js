@@ -22,13 +22,8 @@ export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
 export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     name = 'waterfallPlugin';
 
-    override interactionsEngine: SeparatedInteractionsEngine;
-    override renderEngine: OffscreenRenderEngine;
-
     override styles: WaterfallPluginStyles;
-    override height: number;
-    override min: number;
-    override max: number;
+    height: number;
 
     data;
     positionY: number;

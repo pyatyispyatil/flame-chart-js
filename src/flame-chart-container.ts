@@ -5,12 +5,14 @@ import { TimeGrid, TimeGridStyles } from './engines/time-grid';
 import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
+export type FlameChartContainerStyles<Styles> = {
+    timeGrid?: Partial<TimeGridStyles>;
+    main?: Partial<RenderStyles>;
+} & Styles
+
 export interface FlameChartContainerSettings<Styles> {
     options?: Partial<RenderOptions>;
-    styles?: {
-        timeGrid?: Partial<TimeGridStyles>;
-        main?: Partial<RenderStyles>;
-    } & Styles;
+    styles?: FlameChartContainerStyles<Styles>;
 }
 
 export interface FlameChartContainerOptions<Styles> {
@@ -87,9 +89,10 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
         }
     }
 
-    setSettings(data) {
-        this.timeGrid.setSettings(data);
-        this.renderEngine.setSettings(data);
+    setSettings(settings: FlameChartContainerSettings<Styles>) {
+        this.timeGrid.setSettings({ styles: settings.styles?.timeGrid });
+        this.renderEngine.setSettings({ options: settings.options, styles: settings.styles.main });
+        this.plugins.forEach((plugin) => plugin.setSettings?.({ styles: settings.styles[plugin.name] }));
         this.renderEngine.render();
     }
 

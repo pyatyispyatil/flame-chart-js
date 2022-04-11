@@ -77,11 +77,8 @@ export class RenderEngine extends BasicRenderEngine {
     override setSettings(data) {
         super.setSettings(data);
 
-        this.options = data;
-
         if (this.children) {
             this.children.forEach((engine) => engine.setSettings(data));
-            this.plugins.forEach((plugin) => plugin.setSettings?.(data));
             this.recalcChildrenSizes();
         }
     }

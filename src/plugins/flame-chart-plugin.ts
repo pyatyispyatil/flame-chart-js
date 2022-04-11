@@ -14,8 +14,7 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
-    override interactionsEngine: SeparatedInteractionsEngine;
-    override renderEngine: OffscreenRenderEngine;
+    name = 'flameChartPlugin';
 
     height: number;
 

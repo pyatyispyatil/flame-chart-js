@@ -4,7 +4,9 @@ import { Marks } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
-export default class MarksPlugin extends UIPlugin {
+export default class MarksPlugin extends UIPlugin<undefined> {
+    name = 'marksPlugin';
+
     override renderEngine: OffscreenRenderEngine;
     override interactionsEngine: SeparatedInteractionsEngine;
 

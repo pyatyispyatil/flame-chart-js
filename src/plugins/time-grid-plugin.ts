@@ -16,7 +16,9 @@ export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
     fontColor: 'black',
 };
 
-export default class TimeGridPlugin extends UIPlugin {
+export default class TimeGridPlugin extends UIPlugin<TimeGridPluginStyles> {
+    name = 'timeGridPlugin';
+
     override styles: TimeGridPluginStyles;
     override height: number;
 

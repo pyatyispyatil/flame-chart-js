@@ -19,7 +19,9 @@ export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
     defaultHeight: 68,
 };
 
-export default class WaterfallPlugin extends UIPlugin {
+export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
+    name = 'waterfallPlugin';
+
     override interactionsEngine: SeparatedInteractionsEngine;
     override renderEngine: OffscreenRenderEngine;
 

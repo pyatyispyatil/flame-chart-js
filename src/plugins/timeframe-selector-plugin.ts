@@ -48,7 +48,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     name = 'timeframeSelectorPlugin';
 
     override styles: TimeframeSelectorPluginStyles;
-    override height: number;
+    height: number;
 
     private data: Data;
     private shouldRender: boolean;
@@ -73,8 +73,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     }
 
     override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+        super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));

@@ -4,13 +4,13 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 
 export default abstract class UIPlugin<S = {}> extends EventEmitter {
     abstract name: string;
+    abstract height?: number;
 
     interactionsEngine: SeparatedInteractionsEngine;
     renderEngine: OffscreenRenderEngine;
 
     min?: number;
     max?: number;
-    abstract height?: number;
     styles?: S;
 
     protected constructor() {

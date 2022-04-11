@@ -4,14 +4,8 @@ import { Marks } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
-export default class MarksPlugin extends UIPlugin<undefined> {
+export default class MarksPlugin extends UIPlugin {
     name = 'marksPlugin';
-
-    override renderEngine: OffscreenRenderEngine;
-    override interactionsEngine: SeparatedInteractionsEngine;
-
-    override min: number;
-    override max: number;
 
     marks: Marks;
     hoveredRegion;
@@ -33,7 +27,7 @@ export default class MarksPlugin extends UIPlugin<undefined> {
         }
     }
 
-    override init(renderEngine, interactionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('hover', this.handleHover.bind(this));

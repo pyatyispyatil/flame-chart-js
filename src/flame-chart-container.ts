@@ -32,11 +32,11 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
 
         const styles = settings?.styles || ({} as typeof settings.styles);
 
-        this.timeGrid = new TimeGrid({ styles: styles.timeGrid });
+        this.timeGrid = new TimeGrid({ styles: styles?.timeGrid });
         this.renderEngine = new RenderEngine({
             canvas,
             settings: {
-                styles: styles.main,
+                styles: styles?.main,
                 options: settings.options,
             },
             plugins,
@@ -91,8 +91,8 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
 
     setSettings(settings: FlameChartContainerSettings<Styles>) {
         this.timeGrid.setSettings({ styles: settings.styles?.timeGrid });
-        this.renderEngine.setSettings({ options: settings.options, styles: settings.styles.main });
-        this.plugins.forEach((plugin) => plugin.setSettings?.({ styles: settings.styles[plugin.name] }));
+        this.renderEngine.setSettings({ options: settings.options, styles: settings.styles?.main });
+        this.plugins.forEach((plugin) => plugin.setSettings?.({ styles: settings.styles?.[plugin.name] }));
         this.renderEngine.render();
     }
 

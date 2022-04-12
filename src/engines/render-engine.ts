@@ -13,14 +13,19 @@ export type RenderEngineArgs = {
     plugins: UIPlugin[];
 };
 
+interface ChildrenSizes {
+    position: number;
+    result: { width: number; position: number; height: number }[];
+}
+
 export class RenderEngine extends BasicRenderEngine {
     plugins: UIPlugin[];
     children: OffscreenRenderEngine[];
     requestedRenders: number[];
     timeGrid: TimeGrid;
     freeSpace: number;
-    lastPartialAnimationFrame: number;
-    lastGlobalAnimationFrame: number;
+    lastPartialAnimationFrame: number | null;
+    lastGlobalAnimationFrame: number | null;
 
     constructor({ canvas, settings, timeGrid, plugins }: RenderEngineArgs) {
         super(canvas, settings);
@@ -131,9 +136,9 @@ export class RenderEngine extends BasicRenderEngine {
             } else if (type === 'flexibleGrowing') {
                 return acc - (engine.height || 0);
             } else if (type === 'flexibleStatic') {
-                return acc - (engine.height || plugin.height);
+                return acc - (engine?.height || plugin?.height || 0);
             } else if (type === 'static') {
-                return acc - this.plugins[index].height;
+                return acc - (this.plugins[index]?.height || 0);
             }
             return acc;
         }, this.height);
@@ -142,7 +147,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         const freeSpacePart = Math.floor(freeSpace / flexibleGrowingCount);
 
-        return enginesTypes.reduce(
+        return enginesTypes.reduce<ChildrenSizes>(
             (acc, type, index) => {
                 const engine = this.children[index];
                 const plugin = this.plugins[index];
@@ -203,14 +208,14 @@ export class RenderEngine extends BasicRenderEngine {
         return res;
     }
 
-    renderPlugin(index) {
+    renderPlugin(index: number) {
         const plugin = this.plugins[index];
         const engine = this.children[index];
 
-        engine.clear();
+        engine?.clear();
 
         if (!engine.collapsed) {
-            const isFullRendered = plugin.render();
+            const isFullRendered = plugin?.render?.();
 
             if (!isFullRendered) {
                 engine.standardRender();
@@ -264,7 +269,9 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     render() {
-        cancelAnimationFrame(this.lastPartialAnimationFrame);
+        if (typeof this.lastPartialAnimationFrame === 'number') {
+            cancelAnimationFrame(this.lastPartialAnimationFrame);
+        }
 
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;

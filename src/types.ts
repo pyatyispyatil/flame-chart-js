@@ -99,7 +99,7 @@ export interface ClusterizedFlatTreeNode {
     start: number;
     end: number;
     duration: number;
-    type: string;
+    type: string | undefined;
     color?: string;
     level: number;
     nodes: FlatTreeNode[];

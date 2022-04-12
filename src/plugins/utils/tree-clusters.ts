@@ -15,7 +15,7 @@ const MIN_CLUSTER_SIZE = MIN_BLOCK_SIZE * 2 + STICK_DISTANCE;
 export const walk = (
     treeList: Data,
     cb: (child: Node, parent: any, level: number) => FlatTreeNode,
-    parent = null,
+    parent: FlatTreeNode | Node | null = null,
     level = 0
 ) => {
     treeList.forEach((child) => {
@@ -111,8 +111,8 @@ export const clusterizeFlatTree = (
     stickDistance = STICK_DISTANCE,
     minBlockSize = MIN_BLOCK_SIZE
 ): ClusterizedFlatTree => {
-    let lastCluster = null;
-    let lastNode = null;
+    let lastCluster: FlatTreeNode[] | null = null;
+    let lastNode: FlatTreeNode | null = null;
     let index = 0;
 
     return metaClusterizedFlatTree
@@ -127,6 +127,7 @@ export const clusterizeFlatTree = (
                         lastCluster[index] = node;
                         index++;
                     } else if (
+                        lastCluster &&
                         lastNode &&
                         (node.start - (lastNode.start + lastNode.duration)) * zoom < stickDistance &&
                         node.duration * zoom < minBlockSize &&

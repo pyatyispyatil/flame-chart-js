@@ -12,6 +12,14 @@ import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
 
+interface Dot {
+    pos: number;
+    sort: number;
+    level: number;
+    index: number;
+    type: string;
+}
+
 export type TimeframeSelectorPluginStyles = {
     font: string;
     fontColor: string;
@@ -56,13 +64,13 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     private rightKnobMoving: boolean;
     private selectingActive: boolean;
     private startSelectingPosition: number;
-    private timeout: number | null;
+    private timeout: number | undefined;
     private offscreenRenderEngine: OffscreenRenderEngine;
     private timeGrid: TimeGrid;
     private actualClusters: ClusterizedFlatTree;
     private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
-    private dots;
+    private dots: Dot[];
     private actualClusterizedFlatTree: ClusterizedFlatTree;
 
     constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
@@ -107,7 +115,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => (this.timeout = null), 300);
+        this.timeout = setTimeout(() => (this.timeout = void 0), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();
@@ -246,7 +254,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     setData(data: Data) {
         this.data = data;
 
-        const dots = [];
+        const dots: Dot[] = [];
         const tree = flatTree(this.data);
         const { min, max } = getFlatTreeMinMax(tree);
 

@@ -49,12 +49,12 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
         settings = defaultSettings,
         plugins = [],
     }: FlameChartOptions) {
-        const activePlugins = [];
+        const activePlugins: UIPlugin[] = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
             settings;
         const styles = settings?.styles || ({} as FlameChartSettings['styles']);
 
-        const timeGridPlugin = new TimeGridPlugin({ styles: styles.timeGridPlugin });
+        const timeGridPlugin = new TimeGridPlugin({ styles: styles?.timeGridPlugin });
 
         activePlugins.push(timeGridPlugin);
 
@@ -71,23 +71,23 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
         }
 
         if (waterfall) {
-            waterfallPlugin = new WaterfallPlugin(waterfall, { styles: styles.waterfallPlugin });
+            waterfallPlugin = new WaterfallPlugin(waterfall, { styles: styles?.waterfallPlugin });
             waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (data) {
-                activePlugins.push(new TogglePlugin(waterfallName, { styles: styles.togglePlugin }));
+                activePlugins.push(new TogglePlugin(waterfallName, { styles: styles?.togglePlugin }));
             }
 
             activePlugins.push(waterfallPlugin);
         }
 
         if (data) {
-            timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, { styles: styles.timeframeSelectorPlugin });
+            timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, { styles: styles?.timeframeSelectorPlugin });
             flameChartPlugin = new FlameChartPlugin({ data, colors });
             flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (waterfall) {
-                activePlugins.push(new TogglePlugin(flameChartName, { styles: styles.togglePlugin }));
+                activePlugins.push(new TogglePlugin(flameChartName, { styles: styles?.togglePlugin }));
             }
 
             activePlugins.push(flameChartPlugin);

@@ -27,7 +27,7 @@ const getPixelRatio = (ctx) => {
 
 export type RenderOptions = {
     tooltip?:
-        | ((data: any, renderEngine: RenderEngine | OffscreenRenderEngine, mouse: Mouse) => boolean | void)
+        | ((data: any, renderEngine: RenderEngine | OffscreenRenderEngine, mouse: Mouse | null) => boolean | void)
         | boolean;
     timeUnits: string;
 };
@@ -92,8 +92,8 @@ export class BasicRenderEngine extends EventEmitter {
     textRenderQueue: Text[];
     strokeRenderQueue: Stroke[];
     rectRenderQueue: RectRenderQueue;
-    lastUsedColor: string;
-    lastUsedStrokeColor: string;
+    lastUsedColor: string | null;
+    lastUsedStrokeColor: string | null;
     zoom: number;
     positionX: number;
     min: number;
@@ -107,7 +107,7 @@ export class BasicRenderEngine extends EventEmitter {
 
         this.isSafari = checkSafari();
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d', { alpha: false });
+        this.ctx = canvas.getContext('2d', { alpha: false })!;
         this.pixelRatio = getPixelRatio(this.ctx);
 
         this.setSettings(settings);
@@ -399,8 +399,8 @@ export class BasicRenderEngine extends EventEmitter {
             (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2
         );
 
-        this.ctx.shadowColor = null;
-        this.ctx.shadowBlur = null;
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
 
         fields.forEach(({ text, color }, index) => {
             if (color) {

@@ -138,7 +138,7 @@ export class RenderEngine extends BasicRenderEngine {
             } else if (type === 'flexibleStatic') {
                 return acc - (engine?.height || plugin?.height || 0);
             } else if (type === 'static') {
-                return acc - (this.plugins[index]?.height || 0);
+                return acc - (this.plugins[index]?.height ?? 0);
             }
             return acc;
         }, this.height);

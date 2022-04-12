@@ -119,12 +119,12 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     }
 
     getPrevEngine() {
-        const prevRenderEngineId = (this.renderEngine.id || 0) - 1;
+        const prevRenderEngineId = (this.renderEngine.id ?? 0) - 1;
         return this.renderEngine.parent.children[prevRenderEngineId];
     }
 
     getNextEngine() {
-        const nextRenderEngineId = (this.renderEngine.id || 0) + 1;
+        const nextRenderEngineId = (this.renderEngine.id ?? 0) + 1;
         return this.renderEngine.parent.children[nextRenderEngineId];
     }
 

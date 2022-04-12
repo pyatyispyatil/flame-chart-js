@@ -258,7 +258,7 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion?.cursor) {
             this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
         } else {
-            this.renderEngine.canvas.style.cursor = "";
+            this.renderEngine.canvas.style.cursor = '';
         }
     }
 }

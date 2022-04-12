@@ -8,7 +8,7 @@ import UIPlugin from './plugins/ui-plugin';
 export type FlameChartContainerStyles<Styles> = {
     timeGrid?: Partial<TimeGridStyles>;
     main?: Partial<RenderStyles>;
-} & Styles
+} & Styles;
 
 export interface FlameChartContainerSettings<Styles> {
     options?: Partial<RenderOptions>;

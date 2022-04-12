@@ -11,6 +11,17 @@ export type WaterfallPluginStyles = {
     defaultHeight: number;
 };
 
+type WatterfallPluginDataItem = {
+    intervals: { start: number; end: number; color: string; name: string; type: 'block' | 'line' }[];
+    index: number;
+    max: number;
+    min: number;
+    name: string;
+    textBlock: { start: number; end: number };
+    timing: Record<PropertyKey, number>;
+    meta?: any[];
+};
+
 export type WaterfallPluginSettings = {
     styles?: Partial<WaterfallPluginStyles>;
 };
@@ -25,7 +36,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
     height = defaultWaterfallPluginStyles.defaultHeight;
 
-    data;
+    data: WatterfallPluginDataItem[];
     positionY = 0;
     hoveredRegion;
     selectedRegion;
@@ -214,7 +225,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
         const blockHeight = this.renderEngine.blockHeight + 1;
-        const stack = [];
+        const stack: WatterfallPluginDataItem[] = [];
         const viewedData = this.data
             .filter(({ min, max }) => !((rightSide < min && rightSide < max) || (leftSide > max && rightSide > min)))
             .map((entry) => {

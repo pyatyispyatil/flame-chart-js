@@ -7,12 +7,12 @@ interface OffscreenRenderEngineOptions {
     width: number;
     height: number;
     parent: RenderEngine;
-    id: number;
+    id: number | undefined;
 }
 
 export class OffscreenRenderEngine extends BasicRenderEngine {
     parent: RenderEngine;
-    id: number;
+    id: number | undefined;
     children: OffscreenRenderEngine[];
     flexible: boolean;
     collapsed: boolean;

@@ -10,12 +10,12 @@ export class InteractionsEngine extends EventEmitter {
     private hitRegions: HitRegion[];
     private instances: SeparatedInteractionsEngine[];
     mouse: Mouse;
-    selectedRegion: HitRegion;
-    private hoveredRegion: HitRegion;
+    selectedRegion: HitRegion | null;
+    private hoveredRegion: HitRegion | null;
     private moveActive: boolean;
     private mouseDownPosition: Mouse;
-    private mouseDownHoveredInstance: SeparatedInteractionsEngine;
-    private hoveredInstance: SeparatedInteractionsEngine;
+    private mouseDownHoveredInstance: SeparatedInteractionsEngine | undefined;
+    private hoveredInstance: SeparatedInteractionsEngine | undefined;
     private currentCursor: string | null;
 
     constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine) {
@@ -258,7 +258,7 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion?.cursor) {
             this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
         } else {
-            this.renderEngine.canvas.style.cursor = null;
+            this.renderEngine.canvas.style.cursor = "";
         }
     }
 }

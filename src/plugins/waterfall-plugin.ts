@@ -22,15 +22,14 @@ export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
 export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     name = 'waterfallPlugin';
 
-    override styles: WaterfallPluginStyles;
-    height: number;
+    override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
+    height = defaultWaterfallPluginStyles.defaultHeight;
 
     data;
-    positionY: number;
-    settings;
+    positionY = 0;
     hoveredRegion;
     selectedRegion;
-    initialData: WaterfallItems;
+    initialData: WaterfallItems = [];
 
     constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings) {
         super();

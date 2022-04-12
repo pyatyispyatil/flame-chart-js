@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { mergeObjects } from '../utils';
 import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { RenderEngine } from './render-engine';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';
@@ -25,7 +26,9 @@ const getPixelRatio = (ctx) => {
 };
 
 export type RenderOptions = {
-    tooltip?: Function | boolean;
+    tooltip?:
+        | ((data: any, renderEngine: RenderEngine | OffscreenRenderEngine, mouse: Mouse) => boolean | void)
+        | boolean;
     timeUnits: string;
 };
 

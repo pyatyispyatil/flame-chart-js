@@ -46,6 +46,7 @@
 		"no-self-assign": "error",
 		"no-self-compare": "error",
 		"no-setter-return": "error",
+		"object-curly-spacing": ["error", "always"],
 
 		// TS rules
 		"@typescript-eslint/prefer-optional-chain": "error",

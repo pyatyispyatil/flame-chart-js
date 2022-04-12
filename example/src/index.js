@@ -1,10 +1,10 @@
-import FlameChart from './../../dist/index.js';
-import { defaultTimeGridStyles } from '../../dist/engines/time-grid.js';
-import { defaultRenderStyles } from '../../dist/engines/basic-render-engine.js';
-import { defaultTimeGridPluginStyles } from '../../dist/plugins/time-grid-plugin';
-import { defaultTimeframeSelectorPluginStyles } from '../../dist/plugins/timeframe-selector-plugin';
-import { defaultTogglePluginStyles } from '../../dist/plugins/toggle-plugin.js';
-import { defaultWaterfallPluginStyles} from '../../dist/plugins/waterfall-plugin.js';
+import FlameChart from './../../src/index.js';
+import { defaultTimeGridStyles } from '../../src/engines/time-grid.js';
+import { defaultRenderStyles } from '../../src/engines/basic-render-engine.js';
+import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
+import { defaultTimeframeSelectorPluginStyles } from '../../src/plugins/timeframe-selector-plugin';
+import { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin.js';
+import { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {

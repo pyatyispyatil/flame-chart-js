@@ -52,7 +52,7 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
         const activePlugins: UIPlugin[] = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
             settings;
-        const styles = settings?.styles || ({} as FlameChartSettings['styles']);
+        const styles = settings?.styles ?? ({} as FlameChartSettings['styles']);
 
         const timeGridPlugin = new TimeGridPlugin({ styles: styles?.timeGridPlugin });
 

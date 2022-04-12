@@ -30,7 +30,7 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
     constructor({ canvas, plugins, settings }: FlameChartContainerOptions<Styles>) {
         super();
 
-        const styles = settings?.styles || ({} as typeof settings.styles);
+        const styles = settings?.styles ?? ({} as typeof settings.styles);
 
         this.timeGrid = new TimeGrid({ styles: styles?.timeGrid });
         this.renderEngine = new RenderEngine({

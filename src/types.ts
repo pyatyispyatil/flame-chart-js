@@ -20,7 +20,7 @@ export type Data = Array<Node>;
 
 export type WaterfallItems = Array<{
     name: string;
-    intervals: WaterfallInterval | string;
+    intervals: WaterfallInterval[] | string;
     timing: {
         [key: string]: number;
     };
@@ -35,7 +35,7 @@ type WaterfallInterval = {
 };
 
 interface WaterfallIntervals {
-    [intervalName: string]: WaterfallInterval;
+    [intervalName: string]: WaterfallInterval[];
 }
 
 export interface Waterfall {

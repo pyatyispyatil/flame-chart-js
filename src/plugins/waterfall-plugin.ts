@@ -96,7 +96,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         this.positionY = 0;
     }
 
-    setData({ items: data, intervals: commonIntervals }) {
+    setData({ items: data, intervals: commonIntervals }: Waterfall) {
         this.positionY = 0;
 
         this.initialData = data;

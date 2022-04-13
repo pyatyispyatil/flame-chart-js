@@ -181,40 +181,46 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                 this.renderEngine.options.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse());
             } else {
                 const { data: index } = this.hoveredRegion;
-                const { name, intervals, timing, meta = [] } = this.data.find(({ index: i }) => index === i);
-                const timeUnits = this.renderEngine.getTimeUnits();
-                const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
+                const dataItem = this.data.find(({ index: i }) => index === i);
+                if (dataItem) {
+                    const { name, intervals, timing, meta = [] } = dataItem;
+                    const timeUnits = this.renderEngine.getTimeUnits();
+                    const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
 
-                const header = { text: `${name}` };
-                const intervalsHeader = { text: 'intervals', color: this.renderEngine.styles.tooltipHeaderFontColor };
-                const intervalsTexts = intervals.map(({ name, start, end }) => ({
-                    text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`,
-                }));
-                const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
-                const timingTexts = Object.entries(timing)
-                    .filter(([, time]) => typeof time === 'number')
-                    .map(([name, time]: [string, number]) => ({
-                        text: `${name}: ${time.toFixed(nodeAccuracy)} ${timeUnits}`,
+                    const header = { text: `${name}` };
+                    const intervalsHeader = {
+                        text: 'intervals',
+                        color: this.renderEngine.styles.tooltipHeaderFontColor,
+                    };
+                    const intervalsTexts = intervals.map(({ name, start, end }) => ({
+                        text: `${name}: ${(end - start).toFixed(nodeAccuracy)} ${timeUnits}`,
                     }));
-                const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
-                const metaTexts = meta
-                    ? meta.map(({ name, value, color }) => ({
-                          text: `${name}: ${value}`,
-                          color,
-                      }))
-                    : [];
+                    const timingHeader = { text: 'timing', color: this.renderEngine.styles.tooltipHeaderFontColor };
+                    const timingTexts = Object.entries(timing)
+                        .filter(([, time]) => typeof time === 'number')
+                        .map(([name, time]: [string, number]) => ({
+                            text: `${name}: ${time.toFixed(nodeAccuracy)} ${timeUnits}`,
+                        }));
+                    const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
+                    const metaTexts = meta
+                        ? meta.map(({ name, value, color }) => ({
+                              text: `${name}: ${value}`,
+                              color,
+                          }))
+                        : [];
 
-                this.renderEngine.renderTooltipFromData(
-                    [
-                        header,
-                        intervalsHeader,
-                        ...intervalsTexts,
-                        timingHeader,
-                        ...timingTexts,
-                        ...(metaTexts.length ? [metaHeader, ...metaTexts] : []),
-                    ],
-                    this.interactionsEngine.getGlobalMouse()
-                );
+                    this.renderEngine.renderTooltipFromData(
+                        [
+                            header,
+                            intervalsHeader,
+                            ...intervalsTexts,
+                            timingHeader,
+                            ...timingTexts,
+                            ...(metaTexts.length ? [metaHeader, ...metaTexts] : []),
+                        ],
+                        this.interactionsEngine.getGlobalMouse()
+                    );
+                }
             }
             return true;
         }
@@ -254,7 +260,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
 
                 this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
-                const { x, w } = intervals.reduce(
+                const { x, w } = intervals.reduce<{ x: number | null; w: number }>(
                     (acc, { color, start, end, type }, index) => {
                         const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
@@ -276,11 +282,18 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     const selectedIndex = this.selectedRegion.data;
 
                     if (selectedIndex === index) {
-                        this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+                        this.renderEngine.addStrokeToRenderQueue('green', x ?? 0, y, w, this.renderEngine.blockHeight);
                     }
                 }
 
-                this.interactionsEngine.addHitRegion('waterfall-node', index, x, y, w, this.renderEngine.blockHeight);
+                this.interactionsEngine.addHitRegion(
+                    'waterfall-node',
+                    index,
+                    x ?? 0,
+                    y,
+                    w,
+                    this.renderEngine.blockHeight
+                );
             }
         }, 0);
     }

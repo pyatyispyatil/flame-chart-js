@@ -58,10 +58,10 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         activePlugins.push(timeGridPlugin);
 
-        let marksPlugin: MarksPlugin;
-        let waterfallPlugin: WaterfallPlugin;
-        let timeframeSelectorPlugin: TimeframeSelectorPlugin;
-        let flameChartPlugin: FlameChartPlugin;
+        let marksPlugin: MarksPlugin | undefined;
+        let waterfallPlugin: WaterfallPlugin | undefined;
+        let timeframeSelectorPlugin: TimeframeSelectorPlugin | undefined;
+        let flameChartPlugin: FlameChartPlugin | undefined;
 
         if (marks) {
             marksPlugin = new MarksPlugin(marks);
@@ -102,8 +102,13 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (flameChartPlugin && timeframeSelectorPlugin) {
             this.setData = (data) => {
-                flameChartPlugin.setData(data);
-                timeframeSelectorPlugin.setData(data);
+                if (flameChartPlugin) {
+                    flameChartPlugin.setData(data);
+                }
+
+                if (timeframeSelectorPlugin) {
+                    timeframeSelectorPlugin.setData(data);
+                }
             };
 
             this.setFlameChartPosition = ({ x, y }) => {
@@ -111,7 +116,7 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
                     this.renderEngine.setPositionX(x);
                 }
 
-                if (typeof y === 'number') {
+                if (typeof y === 'number' && flameChartPlugin) {
                     flameChartPlugin.setPositionY(y);
                 }
 
@@ -121,13 +126,17 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (marksPlugin) {
             this.setMarks = (data) => {
-                marksPlugin.setMarks(data);
+                if (marksPlugin) {
+                    marksPlugin.setMarks(data);
+                }
             };
         }
 
         if (waterfallPlugin) {
             this.setWaterfall = (data) => {
-                waterfallPlugin.setData(data);
+                if (waterfallPlugin) {
+                    waterfallPlugin.setData(data);
+                }
             };
         }
     }

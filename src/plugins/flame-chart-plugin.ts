@@ -174,8 +174,8 @@ export default class FlameChartPlugin extends UIPlugin {
         this.initialClusterizedFlatTree = clusterizeFlatTree(
             this.metaClusterizedFlatTree,
             this.renderEngine.zoom,
-            this.min ?? 0,
-            this.max ?? 0
+            this.min,
+            this.max
         );
 
         this.reclusterizeClusteredFlatTree();

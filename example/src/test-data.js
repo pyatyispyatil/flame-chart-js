@@ -1,8 +1,14 @@
-const randomString = (length, minLength = 4) => {
-    const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
-    const rndLength = rnd(length, minLength);
+const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
-    return Array(rndLength).fill(null).map(() => chars[rnd(chars.length - 1)]).join('');
+const randomString = (length, minLength = 4) => {
+    const rndLength = rnd(length, minLength);
+    let str = '';
+
+    for (let i = rndLength; i--;) {
+        str += chars[rnd(chars.length - 1)];
+    }
+
+    return str;
 }
 
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
@@ -68,10 +74,11 @@ const generateRandomNesting = (count, minChild, maxChild, parent) => {
 }
 
 const map = (treeList, cb, parent = null) => {
-    return cb(treeList, parent).map(({ children, ...item }) => ({
-        ...item,
-        children: map(children, cb, item)
-    }));
+    return cb(treeList, parent).map((item) => {
+        item.children = map(item.children, cb, item);
+
+        return item;
+    });
 };
 
 export const generateRandomTree = ({

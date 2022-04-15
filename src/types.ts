@@ -80,7 +80,8 @@ export interface Stroke {
     h: number;
 }
 
-export type FlatTreeNode = Node & {
+export type FlatTreeNode = {
+    source: Node;
     end: number;
     parent: FlatTreeNode | null;
     level: number;
@@ -99,7 +100,7 @@ export interface ClusterizedFlatTreeNode {
     start: number;
     end: number;
     duration: number;
-    type: string | undefined;
+    type?: string;
     color?: string;
     level: number;
     nodes: FlatTreeNode[];

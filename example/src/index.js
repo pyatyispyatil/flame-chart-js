@@ -155,7 +155,10 @@ const flameChart = new FlameChart({
 flameChart.on('select', (node, type) => {
     setNodeView(node ? `${type}\r\n${JSON.stringify({
         ...node,
-        children: undefined,
+        source: {
+            ...node.source,
+            children: '[]',
+        },
         parent: undefined
     }, null, '  ')}` : '');
 });
@@ -168,7 +171,7 @@ onApplyStyles((styles) => {
     flameChart.setSettings({
         styles
     });
-})
+});
 
 onUpdate(() => {
     currentData = generateData();
@@ -184,7 +187,7 @@ onImport((data) => {
 
 onExport(() => {
     return JSON.stringify(currentData);
-})
+});
 
 initQuery(flameChart);
 initView(flameChart, treeConfig, {

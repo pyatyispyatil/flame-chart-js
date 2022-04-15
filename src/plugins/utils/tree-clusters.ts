@@ -33,7 +33,7 @@ export const flatTree = (treeList: Data): FlatTree => {
 
     walk(treeList, (node, parent, level) => {
         const newNode: FlatTreeNode = {
-            ...node,
+            source: node,
             end: node.start + node.duration,
             parent,
             level,
@@ -45,7 +45,7 @@ export const flatTree = (treeList: Data): FlatTree => {
         return newNode;
     });
 
-    return result.sort((a, b) => a.level - b.level || a.start - b.start);
+    return result.sort((a, b) => a.level - b.level || a.source.start - b.source.start);
 };
 
 export const getFlatTreeMinMax = (flatTree: FlatTree) => {
@@ -53,7 +53,7 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
     let min = 0;
     let max = 0;
 
-    flatTree.forEach(({ start, end }) => {
+    flatTree.forEach(({ source: { start }, end }) => {
         if (isFirst) {
             min = start;
             max = end;
@@ -71,14 +71,17 @@ const calcClusterDuration = (nodes: FlatTreeNode[]) => {
     const firstNode = nodes[0];
     const lastNode = nodes[nodes.length - 1];
 
-    return lastNode.start + lastNode.duration - firstNode.start;
+    return lastNode.source.start + lastNode.source.duration - firstNode.source.start;
 };
 
-const checkTimeboundNesting = (node: FlatTreeNode | ClusterizedFlatTreeNode, start: number, end: number) =>
+const checkNodeTimeboundNesting = (node: FlatTreeNode, start: number, end: number) =>
+    (node.source.start < end && node.end > start) || (node.source.start > start && node.end < end);
+
+const checkClusterTimeboundNesting = (node: ClusterizedFlatTreeNode, start: number, end: number) =>
     (node.start < end && node.end > start) || (node.start > start && node.end < end);
 
 const defaultClusterizeCondition = (prevNode: FlatTreeNode, node: FlatTreeNode) =>
-    prevNode.color === node.color && prevNode.type === node.type;
+    prevNode.source.color === node.source.color && prevNode.source.type === node.source.type;
 
 export function metaClusterizeFlatTree(
     flatTree: FlatTree,
@@ -122,16 +125,17 @@ export const clusterizeFlatTree = (
             index = 0;
 
             for (const node of nodes) {
-                if (checkTimeboundNesting(node, start, end)) {
+                if (checkNodeTimeboundNesting(node, start, end)) {
                     if (lastCluster && !lastNode) {
                         lastCluster[index] = node;
                         index++;
                     } else if (
                         lastCluster &&
                         lastNode &&
-                        (node.start - (lastNode.start + lastNode.duration)) * zoom < stickDistance &&
-                        node.duration * zoom < minBlockSize &&
-                        lastNode.duration * zoom < minBlockSize
+                        (node.source.start - (lastNode.source.start + lastNode.source.duration)) * zoom <
+                            stickDistance &&
+                        node.source.duration * zoom < minBlockSize &&
+                        lastNode.source.duration * zoom < minBlockSize
                     ) {
                         lastCluster[index] = node;
                         index++;
@@ -153,11 +157,11 @@ export const clusterizeFlatTree = (
             const duration = calcClusterDuration(nodes);
 
             return {
-                start: node.start,
-                end: node.start + duration,
+                start: node.source.start,
+                end: node.source.start + duration,
                 duration,
-                type: node.type,
-                color: node.color,
+                type: node.source.type,
+                color: node.source.color,
                 level: node.level,
                 nodes,
             };
@@ -173,7 +177,7 @@ export const reclusterizeClusteredFlatTree = (
     minBlockSize?: number
 ): ClusterizedFlatTree => {
     return clusteredFlatTree.reduce<ClusterizedFlatTree>((acc, cluster) => {
-        if (checkTimeboundNesting(cluster, start, end)) {
+        if (checkClusterTimeboundNesting(cluster, start, end)) {
             if (cluster.duration * zoom <= MIN_CLUSTER_SIZE) {
                 acc.push(cluster);
             } else {

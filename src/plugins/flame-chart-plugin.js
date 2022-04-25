@@ -66,8 +66,11 @@ export default class FlameChartPlugin extends UIPlugin {
         this.colors = {};
         this.lastRandomColor = DEFAULT_COLOR;
 
-        this.positionY = 0;
         this.selectedRegion = null;
+        // Check if position is safe, if not, reset it
+        if (!this.positionY || this.positionY < 0) {
+            this.positionY = 0;
+        }
     }
 
     calcMinMax() {

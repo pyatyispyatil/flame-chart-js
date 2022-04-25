@@ -294,10 +294,11 @@ export default class TimeframeSelectorPlugin {
     }
 
     offscreenRender() {
-        const zoom = this.offscreenRenderEngine.getInitialZoom();
+        const zoom = this.zoom ? this.zoom : this.offscreenRenderEngine.getInitialZoom();
+        const positionX = this.renderEngine.positionX || this.offscreenRenderEngine.min;
 
         this.offscreenRenderEngine.setZoom(zoom);
-        this.offscreenRenderEngine.setPositionX(this.offscreenRenderEngine.min);
+        this.offscreenRenderEngine.setPositionX(positionX);
         this.offscreenRenderEngine.clear();
 
         this.timeGrid.recalc();

@@ -62,9 +62,8 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
 
-    handleMouseWheel(e) {
+    handleMouseWheelZoom(e) {
         const { deltaY, deltaX } = e;
-        e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
         const initialZoom = this.renderEngine.getInitialZoom();
@@ -94,6 +93,21 @@ export class InteractionsEngine extends EventEmitter {
         if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
             this.renderEngine.render();
         }
+    }
+
+    hanldeMouseWheelMove(e) {
+        const deltaY = e;
+        this.emit('change-position', {deltaX: 0, deltaY: deltaY}, null, null, this.hoveredInstance);
+    }
+
+    handleMouseWheel(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        this.handleMouseWheelZoom(e);
+      } else {
+        this.hanldeMouseWheelMove(e);
+      }
     }
 
     handleMouseDown() {

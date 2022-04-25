@@ -331,7 +331,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     castLevelToHeight(level, levelHeight) {
-        return this.height - (level * levelHeight);
+        return level * levelHeight;
     }
 
     renderTimeframe() {

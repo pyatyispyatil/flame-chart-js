@@ -39,7 +39,10 @@ export default class FlameChartPlugin extends UIPlugin {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
 
-        this.interactionsEngine.setCursor('grabbing');
+        // TODO: this code only shows "grabbing" when the move is active, not when mouse goes down.
+        if (this.interactionsEngine.moveActive) {
+          this.interactionsEngine.setCursor('grabbing');
+        }
 
         if (this.positionY + deltaY >= 0) {
             this.setPositionY(this.positionY + deltaY);

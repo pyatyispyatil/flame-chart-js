@@ -95,8 +95,8 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
 
-    hanldeMouseWheelMove(e) {
-        const deltaY = e;
+    handleMouseWheelMove(e) {
+        const deltaY = e.deltaY;
         this.emit('change-position', {deltaX: 0, deltaY: deltaY}, null, null, this.hoveredInstance);
     }
 
@@ -106,7 +106,7 @@ export class InteractionsEngine extends EventEmitter {
       if (e.ctrlKey || e.metaKey) {
         this.handleMouseWheelZoom(e);
       } else {
-        this.hanldeMouseWheelMove(e);
+        this.handleMouseWheelMove(e);
       }
     }
 

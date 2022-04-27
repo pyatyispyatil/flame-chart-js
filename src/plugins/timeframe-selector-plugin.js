@@ -212,12 +212,13 @@ export default class TimeframeSelectorPlugin {
 
         const dots = [];
         const tree = flatTree(this.data);
-        const { min, max } = getFlatTreeMinMax(tree);
+        const { min, max, maxDepth } = getFlatTreeMinMax(tree);
 
         let maxLevel = 0;
 
         this.min = min;
         this.max = max;
+        this.maxDepth = maxDepth;
 
         this.clusters = metaClusterizeFlatTree(tree, () => true);
         this.actualClusters = clusterizeFlatTree(

@@ -41,13 +41,14 @@ export default class FlameChartPlugin extends UIPlugin {
 
         // TODO: this code only shows "grabbing" when the move is active, not when mouse goes down.
         if (this.interactionsEngine.moveActive) {
-          this.interactionsEngine.setCursor('grabbing');
+            this.interactionsEngine.setCursor('grabbing');
         }
 
-        if (this.positionY + deltaY >= 0) {
-            this.setPositionY(this.positionY + deltaY);
-        } else {
+        const maxY = this.maxDepth * this.renderEngine.blockHeight;
+        if (this.positionY + deltaY < 0) {
             this.setPositionY(0);
+        } else if (this.positionY + deltaY < maxY) {
+            this.setPositionY(this.positionY + deltaY);
         }
 
         this.renderEngine.tryToChangePosition(deltaX)
@@ -79,10 +80,11 @@ export default class FlameChartPlugin extends UIPlugin {
     calcMinMax() {
         const { flatTree } = this;
 
-        const { min, max } = getFlatTreeMinMax(flatTree);
+        const { min, max, maxDepth } = getFlatTreeMinMax(flatTree);
 
         this.min = min;
         this.max = max;
+        this.maxDepth = maxDepth;
     }
 
     handleSelect(region) {

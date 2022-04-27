@@ -210,7 +210,7 @@ export default class TimeframeSelectorPlugin {
     setData(data) {
         this.data = data;
 
-        const dots = [];
+        const nodes = [];
         const tree = flatTree(this.data);
         const { min, max, maxDepth } = getFlatTreeMinMax(tree);
 
@@ -238,57 +238,31 @@ export default class TimeframeSelectorPlugin {
             Infinity
         ).sort((a, b) => a.start - b.start);
 
-        this.actualClusterizedFlatTree.forEach(({ start, end, level }, index) => {
+        this.actualClusterizedFlatTree.forEach(({ start, end, level, color }) => {
             if (maxLevel < level + 1) {
                 maxLevel = level + 1;
             }
 
-            dots.push({
-                pos: start,
-                sort: 0,
-                level: level,
-                index,
-                type: 'start'
-            }, {
-                pos: start,
-                sort: 1,
-                level: level + 1,
-                index,
-                type: 'start'
-            }, {
-                pos: end,
-                sort: 2,
-                level: level + 1,
-                index,
-                type: 'end'
-            }, {
-                pos: end,
-                sort: 3,
-                level: level,
-                index,
-                type: 'end'
+            nodes.push({
+                color: color,
+                dots: [{
+                      pos: start,
+                      level: level,
+                  }, {
+                      pos: start,
+                      level: level + 1,
+                  }, {
+                      pos: end,
+                      level: level + 1,
+                  }, {
+                      pos: end,
+                      level: level,
+                  }
+                ]
             });
         });
 
-        this.dots = dots
-            .sort((a, b) => {
-                if (a.pos !== b.pos) {
-                    return a.pos - b.pos;
-                } else {
-                    if (a.index === b.index) {
-                        return a.sort - b.sort;
-                    } else {
-                        if (a.type === 'start' && b.type === 'start') {
-                            return a.level - b.level;
-                        } else if (a.type === 'end' && b.type === 'end') {
-                            return b.level - a.level;
-                        } else {
-                            return 0;
-                        }
-                    }
-                }
-            })
-
+        this.nodes = nodes;
         this.maxLevel = maxLevel;
 
         this.offscreenRender();
@@ -298,35 +272,33 @@ export default class TimeframeSelectorPlugin {
         const zoom = this.zoom ? this.zoom : this.offscreenRenderEngine.getInitialZoom();
         const positionX = this.renderEngine.positionX || this.offscreenRenderEngine.min;
 
+        // Initialize
         this.offscreenRenderEngine.setZoom(zoom);
         this.offscreenRenderEngine.setPositionX(positionX);
         this.offscreenRenderEngine.clear();
 
+        // Render grid
         this.timeGrid.recalc();
         this.timeGrid.renderLines(0, this.offscreenRenderEngine.height);
         this.timeGrid.renderTimes();
 
-        this.offscreenRenderEngine.setStrokeColor(this.styles.graphStrokeColor);
-        this.offscreenRenderEngine.setCtxColor(this.styles.graphFillColor);
-        this.offscreenRenderEngine.ctx.beginPath();
+        // Render mini chart
+        if (this.nodes.length) {
+            const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
+            this.nodes.forEach((node) => {
+                this.offscreenRenderEngine.setCtxColor(node.color);
+                this.offscreenRenderEngine.ctx.beginPath();
+                this.offscreenRenderEngine.ctx.moveTo((node.dots[0].pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(node.dots[0].level, levelHeight));
 
-        const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
-
-        if (this.dots.length) {
-            this.offscreenRenderEngine.ctx.moveTo((this.dots[0].pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(this.dots[0].level, levelHeight));
-
-            this.dots.forEach((dot) => {
-                const { pos, level } = dot;
-
-                this.offscreenRenderEngine.ctx.lineTo((pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(level, levelHeight));
+                node.dots.forEach((dot) => {
+                    this.offscreenRenderEngine.ctx.lineTo((dot.pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(dot.level, levelHeight));
+                })
+                this.offscreenRenderEngine.ctx.closePath();
+                this.offscreenRenderEngine.ctx.fill();
             });
         }
 
-        this.offscreenRenderEngine.ctx.closePath();
-
-        this.offscreenRenderEngine.ctx.stroke();
-        this.offscreenRenderEngine.ctx.fill();
-
+        // Render bottom line
         this.offscreenRenderEngine.setCtxColor(this.styles.bottomLineColor);
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
     }

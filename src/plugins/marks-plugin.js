@@ -95,14 +95,22 @@ export default class MarksPlugin extends UIPlugin {
 
     postRender() {
         this.marks.forEach((node) => {
-            const { timestamp, color } = node;
+            const { timestamp, color, level } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
 
             this.renderEngine.parent.setStrokeColor(color);
             this.renderEngine.parent.ctx.beginPath();
             this.renderEngine.parent.ctx.setLineDash([8, 7]);
             this.renderEngine.parent.ctx.moveTo(position, this.renderEngine.position);
-            this.renderEngine.parent.ctx.lineTo(position, this.renderEngine.parent.height);
+
+            // targetBlock is the y position in the flameChart of the block we are marking.
+            const targetBlock = (this.renderEngine.blockHeight * level);
+            // relativePosition translates according to the current position of the viewport.
+            // The constant 3 accounts for 3 blocks comes from various blocks that are inserted between the mark and the actual flamechart. I think.
+            const relativePosition = (targetBlock - this.renderEngine.parent.flameChartPositionY) + this.renderEngine.position * 3;
+            if (relativePosition > this.renderEngine.position) {
+              this.renderEngine.parent.ctx.lineTo(position, relativePosition);
+            }
             this.renderEngine.parent.ctx.stroke();
         });
     }

@@ -35,6 +35,8 @@ export default class FlameChartContainer extends EventEmitter {
         this.renderEngine.calcTimeGrid();
 
         this.plugins.forEach((plugin) => plugin.postInit && plugin.postInit());
+        // Initialize flame chart position to 0, just in case.
+        this.renderEngine.setFlameChartPositionY(0);
 
         this.renderEngine.render();
     }

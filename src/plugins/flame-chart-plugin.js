@@ -64,6 +64,9 @@ export default class FlameChartPlugin extends UIPlugin {
 
     setPositionY(y) {
         this.positionY = y;
+        if (this.renderEngine) {
+          this.renderEngine.parent.setFlameChartPositionY(y);
+        }
     }
 
     reset() {
@@ -73,7 +76,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.selectedRegion = null;
         // Check if position is safe, if not, reset it
         if (!this.positionY || this.positionY < 0) {
-            this.positionY = 0;
+            this.setPositionY(0);
         }
     }
 

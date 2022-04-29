@@ -47,7 +47,8 @@ export default class FlameChartPlugin extends UIPlugin {
         const maxY = this.maxDepth * this.renderEngine.blockHeight;
         if (this.positionY + deltaY < 0) {
             this.setPositionY(0);
-        } else if (this.positionY + deltaY < maxY) {
+        } else if (this.positionY + deltaY < maxY - this.renderEngine.height/2) {
+            // Only set Y if it is less than moving everything off the screen
             this.setPositionY(this.positionY + deltaY);
         }
 

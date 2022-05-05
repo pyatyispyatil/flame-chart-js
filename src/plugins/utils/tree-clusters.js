@@ -106,6 +106,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
     let lastNode = null;
     let index = 0;
     let clusters = [];
+    let largestNode = null;
 
     return metaClusterizedFlatTree
         .reduce((acc, { nodes }) => {
@@ -134,6 +135,9 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
                     }
 
                     lastNode = node;
+                    if (!largestNode || node.duration > largestNode.duration) {
+                      largestNode = node;
+                    }
                 }
             }
 
@@ -148,7 +152,7 @@ export const clusterizeFlatTree = (metaClusterizedFlatTree, zoom, start, end, st
                 end: node.start + duration,
                 duration,
                 type: node.type,
-                color: node.color,
+                color: largestNode.color,
                 level: node.level,
                 nodes
             };

@@ -52,8 +52,9 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
     let isFirst = true;
     let min = 0;
     let max = 0;
+    let maxDepth = 0;
 
-    flatTree.forEach(({ source: { start }, end }) => {
+    flatTree.forEach(({ source: { start }, end, level }) => {
         if (isFirst) {
             min = start;
             max = end;
@@ -62,9 +63,12 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
             min = min < start ? min : start;
             max = max > end ? max : end;
         }
+        if (level > maxDepth) {
+          maxDepth = level;
+        }
     });
 
-    return { min, max };
+    return { min, max, maxDepth };
 };
 
 const calcClusterDuration = (nodes: FlatTreeNode[]) => {

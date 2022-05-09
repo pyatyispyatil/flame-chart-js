@@ -120,17 +120,17 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseWheelMove(e) {
         const deltaY = e.deltaY;
-        this.emit('change-position', {deltaX: 0, deltaY: deltaY}, null, null, this.hoveredInstance);
+        this.emit('change-position', { deltaX: 0, deltaY: deltaY }, null, null, this.hoveredInstance);
     }
 
     handleMouseWheel(e) {
-      e.stopPropagation();
-      e.preventDefault();
-      if (e.ctrlKey || e.metaKey) {
-        this.handleMouseWheelZoom(e);
-      } else {
-        this.handleMouseWheelMove(e);
-      }
+        e.stopPropagation();
+        e.preventDefault();
+        if (e.ctrlKey || e.metaKey) {
+            this.handleMouseWheelZoom(e);
+        } else {
+            this.handleMouseWheelMove(e);
+        }
     }
 
     handleMouseDown() {

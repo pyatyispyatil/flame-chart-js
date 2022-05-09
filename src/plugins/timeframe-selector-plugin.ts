@@ -12,14 +12,6 @@ import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
 
-interface Dot {
-    pos: number;
-    sort: number;
-    level: number;
-    index: number;
-    type: string;
-}
-
 export type TimeframeSelectorPluginStyles = {
     font: string;
     fontColor: string;
@@ -70,7 +62,8 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     private actualClusters: ClusterizedFlatTree;
     private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
-    private dots: Dot[];
+    // TODO add type to nodes
+    private nodes: any[];
     private actualClusterizedFlatTree: ClusterizedFlatTree;
 
     constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
@@ -255,7 +248,6 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         this.data = data;
 
         const nodes: any = [];
-        const dots: Dot[] = [];
         const tree = flatTree(this.data);
         const { min, max, maxDepth } = getFlatTreeMinMax(tree);
 
@@ -263,7 +255,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
 
         this.min = min;
         this.max = max;
-        this.maxDepth = maxDepth;
+        this.maxLevel = maxDepth;
 
         this.clusters = metaClusterizeFlatTree(tree, () => true);
         this.actualClusters = clusterizeFlatTree(
@@ -314,7 +306,8 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     }
 
     offscreenRender() {
-        const zoom = this.zoom ? this.zoom : this.offscreenRenderEngine.getInitialZoom();
+        // TODO not sure if this zoom lookup is right.
+        const zoom = this.renderEngine.zoom ?? this.renderEngine.getInitialZoom();
         const positionX = this.renderEngine.positionX || this.offscreenRenderEngine.min;
 
         // Initialize

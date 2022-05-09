@@ -3,6 +3,7 @@ interface Mark {
     fullName: string;
     timestamp: number;
     color: string;
+    level: number; // Node level mark points to.
 }
 
 export type Marks = Array<Mark>;
@@ -14,6 +15,7 @@ export interface Node {
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
     children?: Array<Node>; // node children (same structure as for node)
+    outline?: string; // node outline color.
 }
 
 export type Data = Array<Node>;

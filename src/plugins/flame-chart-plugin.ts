@@ -30,6 +30,7 @@ export default class FlameChartPlugin extends UIPlugin {
     flatTree: FlatTree;
     positionY: number;
     colors: Colors;
+    maxDepth: number;
     selectedRegion;
     lastRandomColor: typeof DEFAULT_COLOR;
     hoveredRegion;
@@ -47,6 +48,7 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.parseData();
         this.reset();
+        this.maxDepth = 0;
     }
 
     override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
@@ -55,6 +57,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
+        this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
 
         this.initData();
@@ -63,11 +66,6 @@ export default class FlameChartPlugin extends UIPlugin {
     handlePositionChange({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
-
-        // TODO: this code only shows "grabbing" when the move is active, not when mouse goes down.
-        if (this.interactionsEngine.moveActive) {
-            this.interactionsEngine.setCursor('grabbing');
-        }
 
         const maxY = this.maxDepth * this.renderEngine.blockHeight;
         if (this.positionY + deltaY < 0) {
@@ -82,6 +80,10 @@ export default class FlameChartPlugin extends UIPlugin {
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
         }
+    }
+
+    handleMouseDown() {
+        this.interactionsEngine.setCursor('grabbing');
     }
 
     handleMouseUp() {
@@ -227,8 +229,7 @@ export default class FlameChartPlugin extends UIPlugin {
                 this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse(),
-                    this.positionY
+                    this.interactionsEngine.getGlobalMouse()
                 );
             } else {
                 const {
@@ -283,9 +284,10 @@ export default class FlameChartPlugin extends UIPlugin {
             }
 
             if (w >= 0.25) {
+                // TODO does this handle color correctly?
                 this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
-                if (nodes[0].outline) {
-                  this.renderEngine.addStrokeToRenderQueue(nodes[0].outline, x, y , w, blockHeight);
+                if (nodes[0].source.outline) {
+                    this.renderEngine.addStrokeToRenderQueue(nodes[0].source.outline, x, y, w, blockHeight);
                 }
             }
 

@@ -212,11 +212,11 @@ export class RenderEngine extends BasicRenderEngine {
 
     // Converts the relative position from flamechart to absolute position for entire display
     setFlameChartPositionY(flameChartY) {
-      let totalHeight = 0;
-      for (let i = 0; i < this.children.length - 1; i++) {
-        totalHeight += this.children[i].height;
-      }
-      this.flameChartPositionY = flameChartY + totalHeight;
+        let totalHeight = 0;
+        for (let i = 0; i < this.children.length - 1; i++) {
+            totalHeight += this.children[i].height;
+        }
+        this.flameChartPositionY = flameChartY + totalHeight;
     }
 
     renderPlugin(index: number) {

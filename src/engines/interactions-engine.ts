@@ -84,7 +84,7 @@ export class InteractionsEngine extends EventEmitter {
         const deltaX = e.deltaX;
         // This is a heuristic indicating its a pinch to zoom.
         if (Math.abs(deltaY) < 10) {
-          deltaY = deltaY * 10;
+            deltaY = deltaY * 10;
         }
 
         const realView = this.renderEngine.getRealView();

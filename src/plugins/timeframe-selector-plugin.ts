@@ -26,6 +26,12 @@ export type TimeframeSelectorPluginStyles = {
     backgroundColor: string;
 };
 
+// Replaced the "dot" type from upstream.
+export type DotNode = {
+    color?: string;
+    dots: { pos: number; level: number }[];
+};
+
 export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
@@ -63,7 +69,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
     // TODO add type to nodes
-    private nodes: any[];
+    private nodes: DotNode[];
     private actualClusterizedFlatTree: ClusterizedFlatTree;
 
     constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
@@ -247,7 +253,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     setData(data: Data) {
         this.data = data;
 
-        const nodes: any = [];
+        const nodes: DotNode[] = [];
         const tree = flatTree(this.data);
         const { min, max, maxDepth } = getFlatTreeMinMax(tree);
 
@@ -282,20 +288,24 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
 
             nodes.push({
                 color: color,
-                dots: [{
-                      pos: start,
-                      level: level,
-                  }, {
-                      pos: start,
-                      level: level + 1,
-                  }, {
-                      pos: end,
-                      level: level + 1,
-                  }, {
-                      pos: end,
-                      level: level,
-                  }
-                ]
+                dots: [
+                    {
+                        pos: start,
+                        level: level,
+                    },
+                    {
+                        pos: start,
+                        level: level + 1,
+                    },
+                    {
+                        pos: end,
+                        level: level + 1,
+                    },
+                    {
+                        pos: end,
+                        level: level,
+                    },
+                ],
             });
         });
 
@@ -324,13 +334,19 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         if (this.nodes.length) {
             const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
             this.nodes.forEach((node) => {
-                this.offscreenRenderEngine.setCtxColor(node.color);
+                this.offscreenRenderEngine.setCtxColor(node.color ?? this.styles.graphFillColor);
                 this.offscreenRenderEngine.ctx.beginPath();
-                this.offscreenRenderEngine.ctx.moveTo((node.dots[0].pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(node.dots[0].level, levelHeight));
+                this.offscreenRenderEngine.ctx.moveTo(
+                    (node.dots[0].pos - this.offscreenRenderEngine.min) * zoom,
+                    this.castLevelToHeight(node.dots[0].level, levelHeight)
+                );
 
                 node.dots.forEach((dot) => {
-                    this.offscreenRenderEngine.ctx.lineTo((dot.pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(dot.level, levelHeight));
-                })
+                    this.offscreenRenderEngine.ctx.lineTo(
+                        (dot.pos - this.offscreenRenderEngine.min) * zoom,
+                        this.castLevelToHeight(dot.level, levelHeight)
+                    );
+                });
                 this.offscreenRenderEngine.ctx.closePath();
                 this.offscreenRenderEngine.ctx.fill();
             });

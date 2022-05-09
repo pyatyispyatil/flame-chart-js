@@ -328,12 +328,12 @@ export class BasicRenderEngine extends EventEmitter {
     resetView() {
         // Check if zoom is safe, if not, reset it.
         if (!this.zoom) {
-          this.setZoom(this.getInitialZoom());
+            this.setZoom(this.getInitialZoom());
         }
 
         // Check if position is safe, if not, reset it.
         if (!this.positionX || this.positionX < this.min || this.positionX > this.max) {
-          this.setPositionX(this.min);
+            this.setPositionX(this.min);
         }
     }
 

@@ -64,7 +64,7 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
             max = max > end ? max : end;
         }
         if (level > maxDepth) {
-          maxDepth = level;
+            maxDepth = level;
         }
     });
 

@@ -1,19 +1,30 @@
-import { deepMerge } from '../utils.js';
-import { BasicRenderEngine } from './basic-render-engine.js';
+import { mergeObjects } from '../utils';
+import { RenderSettings, BasicRenderEngine } from './basic-render-engine';
+import { RenderEngine } from './render-engine';
+import { Mouse, TooltipField } from '../types';
+
+interface OffscreenRenderEngineOptions {
+    width: number;
+    height: number;
+    parent: RenderEngine;
+    id: number | undefined;
+}
 
 export class OffscreenRenderEngine extends BasicRenderEngine {
-    constructor({
-                    width,
-                    height,
-                    parent,
-                    id
-                }) {
+    parent: RenderEngine;
+    id: number | undefined;
+    children: OffscreenRenderEngine[];
+    flexible: boolean;
+    collapsed: boolean;
+    position: number;
+
+    constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');
 
         canvas.width = width;
         canvas.height = height;
 
-        super(canvas, parent.settings);
+        super(canvas, { options: parent.options, styles: parent.styles });
 
         this.width = width;
         this.height = height;
@@ -28,7 +39,8 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         const child = new OffscreenRenderEngine({
             width: this.width,
             height: this.height,
-            parent: this.parent
+            parent: this.parent,
+            id: void 0,
         });
 
         this.children.push(child);
@@ -52,12 +64,19 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.collapsed = false;
     }
 
-    setSettingsOverrides(settings) {
-        this.setSettings(deepMerge(this.settings, settings));
+    setSettingsOverrides(settings: RenderSettings) {
+        this.setSettings({
+            styles: mergeObjects(this.styles, settings.styles),
+            options: mergeObjects(this.options, settings.options),
+        });
         this.children.forEach((child) => child.setSettingsOverrides(settings));
     }
 
-    resize({ width, height, position }, isParentCall) {
+    // @ts-ignore - overrides a parent function which has different signature
+    override resize(
+        { width, height, position }: { width?: number; height?: number; position?: number },
+        isParentCall?: boolean
+    ) {
         const isHeightChanged = super.resize(width, height);
 
         if (!isParentCall && isHeightChanged) {
@@ -71,12 +90,12 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.children.forEach((child) => child.resize({ width, height, position }));
     }
 
-    setMinMax(min, max) {
+    override setMinMax(min: number, max: number) {
         super.setMinMax(min, max);
         this.children.forEach((child) => child.setMinMax(min, max));
     }
 
-    setSettings(settings) {
+    override setSettings(settings: RenderSettings) {
         super.setSettings(settings);
 
         if (this.children) {
@@ -84,7 +103,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         }
     }
 
-    tryToChangePosition(positionDelta) {
+    override tryToChangePosition(positionDelta: number) {
         this.parent.tryToChangePosition(positionDelta);
     }
 
@@ -92,7 +111,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.parent.calcMinMax();
     }
 
-    getTimeUnits() {
+    override getTimeUnits() {
         return this.parent.getTimeUnits();
     }
 
@@ -115,7 +134,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
         this.renderTimeGrid();
     }
 
-    renderTooltipFromData(fields, mouse) {
+    override renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {
         this.parent.renderTooltipFromData(fields, mouse);
     }
 

@@ -3,28 +3,53 @@ import {
     clusterizeFlatTree,
     metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
-    getFlatTreeMinMax
-} from './utils/tree-clusters.js';
+    getFlatTreeMinMax,
+} from './utils/tree-clusters';
 import Color from 'color';
-import UIPlugin from './ui-plugin.js';
+import UIPlugin from './ui-plugin';
+import {
+    ClusterizedFlatTree,
+    ClusterizedFlatTreeNode,
+    Colors,
+    Data,
+    FlatTree,
+    MetaClusterizedFlatTree,
+} from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export default class FlameChartPlugin extends UIPlugin {
-    constructor({
-                    data,
-                    colors
-                }) {
+    name = 'flameChartPlugin';
+
+    height: number;
+
+    data: Data;
+    userColors: Colors;
+    flatTree: FlatTree;
+    positionY: number;
+    colors: Colors;
+    selectedRegion;
+    lastRandomColor: typeof DEFAULT_COLOR;
+    hoveredRegion;
+    metaClusterizedFlatTree: MetaClusterizedFlatTree;
+    actualClusterizedFlatTree: ClusterizedFlatTree;
+    initialClusterizedFlatTree: ClusterizedFlatTree;
+    lastUsedColor: string | null;
+    renderChartTimeout: number;
+
+    constructor({ data, colors }) {
         super();
 
         this.data = data;
         this.userColors = colors;
 
-        this.parseData(this.data);
+        this.parseData();
         this.reset();
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
@@ -35,7 +60,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.initData();
     }
 
-    handlePositionChange({ deltaX, deltaY }) {
+    handlePositionChange({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
         const startPositionY = this.positionY;
         const startPositionX = this.renderEngine.parent.positionX;
 
@@ -52,7 +77,7 @@ export default class FlameChartPlugin extends UIPlugin {
             this.setPositionY(this.positionY + deltaY);
         }
 
-        this.renderEngine.tryToChangePosition(deltaX)
+        this.renderEngine.tryToChangePosition(deltaX);
 
         if (startPositionX !== this.renderEngine.parent.positionX || startPositionY !== this.positionY) {
             this.renderEngine.parent.render();
@@ -63,7 +88,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.clearCursor();
     }
 
-    setPositionY(y) {
+    setPositionY(y: number) {
         this.positionY = y;
         if (this.renderEngine) {
           this.renderEngine.parent.setFlameChartPositionY(y);
@@ -92,15 +117,14 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleSelect(region) {
-        const mouse = this.interactionsEngine.getMouse();
-        const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
+        const selectedRegion = this.findNodeInCluster(region);
 
         if (this.selectedRegion !== selectedRegion) {
             this.selectedRegion = selectedRegion;
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            this.emit('select', this.selectedRegion?.data, 'flame-chart-node');
         }
     }
 
@@ -112,7 +136,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const mouse = this.interactionsEngine.getMouse();
 
         if (region && region.type === 'cluster') {
-            const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
+            const hoveredNode = region.data.nodes.find(({ level, source: { start, duration } }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
 
                 return mouse.x >= x && mouse.x <= x + w && mouse.y >= y && mouse.y <= y + this.renderEngine.blockHeight;
@@ -121,13 +145,14 @@ export default class FlameChartPlugin extends UIPlugin {
             if (hoveredNode) {
                 return {
                     data: hoveredNode,
-                    type: 'node'
+                    type: 'node',
                 };
             }
         }
+        return null;
     }
 
-    getColor(type, defaultColor) {
+    getColor(type: string = '_default', defaultColor?: string) {
         if (defaultColor) {
             return defaultColor;
         } else if (this.colors[type]) {
@@ -138,15 +163,14 @@ export default class FlameChartPlugin extends UIPlugin {
             this.colors[type] = color.rgb().toString();
 
             return this.colors[type];
-        } else {
-            this.lastRandomColor = this.lastRandomColor.rotate(27);
-            this.colors[type] = this.lastRandomColor.rgb().toString();
-
-            return this.colors[type];
         }
+        this.lastRandomColor = this.lastRandomColor.rotate(27);
+        this.colors[type] = this.lastRandomColor.rgb().toString();
+
+        return this.colors[type];
     }
 
-    setData(data) {
+    setData(data: Data) {
         this.data = data;
 
         this.parseData();
@@ -185,36 +209,43 @@ export default class FlameChartPlugin extends UIPlugin {
         );
     }
 
-    calcRect(start, duration, level) {
-        const w = (duration * this.renderEngine.zoom);
+    calcRect(start: number, duration: number, level: number) {
+        const w = duration * this.renderEngine.zoom;
 
         return {
             x: this.renderEngine.timeToPosition(start),
-            y: (level * (this.renderEngine.blockHeight + 1)) - this.positionY,
-            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3
-        }
+            y: level * (this.renderEngine.blockHeight + 1) - this.positionY,
+            w: w <= 0.1 ? 0.1 : w >= 3 ? w - 1 : w - w / 3,
+        };
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion) {
-            if (this.renderEngine.settings.tooltip === false) {
+            if (this.renderEngine.options.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === 'function') {
-                this.renderEngine.settings.tooltip(
+            } else if (typeof this.renderEngine.options.tooltip === 'function') {
+                this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
                     this.interactionsEngine.getGlobalMouse(),
                     this.positionY
                 );
             } else {
-                const { data: { start, duration, children, name } } = this.hoveredRegion;
+                const {
+                    data: {
+                        source: { start, duration, name },
+                        children,
+                    },
+                } = this.hoveredRegion;
                 const timeUnits = this.renderEngine.getTimeUnits();
 
                 const selfTime = duration - (children ? children.reduce((acc, { duration }) => acc + duration, 0) : 0);
 
                 const nodeAccuracy = this.renderEngine.getAccuracy() + 2;
                 const header = `${name}`;
-                const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${children && children.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''}`;
+                const dur = `duration: ${duration.toFixed(nodeAccuracy)} ${timeUnits} ${
+                    children?.length ? `(self ${selfTime.toFixed(nodeAccuracy)} ${timeUnits})` : ''
+                }`;
                 const st = `start: ${start.toFixed(nodeAccuracy)}`;
 
                 this.renderEngine.renderTooltipFromData(
@@ -225,41 +256,26 @@ export default class FlameChartPlugin extends UIPlugin {
 
             return true;
         }
+        return false;
     }
 
-    render() {
-        const {
-            width,
-            blockHeight,
-            height,
-            minTextWidth
-        } = this.renderEngine;
+    override render() {
+        const { width, blockHeight, height, minTextWidth } = this.renderEngine;
         this.lastUsedColor = null;
 
         this.reclusterizeClusteredFlatTree();
 
-        const processCluster = (cb) => (cluster) => {
-            const {
-                start,
-                duration,
-                level,
-            } = cluster;
+        const processCluster = (cb) => (cluster: ClusterizedFlatTreeNode) => {
+            const { start, duration, level } = cluster;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            if (x + w > 0
-                && x < width
-                && y + blockHeight > 0
-                && y < height) {
+            if (x + w > 0 && x < width && y + blockHeight > 0 && y < height) {
                 cb(cluster, x, y, w);
             }
         };
 
-        const renderCluster = (cluster, x, y, w) => {
-            const {
-                type,
-                nodes,
-                color
-            } = cluster;
+        const renderCluster = (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => {
+            const { type, nodes, color } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
@@ -274,18 +290,21 @@ export default class FlameChartPlugin extends UIPlugin {
             }
 
             if (w >= minTextWidth && nodes.length === 1) {
-                this.renderEngine.addTextToRenderQueue(nodes[0].name, x, y, w);
+                this.renderEngine.addTextToRenderQueue(nodes[0].source.name, x, y, w);
             }
-        }
+        };
 
-        const addHitRegion = (cluster, x, y, w) => {
+        const addHitRegion = (cluster, x: number, y: number, w: number) => {
             this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
-        }
+        };
 
         this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));
 
         if (this.selectedRegion && this.selectedRegion.type === 'node') {
-            const { start, duration, level } = this.selectedRegion.data;
+            const {
+                source: { start, duration },
+                level,
+            } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
             this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);

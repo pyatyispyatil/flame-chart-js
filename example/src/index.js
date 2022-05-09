@@ -1,10 +1,10 @@
 import FlameChart from './../../src/index.js';
-import { defaultTimeGridSettings } from '../../src/engines/time-grid.js';
-import { defaultRenderSettings } from '../../src/engines/basic-render-engine.js';
-import { defaultTimeGridPluginSettings } from './../../src/plugins/time-grid-plugin.js';
-import { defaultTimeframeSelectorPluginSettings } from './../../src/plugins/timeframe-selector-plugin.js';
-import { defaultTogglePluginSettings } from '../../src/plugins/toggle-plugin.js';
-import { defaultWaterfallPluginSettings} from '../../src/plugins/waterfall-plugin.js';
+import { defaultTimeGridStyles } from '../../src/engines/time-grid.js';
+import { defaultRenderStyles } from '../../src/engines/basic-render-engine.js';
+import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
+import { defaultTimeframeSelectorPluginStyles } from '../../src/plugins/timeframe-selector-plugin';
+import { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin.js';
+import { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin.js';
 import { generateRandomTree } from './test-data.js';
 import { query, initQuery } from './query.js';
 import {
@@ -155,7 +155,10 @@ const flameChart = new FlameChart({
 flameChart.on('select', (node, type) => {
     setNodeView(node ? `${type}\r\n${JSON.stringify({
         ...node,
-        children: undefined,
+        source: {
+            ...node.source,
+            children: '[]',
+        },
         parent: undefined
     }, null, '  ')}` : '');
 });
@@ -168,7 +171,7 @@ onApplyStyles((styles) => {
     flameChart.setSettings({
         styles
     });
-})
+});
 
 onUpdate(() => {
     currentData = generateData();
@@ -184,14 +187,14 @@ onImport((data) => {
 
 onExport(() => {
     return JSON.stringify(currentData);
-})
+});
 
 initQuery(flameChart);
 initView(flameChart, treeConfig, {
-    ...defaultRenderSettings.styles,
-    ...defaultTimeGridSettings.styles,
-    ...defaultTimeGridPluginSettings.styles,
-    ...defaultTimeframeSelectorPluginSettings.styles,
-    ...defaultWaterfallPluginSettings.styles,
-    ...defaultTogglePluginSettings.styles
+    main: defaultRenderStyles,
+    timeGrid: defaultTimeGridStyles,
+    timeGridPlugin: defaultTimeGridPluginStyles,
+    timeframeSelectorPlugin: defaultTimeframeSelectorPluginStyles,
+    waterfallPlugin: defaultWaterfallPluginStyles,
+    togglePlugin: defaultTogglePluginStyles
 });

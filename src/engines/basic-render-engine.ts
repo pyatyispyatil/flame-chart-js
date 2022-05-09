@@ -1,47 +1,105 @@
 import { EventEmitter } from 'events';
-import { deepMerge } from './../utils.js';
+import { mergeObjects } from '../utils';
+import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { RenderEngine } from './render-engine';
 
-const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'\";:.,?~';
+// eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
+const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
-    return ua.indexOf('safari') != -1 ? ua.indexOf('chrome') > -1 ? false : true : false;
-}
+    return ua.includes('safari') ? !ua.includes('chrome') : false;
+};
 
 const getPixelRatio = (ctx) => {
     const dpr = window.devicePixelRatio || 1;
-    const bsr = ctx.webkitBackingStorePixelRatio ||
+    const bsr =
+        ctx.webkitBackingStorePixelRatio ||
         ctx.mozBackingStorePixelRatio ||
         ctx.msBackingStorePixelRatio ||
         ctx.oBackingStorePixelRatio ||
-        ctx.backingStorePixelRatio || 1;
+        ctx.backingStorePixelRatio ||
+        1;
 
     return dpr / bsr;
-}
+};
 
-export const defaultRenderSettings = {
+export type RenderOptions = {
+    tooltip?:
+        | ((data: any, renderEngine: RenderEngine | OffscreenRenderEngine, mouse: Mouse | null) => boolean | void)
+        | boolean;
+    timeUnits: string;
+};
+
+export type RenderStyles = {
+    blockHeight: number;
+    blockPaddingLeftRight: number;
+    backgroundColor: string;
+    font: string;
+    fontColor: string;
+    tooltipHeaderFontColor: string;
+    tooltipBodyFontColor: string;
+    tooltipBackgroundColor: string;
+    headerHeight: number;
+    headerColor: string;
+    headerStrokeColor: string;
+    headerTitleLeftPadding: number;
+};
+
+export type RenderSettings = {
+    options?: Partial<RenderOptions>;
+    styles?: Partial<RenderStyles>;
+};
+
+export const defaultRenderSettings: RenderOptions = {
+    tooltip: undefined,
     timeUnits: 'ms',
-    styles: {
-        main: {
-            blockHeight: 16,
-            blockPaddingLeftRight: 4,
-            backgroundColor: 'white',
-            font: `10px sans-serif`,
-            fontColor: 'black',
-            tooltipHeaderFontColor: 'black',
-            tooltipBodyFontColor: '#688f45',
-            tooltipBackgroundColor: 'white',
-            headerHeight: 14,
-            headerColor: 'rgba(112, 112, 112, 0.25)',
-            headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
-            headerTitleLeftPadding: 16
-        }
-    },
-    tooltip: undefined
+};
+
+export const defaultRenderStyles: RenderStyles = {
+    blockHeight: 16,
+    blockPaddingLeftRight: 4,
+    backgroundColor: 'white',
+    font: `10px sans-serif`,
+    fontColor: 'black',
+    tooltipHeaderFontColor: 'black',
+    tooltipBodyFontColor: '#688f45',
+    tooltipBackgroundColor: 'white',
+    headerHeight: 14,
+    headerColor: 'rgba(112, 112, 112, 0.25)',
+    headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
+    headerTitleLeftPadding: 16,
 };
 
 export class BasicRenderEngine extends EventEmitter {
-    constructor(canvas, settings) {
+    width: number;
+    height: number;
+    isSafari: boolean;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    pixelRatio: number;
+    options: RenderOptions;
+    timeUnits;
+    styles: RenderStyles;
+    blockPaddingLeftRight: number;
+    blockHeight: number;
+    blockPaddingTopBottom: number;
+    charHeight: number;
+    placeholderWidth: number;
+    avgCharWidth: number;
+    minTextWidth: number;
+    textRenderQueue: Text[];
+    strokeRenderQueue: Stroke[];
+    rectRenderQueue: RectRenderQueue;
+    lastUsedColor: string | null;
+    lastUsedStrokeColor: string | null;
+    zoom: number;
+    positionX: number;
+    min: number;
+    max: number;
+
+    constructor(canvas: HTMLCanvasElement, settings: RenderSettings) {
         super();
 
         this.width = canvas.width;
@@ -49,7 +107,7 @@ export class BasicRenderEngine extends EventEmitter {
 
         this.isSafari = checkSafari();
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d', { alpha: false });
+        this.ctx = canvas.getContext('2d', { alpha: false })!;
         this.pixelRatio = getPixelRatio(this.ctx);
 
         this.setSettings(settings);
@@ -58,13 +116,11 @@ export class BasicRenderEngine extends EventEmitter {
         this.reset();
     }
 
-    setSettings(data) {
-        const settings = deepMerge(defaultRenderSettings, data);
+    setSettings({ options, styles }: RenderSettings) {
+        this.options = mergeObjects(defaultRenderSettings, options);
+        this.styles = mergeObjects(defaultRenderStyles, styles);
 
-        this.settings = settings;
-
-        this.timeUnits = settings.timeUnits;
-        this.styles = settings.styles.main;
+        this.timeUnits = this.options.timeUnits;
 
         this.blockHeight = this.styles.blockHeight;
         this.ctx.font = this.styles.font;
@@ -72,13 +128,13 @@ export class BasicRenderEngine extends EventEmitter {
         const {
             actualBoundingBoxAscent: fontAscent,
             actualBoundingBoxDescent: fontDescent,
-            width: allCharsWidth
+            width: allCharsWidth,
         } = this.ctx.measureText(allChars);
         const { width: placeholderWidth } = this.ctx.measureText('…');
         const fontHeight = fontAscent + fontDescent;
 
         this.blockPaddingLeftRight = this.styles.blockPaddingLeftRight;
-        this.blockPaddingTopBottom = Math.ceil((this.blockHeight - (fontHeight)) / 2);
+        this.blockPaddingTopBottom = Math.ceil((this.blockHeight - fontHeight) / 2);
         this.charHeight = fontHeight + 1;
         this.placeholderWidth = placeholderWidth;
         this.avgCharWidth = allCharsWidth / allChars.length;
@@ -91,40 +147,40 @@ export class BasicRenderEngine extends EventEmitter {
         this.rectRenderQueue = {};
     }
 
-    setCtxColor(color) {
+    setCtxColor(color: string) {
         if (color && this.lastUsedColor !== color) {
             this.ctx.fillStyle = color;
             this.lastUsedColor = color;
         }
     }
 
-    setStrokeColor(color) {
+    setStrokeColor(color: string) {
         if (color && this.lastUsedStrokeColor !== color) {
             this.ctx.strokeStyle = color;
             this.lastUsedStrokeColor = color;
         }
     }
 
-    setCtxFont(font) {
+    setCtxFont(font: string) {
         if (font && this.ctx.font !== font) {
             this.ctx.font = font;
         }
     }
 
-    fillRect(x, y, w, h) {
+    fillRect(x: number, y: number, w: number, h: number) {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    fillText(text, x, y) {
+    fillText(text: string, x: number, y) {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(color, x, y, w) {
+    renderBlock(color: string, x: number, y: number, w: number) {
         this.setCtxColor(color);
         this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
-    renderStroke(color, x, y, w, h) {
+    renderStroke(color: string, x: number, y: number, w: number, h: number) {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
         this.ctx.strokeRect(x, y, w, h);
@@ -138,19 +194,19 @@ export class BasicRenderEngine extends EventEmitter {
         this.emit('clear');
     }
 
-    timeToPosition(time) {
-        return time * this.zoom - this.positionX * this.zoom
+    timeToPosition(time: number) {
+        return time * this.zoom - this.positionX * this.zoom;
     }
 
-    pixelToTime(width) {
+    pixelToTime(width: number) {
         return width / this.zoom;
     }
 
-    setZoom(zoom) {
+    setZoom(zoom: number) {
         this.zoom = zoom;
     }
 
-    setPositionX(x) {
+    setPositionX(x: number) {
         const currentPos = this.positionX;
 
         this.positionX = x;
@@ -158,7 +214,7 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color, x, y, w) {
+    addRectToRenderQueue(color: string, x: number, y: number, w: number) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
@@ -166,7 +222,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.rectRenderQueue[color].push({ x, y, w });
     }
 
-    addTextToRenderQueue(text, x, y, w) {
+    addTextToRenderQueue(text: string, x: number, y: number, w: number) {
         if (text) {
             const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
@@ -176,7 +232,7 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    addStrokeToRenderQueue(color, x, y, w, h) {
+    addStrokeToRenderQueue(color: string, x: number, y: number, w: number, h: number) {
         this.strokeRenderQueue.push({ color, x, y, w, h });
     }
 
@@ -193,23 +249,30 @@ export class BasicRenderEngine extends EventEmitter {
     resolveTextRenderQueue() {
         this.setCtxColor(this.styles.fontColor);
 
-        this.textRenderQueue.forEach(({ text, x, y, w, textMaxWidth }) => {
+        this.textRenderQueue.forEach(({ text, x, y, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
 
             if (textWidth > textMaxWidth) {
-                const avgCharWidth = textWidth / (text.length);
+                const avgCharWidth = textWidth / text.length;
                 const maxChars = Math.floor((textMaxWidth - this.placeholderWidth) / avgCharWidth);
                 const halfChars = (maxChars - 1) / 2;
 
                 if (halfChars > 0) {
-                    text = text.slice(0, Math.ceil(halfChars)) + '…' + text.slice(text.length - Math.floor(halfChars), text.length);
+                    text =
+                        text.slice(0, Math.ceil(halfChars)) +
+                        '…' +
+                        text.slice(text.length - Math.floor(halfChars), text.length);
                 } else {
                     text = '';
                 }
             }
 
             if (text) {
-                this.ctx.fillText(text, (x < 0 ? 0 : x) + this.blockPaddingLeftRight, y + this.blockHeight - this.blockPaddingTopBottom);
+                this.ctx.fillText(
+                    text,
+                    (x < 0 ? 0 : x) + this.blockPaddingLeftRight,
+                    y + this.blockHeight - this.blockPaddingTopBottom
+                );
             }
         });
 
@@ -224,7 +287,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.strokeRenderQueue = [];
     }
 
-    setMinMax(min, max) {
+    setMinMax(min: number, max: number) {
         const hasChanges = min !== this.min || max !== this.max;
 
         this.min = min;
@@ -239,7 +302,7 @@ export class BasicRenderEngine extends EventEmitter {
         return this.timeUnits;
     }
 
-    tryToChangePosition(positionDelta) {
+    tryToChangePosition(positionDelta: number) {
         const realView = this.getRealView();
 
         if (this.positionX + positionDelta + realView <= this.max && this.positionX + positionDelta >= this.min) {
@@ -254,9 +317,8 @@ export class BasicRenderEngine extends EventEmitter {
     getInitialZoom() {
         if (this.max - this.min > 0) {
             return this.width / (this.max - this.min);
-        } else {
-            return 1;
         }
+        return 1;
     }
 
     getRealView() {
@@ -266,16 +328,16 @@ export class BasicRenderEngine extends EventEmitter {
     resetView() {
         // Check if zoom is safe, if not, reset it.
         if (!this.zoom) {
-          this.setZoom(this.getInitialZoom());
+            this.setZoom(this.getInitialZoom());
         }
 
         // Check if position is safe, if not, reset it.
         if (!this.positionX || this.positionX < this.min || this.positionX > this.max) {
-          this.setPositionX(this.min);
+            this.setPositionX(this.min);
         }
     }
 
-    resize(width, height) {
+    resize(width?: number, height?: number) {
         const isWidthChanged = typeof width === 'number' && this.width !== width;
         const isHeightChanged = typeof height === 'number' && this.height !== height;
 
@@ -289,6 +351,7 @@ export class BasicRenderEngine extends EventEmitter {
 
             return isHeightChanged;
         }
+        return false;
     }
 
     applyCanvasSize() {
@@ -304,7 +367,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.lastUsedStrokeColor = null;
     }
 
-    copy(engine) {
+    copy(engine: OffscreenRenderEngine) {
         const ratio = this.isSafari ? 1 : engine.pixelRatio;
 
         if (engine.canvas.height) {
@@ -322,11 +385,12 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    renderTooltipFromData(fields, mouse) {
+    renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {
         const mouseX = mouse.x + 10;
         const mouseY = mouse.y + 10;
 
-        const maxWidth = fields.map(({ text }) => text)
+        const maxWidth = fields
+            .map(({ text }) => text)
             .map((text) => this.ctx.measureText(text))
             .reduce((acc, { width }) => Math.max(acc, width), 0);
         const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;
@@ -342,18 +406,16 @@ export class BasicRenderEngine extends EventEmitter {
             (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2
         );
 
-        this.ctx.shadowColor = null;
-        this.ctx.shadowBlur = null;
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
 
         fields.forEach(({ text, color }, index) => {
             if (color) {
                 this.setCtxColor(color);
+            } else if (!index) {
+                this.setCtxColor(this.styles.tooltipHeaderFontColor);
             } else {
-                if (!index) {
-                    this.setCtxColor(this.styles.tooltipHeaderFontColor);
-                } else {
-                    this.setCtxColor(this.styles.tooltipBodyFontColor);
-                }
+                this.setCtxColor(this.styles.tooltipBodyFontColor);
             }
 
             this.ctx.fillText(
@@ -364,7 +426,7 @@ export class BasicRenderEngine extends EventEmitter {
         });
     }
 
-    renderShape(color, dots, posX, posY) {
+    renderShape(color: string, dots: Dots, posX: number, posY: number) {
         this.setCtxColor(color);
 
         this.ctx.beginPath();
@@ -378,10 +440,17 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fill();
     }
 
-    renderTriangle(color, x, y, width, height, direction) {
+    renderTriangle(
+        color: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        direction: 'bottom' | 'left' | 'right' | 'top'
+    ) {
         const halfHeight = height / 2;
         const halfWidth = width / 2;
-        let dots;
+        let dots: Dots;
 
         switch (direction) {
             case 'top':
@@ -417,7 +486,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.renderShape(color, dots, x, y);
     }
 
-    renderCircle(color, x, y, radius) {
+    renderCircle(color: string, x: number, y: number, radius: number) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
         this.setCtxColor(color);

@@ -1,18 +1,31 @@
-import { deepMerge } from '../utils.js';
+import { mergeObjects } from '../utils';
+import { RenderEngine } from './render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
 
 const MIN_PIXEL_DELTA = 85;
 
-export const defaultTimeGridSettings = {
-    styles: {
-        timeGrid: {
-            color: 'rgba(90,90,90,0.20)'
-        }
-    }
+export type TimeGridStyles = {
+    color: string;
+};
+
+export type TimeGridSettings = {
+    styles?: Partial<TimeGridStyles>;
+};
+
+export const defaultTimeGridStyles: TimeGridStyles = {
+    color: 'rgba(90,90,90,0.20)',
 };
 
 export class TimeGrid {
-    constructor(renderEngine, settings) {
-        this.renderEngine = renderEngine;
+    renderEngine: OffscreenRenderEngine | RenderEngine;
+    start: number;
+    end: number;
+    accuracy: number;
+    delta: number;
+    styles: TimeGridStyles;
+    timeUnits;
+
+    constructor(settings: TimeGridSettings) {
         this.start = 0;
         this.end = 0;
         this.accuracy = 0;
@@ -21,11 +34,17 @@ export class TimeGrid {
         this.setSettings(settings);
     }
 
-    setSettings(data) {
-        const settings = deepMerge(defaultTimeGridSettings, data);
-
-        this.styles = settings.styles.timeGrid;
+    setDefaultRenderEngine(renderEngine: OffscreenRenderEngine | RenderEngine) {
+        this.renderEngine = renderEngine;
         this.timeUnits = this.renderEngine.getTimeUnits();
+    }
+
+    setSettings({ styles }: TimeGridSettings) {
+        this.styles = mergeObjects(defaultTimeGridStyles, styles);
+
+        if (this.renderEngine) {
+            this.timeUnits = this.renderEngine.getTimeUnits();
+        }
     }
 
     recalc() {
@@ -47,36 +66,34 @@ export class TimeGrid {
         const strTimelineDelta = (this.delta / 2).toString();
 
         if (strTimelineDelta.includes('e')) {
-            return strTimelineDelta.match(/\d+$/)[0];
-        } else {
-            const zeros = strTimelineDelta.match(/(0\.0*)/);
-
-            return zeros ? zeros[0].length - 1 : 0;
+            return Number(strTimelineDelta.match(/\d+$/)?.[0]);
         }
+        const zeros = strTimelineDelta.match(/(0\.0*)/);
+        return zeros ? zeros[0].length - 1 : 0;
     }
 
     getTimelineAccuracy() {
         return this.accuracy;
     }
 
-    forEachTime(cb) {
+    forEachTime(cb: (pixelPosition: number, timePosition: number) => void) {
         for (let i = this.start; i <= this.end; i++) {
             const timePosition = i * this.delta + this.renderEngine.min;
-            const pixelPosition = this.renderEngine.timeToPosition(timePosition.toFixed(this.accuracy));
+            const pixelPosition = this.renderEngine.timeToPosition(Number(timePosition.toFixed(this.accuracy)));
 
             cb(pixelPosition, timePosition);
         }
     }
 
-    renderLines(start, height, renderEngine = this.renderEngine) {
+    renderLines(start: number, height: number, renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(this.styles.color);
 
-        this.forEachTime((pixelPosition) => {
+        this.forEachTime((pixelPosition: number) => {
             renderEngine.fillRect(pixelPosition, start, 1, height);
         });
     }
 
-    renderTimes(renderEngine = this.renderEngine) {
+    renderTimes(renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
         renderEngine.setCtxColor(renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 

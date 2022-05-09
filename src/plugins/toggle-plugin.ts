@@ -1,38 +1,63 @@
-import { deepMerge } from '../utils.js';
+import { mergeObjects } from '../utils';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import UIPlugin from './ui-plugin';
 
-export const defaultTogglePluginSettings = {
-    styles: {
-        togglePlugin: {
-            height: 16,
-            color: 'rgb(202,202,202, 0.25)',
-            strokeColor: 'rgb(138,138,138, 0.50)',
-            dotsColor: 'rgb(97,97,97)',
-            fontColor: 'black',
-            font: '10px sans-serif',
-            triangleWidth: 10,
-            triangleHeight: 7,
-            triangleColor: 'black',
-            leftPadding: 10
-        }
-    }
+export type TogglePluginStyles = {
+    height: number;
+    color: string;
+    strokeColor: string;
+    dotsColor: string;
+    fontColor: string;
+    font: string;
+    triangleWidth: number;
+    triangleHeight: number;
+    triangleColor: string;
+    leftPadding: number;
 };
 
-export default class TogglePlugin {
-    constructor(title, settings) {
+export type TogglePluginSettings = {
+    styles?: Partial<TogglePluginStyles>;
+};
+
+export const defaultTogglePluginStyles: TogglePluginStyles = {
+    height: 16,
+    color: 'rgb(202,202,202, 0.25)',
+    strokeColor: 'rgb(138,138,138, 0.50)',
+    dotsColor: 'rgb(97,97,97)',
+    fontColor: 'black',
+    font: '10px sans-serif',
+    triangleWidth: 10,
+    triangleHeight: 7,
+    triangleColor: 'black',
+    leftPadding: 10,
+};
+
+export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
+    name = 'togglePlugin';
+
+    override styles: TogglePluginStyles;
+    height: number;
+
+    title: string;
+    resizeActive: boolean;
+    resizeStartHeight: number;
+    resizeStartPosition: number;
+
+    constructor(title: string, settings: TogglePluginSettings) {
+        super();
         this.setSettings(settings);
         this.title = title;
     }
 
-    setSettings(data) {
-        this.settings = deepMerge(defaultTogglePluginSettings, data);
-        this.styles = this.settings.styles.togglePlugin;
+    override setSettings({ styles }: TogglePluginSettings) {
+        this.styles = mergeObjects(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;
     }
 
-    init(renderEngine, interactionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
+        super.init(renderEngine, interactionsEngine);
 
         const nextEngine = this.getNextEngine();
         nextEngine.setFlexible();
@@ -90,23 +115,25 @@ export default class TogglePlugin {
         this.interactionsEngine.parent.on('up', () => {
             this.interactionsEngine.clearCursor();
             this.resizeActive = false;
-        })
+        });
     }
 
     getPrevEngine() {
-        return this.renderEngine.parent.children[this.renderEngine.id - 1];
+        const prevRenderEngineId = (this.renderEngine.id ?? 0) - 1;
+        return this.renderEngine.parent.children[prevRenderEngineId];
     }
 
     getNextEngine() {
-        return this.renderEngine.parent.children[this.renderEngine.id + 1];
+        const nextRenderEngineId = (this.renderEngine.id ?? 0) + 1;
+        return this.renderEngine.parent.children[nextRenderEngineId];
     }
 
-    render() {
+    override render() {
         const nextEngine = this.getNextEngine();
         const prevEngine = this.getPrevEngine();
         const triangleFullWidth = this.styles.leftPadding + this.styles.triangleWidth;
-        const centerW = this.renderEngine.width/2;
-        const centerH = this.styles.height/2;
+        const centerW = this.renderEngine.width / 2;
+        const centerH = this.styles.height / 2;
 
         this.renderEngine.setCtxFont(this.styles.font);
 
@@ -116,19 +143,42 @@ export default class TogglePlugin {
 
         this.renderEngine.setCtxColor(this.styles.fontColor);
         this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
-        this.renderEngine.renderTriangle(this.styles.triangleColor, this.styles.leftPadding, 0 + this.styles.height / 2, this.styles.triangleWidth, this.styles.triangleHeight, nextEngine.collapsed ? 'right' : 'bottom');
+        this.renderEngine.renderTriangle(
+            this.styles.triangleColor,
+            this.styles.leftPadding,
+            this.styles.height / 2,
+            this.styles.triangleWidth,
+            this.styles.triangleHeight,
+            nextEngine.collapsed ? 'right' : 'bottom'
+        );
 
-        const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title)
+        const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title);
         const buttonWidth = titleWidth + triangleFullWidth;
 
-        this.interactionsEngine.addHitRegion('toggle', this.renderEngine.id, 0, 0, buttonWidth, this.styles.height, 'pointer');
+        this.interactionsEngine.addHitRegion(
+            'toggle',
+            this.renderEngine.id,
+            0,
+            0,
+            buttonWidth,
+            this.styles.height,
+            'pointer'
+        );
 
         if (prevEngine.flexible) {
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW, centerH, 1.5);
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW - 10, centerH, 1.5);
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW + 10, centerH, 1.5);
 
-            this.interactionsEngine.addHitRegion('knob-resize', this.renderEngine.id, buttonWidth, 0, this.renderEngine.width - buttonWidth, this.styles.height, 'row-resize');
+            this.interactionsEngine.addHitRegion(
+                'knob-resize',
+                this.renderEngine.id,
+                buttonWidth,
+                0,
+                this.renderEngine.width - buttonWidth,
+                this.styles.height,
+                'row-resize'
+            );
         }
     }
 }

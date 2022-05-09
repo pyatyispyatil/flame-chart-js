@@ -1,8 +1,17 @@
 import Color from 'color';
-import UIPlugin from './ui-plugin.js';
+import UIPlugin from './ui-plugin';
+import { Marks } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 export default class MarksPlugin extends UIPlugin {
-    constructor(marks) {
+    name = 'marksPlugin';
+
+    marks: Marks;
+    hoveredRegion;
+    selectedRegion;
+
+    constructor(marks: Marks) {
         super();
         this.marks = this.prepareMarks(marks);
 
@@ -13,18 +22,17 @@ export default class MarksPlugin extends UIPlugin {
         const { marks } = this;
 
         if (marks.length) {
-            this.min = marks.reduce((acc, { timestamp }) => timestamp < acc ? timestamp : acc, marks[0].timestamp);
-            this.max = marks.reduce((acc, { timestamp }) => timestamp > acc ? timestamp : acc, marks[0].timestamp);
+            this.min = marks.reduce((acc, { timestamp }) => (timestamp < acc ? timestamp : acc), marks[0].timestamp);
+            this.max = marks.reduce((acc, { timestamp }) => (timestamp > acc ? timestamp : acc), marks[0].timestamp);
         }
     }
 
-    init(renderEngine, interactionsEngine) {
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('hover', this.handleHover.bind(this));
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
     }
-
 
     handleHover(region) {
         this.hoveredRegion = region;
@@ -42,20 +50,20 @@ export default class MarksPlugin extends UIPlugin {
         }
     }
 
-    get height() {
+    override get height() {
         return this.renderEngine.blockHeight + 1;
     }
 
-    prepareMarks(marks) {
+    prepareMarks(marks: Marks) {
         return marks
             .map(({ color, ...rest }) => ({
                 ...rest,
-                color: new Color(color).alpha(0.7).rgb().toString()
+                color: new Color(color).alpha(0.7).rgb().toString(),
             }))
             .sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    setMarks(marks) {
+    setMarks(marks: Marks) {
         this.marks = this.prepareMarks(marks);
 
         this.calcMinMax();
@@ -64,36 +72,41 @@ export default class MarksPlugin extends UIPlugin {
         this.renderEngine.resetParentView();
     }
 
-    calcMarksBlockPosition(position, prevEnding) {
+    calcMarksBlockPosition(position: number, prevEnding: number) {
         if (position > 0) {
             if (prevEnding > position) {
                 return prevEnding;
-            } else {
-                return position;
             }
-        } else {
             return position;
         }
+        return position;
     }
 
-    render() {
+    override render() {
         this.marks.reduce((prevEnding, node) => {
             const { timestamp, color, shortName } = node;
             const { width } = this.renderEngine.ctx.measureText(shortName);
             const fullWidth = width + this.renderEngine.blockPaddingLeftRight * 2;
             const position = this.renderEngine.timeToPosition(timestamp);
-            const blockPosition = this.calcMarksBlockPosition(position, prevEnding, width);
+            const blockPosition = this.calcMarksBlockPosition(position, prevEnding);
 
             this.renderEngine.addRectToRenderQueue(color, blockPosition, 0, fullWidth);
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);
 
-            this.interactionsEngine.addHitRegion('timestamp', node, blockPosition, 0, fullWidth, this.renderEngine.blockHeight);
+            this.interactionsEngine.addHitRegion(
+                'timestamp',
+                node,
+                blockPosition,
+                0,
+                fullWidth,
+                this.renderEngine.blockHeight
+            );
 
             return blockPosition + fullWidth;
         }, 0);
     }
 
-    postRender() {
+    override postRender() {
         this.marks.forEach((node) => {
             const { timestamp, color, level } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
@@ -104,28 +117,32 @@ export default class MarksPlugin extends UIPlugin {
             this.renderEngine.parent.ctx.moveTo(position, this.renderEngine.position);
 
             // targetBlock is the y position in the flameChart of the block we are marking.
-            const targetBlock = (this.renderEngine.blockHeight * level);
+            const targetBlock = this.renderEngine.blockHeight * level;
             // relativePosition translates according to the current position of the viewport.
             // The constant 3 accounts for 3 blocks comes from various blocks that are inserted between the mark and the actual flamechart. I think.
-            const relativePosition = (targetBlock - this.renderEngine.parent.flameChartPositionY) + this.renderEngine.position * 3;
+            const relativePosition =
+                targetBlock - this.renderEngine.parent.flameChartPositionY + this.renderEngine.position;
             if (relativePosition > this.renderEngine.position) {
-              this.renderEngine.parent.ctx.lineTo(position, relativePosition);
+                this.renderEngine.parent.ctx.lineTo(position, relativePosition);
             }
             this.renderEngine.parent.ctx.stroke();
         });
     }
 
-    renderTooltip() {
+    override renderTooltip() {
         if (this.hoveredRegion && this.hoveredRegion.type === 'timestamp') {
-            if (this.renderEngine.settings.tooltip === false) {
+            if (this.renderEngine.options.tooltip === false) {
                 return true;
-            } else if (typeof this.renderEngine.settings.tooltip === "function") {
-                this.renderEngine.settings.tooltip(
+            } else if (typeof this.renderEngine.options.tooltip === 'function') {
+                this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse())
+                    this.interactionsEngine.getGlobalMouse()
+                );
             } else {
-                const { data: { fullName, timestamp } } = this.hoveredRegion;
+                const {
+                    data: { fullName, timestamp },
+                } = this.hoveredRegion;
 
                 const marksAccuracy = this.renderEngine.getAccuracy() + 2;
                 const header = `${fullName}`;
@@ -138,5 +155,6 @@ export default class MarksPlugin extends UIPlugin {
             }
             return true;
         }
+        return false;
     }
 }

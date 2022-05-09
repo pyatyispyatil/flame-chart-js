@@ -1,12 +1,34 @@
-import { TimeGrid } from './time-grid.js';
-import { BasicRenderEngine } from './basic-render-engine.js';
-import { OffscreenRenderEngine } from './offscreen-render-engine.js';
-import { isNumber } from '../utils.js';
+import { TimeGrid } from './time-grid';
+import { BasicRenderEngine, RenderSettings } from './basic-render-engine';
+import { OffscreenRenderEngine } from './offscreen-render-engine';
+import { isNumber } from '../utils';
+import UIPlugin from '../plugins/ui-plugin';
 
 const MAX_ACCURACY = 6;
 
+export type RenderEngineArgs = {
+    canvas: HTMLCanvasElement;
+    settings: RenderSettings;
+    timeGrid: TimeGrid;
+    plugins: UIPlugin[];
+};
+
+interface ChildrenSizes {
+    position: number;
+    result: { width: number; position: number; height: number }[];
+}
+
 export class RenderEngine extends BasicRenderEngine {
-    constructor(canvas, settings, plugins) {
+    plugins: UIPlugin[];
+    children: OffscreenRenderEngine[];
+    requestedRenders: number[];
+    timeGrid: TimeGrid;
+    freeSpace: number;
+    lastPartialAnimationFrame: number | null;
+    lastGlobalAnimationFrame: number | null;
+    flameChartPositionY: number;
+
+    constructor({ canvas, settings, timeGrid, plugins }: RenderEngineArgs) {
         super(canvas, settings);
 
         this.plugins = plugins;
@@ -15,7 +37,8 @@ export class RenderEngine extends BasicRenderEngine {
         this.requestedRenders = [];
         this.flameChartPositionY = 0;
 
-        this.timeGrid = new TimeGrid(this, settings);
+        this.timeGrid = timeGrid;
+        this.timeGrid.setDefaultRenderEngine(this);
     }
 
     makeInstance() {
@@ -24,7 +47,6 @@ export class RenderEngine extends BasicRenderEngine {
             height: 0,
             id: this.children.length,
             parent: this,
-            settings: this.settings
         });
 
         offscreenRenderEngine.setMinMax(this.min, this.max);
@@ -53,29 +75,22 @@ export class RenderEngine extends BasicRenderEngine {
         this.timeGrid.recalc();
     }
 
-    setMinMax(min, max) {
+    override setMinMax(min: number, max: number) {
         super.setMinMax(min, max);
 
         this.children.forEach((engine) => engine.setMinMax(min, max));
     }
 
-    setSettings(data) {
+    override setSettings(data) {
         super.setSettings(data);
-
-        this.settings = data;
-
-        if (this.timeGrid) {
-            this.timeGrid.setSettings(data);
-        }
 
         if (this.children) {
             this.children.forEach((engine) => engine.setSettings(data));
-            this.plugins.forEach((plugin) => plugin.setSettings && plugin.setSettings(data));
             this.recalcChildrenSizes();
         }
     }
 
-    resize(width, height) {
+    override resize(width, height): boolean {
         const currentWidth = this.width;
 
         super.resize(width, height);
@@ -86,6 +101,8 @@ export class RenderEngine extends BasicRenderEngine {
         } else if (this.positionX > this.min) {
             this.tryToChangePosition(-this.pixelToTime((width - currentWidth) / 2));
         }
+
+        return true;
     }
 
     recalcChildrenSizes() {
@@ -108,9 +125,8 @@ export class RenderEngine extends BasicRenderEngine {
                 return 'flexibleStatic';
             } else if (!plugin.height) {
                 return 'flexibleGrowing';
-            } else {
-                return 'static';
             }
+            return 'static';
         });
 
         const freeSpace = enginesTypes.reduce((acc, type, index) => {
@@ -122,20 +138,19 @@ export class RenderEngine extends BasicRenderEngine {
             } else if (type === 'flexibleGrowing') {
                 return acc - (engine.height || 0);
             } else if (type === 'flexibleStatic') {
-                return acc - (engine.height || plugin.height);
+                return acc - (engine?.height || plugin?.height || 0);
             } else if (type === 'static') {
-                return acc - this.plugins[index].height;
-            } else {
-                return acc;
+                return acc - (this.plugins[index]?.height ?? 0);
             }
+            return acc;
         }, this.height);
 
         const flexibleGrowingCount = enginesTypes.filter((type) => type === 'flexibleGrowing').length;
 
         const freeSpacePart = Math.floor(freeSpace / flexibleGrowingCount);
 
-        return enginesTypes
-            .reduce((acc, type, index) => {
+        return enginesTypes.reduce<ChildrenSizes>(
+            (acc, type, index) => {
                 const engine = this.children[index];
                 const plugin = this.plugins[index];
                 let height;
@@ -159,23 +174,25 @@ export class RenderEngine extends BasicRenderEngine {
                 acc.result.push({
                     width: this.width,
                     position: acc.position,
-                    height
+                    height,
                 });
 
                 acc.position += height;
 
                 return acc;
-            }, {
+            },
+            {
                 position: 0,
-                result: []
-            }).result;
+                result: [],
+            }
+        ).result;
     }
 
     getAccuracy() {
         return this.timeGrid.accuracy;
     }
 
-    setZoom(zoom) {
+    override setZoom(zoom: number) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
             super.setZoom(zoom);
             this.children.forEach((engine) => engine.setZoom(zoom));
@@ -186,7 +203,7 @@ export class RenderEngine extends BasicRenderEngine {
         return false;
     }
 
-    setPositionX(x) {
+    override setPositionX(x: number) {
         const res = super.setPositionX(x);
         this.children.forEach((engine) => engine.setPositionX(x));
 
@@ -195,21 +212,21 @@ export class RenderEngine extends BasicRenderEngine {
 
     // Converts the relative position from flamechart to absolute position for entire display
     setFlameChartPositionY(flameChartY) {
-      let totalHeight = 0;
-      for (let i = 0; i < this.children.length - 1; i++) {
-        totalHeight += this.children[i].height;
-      }
-      this.flameChartPositionY = flameChartY + totalHeight;
+        let totalHeight = 0;
+        for (let i = 0; i < this.children.length - 1; i++) {
+            totalHeight += this.children[i].height;
+        }
+        this.flameChartPositionY = flameChartY + totalHeight;
     }
 
-    renderPlugin(index) {
+    renderPlugin(index: number) {
         const plugin = this.plugins[index];
         const engine = this.children[index];
 
-        engine.clear();
+        engine?.clear();
 
         if (!engine.collapsed) {
-            const isFullRendered = plugin.render();
+            const isFullRendered = plugin?.render?.();
 
             if (!isFullRendered) {
                 engine.standardRender();
@@ -217,7 +234,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    partialRender(id) {
+    partialRender(id?: number) {
         if (typeof id === 'number') {
             this.requestedRenders.push(id);
         }
@@ -252,18 +269,20 @@ export class RenderEngine extends BasicRenderEngine {
             }
 
             if (plugin.renderTooltip) {
-                tooltipRendered = tooltipRendered || !!plugin.renderTooltip();
+                tooltipRendered = tooltipRendered || Boolean(plugin.renderTooltip());
             }
         });
 
-        if (!tooltipRendered && typeof this.settings.tooltip === "function"){
+        if (!tooltipRendered && typeof this.options.tooltip === 'function') {
             // notify tooltip of nothing to render
-            this.settings.tooltip(null, this, null);
+            this.options.tooltip(null, this, null);
         }
     }
 
     render() {
-        cancelAnimationFrame(this.lastPartialAnimationFrame);
+        if (typeof this.lastPartialAnimationFrame === 'number') {
+            cancelAnimationFrame(this.lastPartialAnimationFrame);
+        }
 
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;

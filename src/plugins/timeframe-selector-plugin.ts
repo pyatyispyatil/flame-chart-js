@@ -3,58 +3,92 @@ import {
     flatTree,
     clusterizeFlatTree,
     getFlatTreeMinMax,
-    reclusterizeClusteredFlatTree
-} from './utils/tree-clusters.js';
-import { deepMerge } from '../utils.js';
-import { TimeGrid } from '../engines/time-grid.js';
+    reclusterizeClusteredFlatTree,
+} from './utils/tree-clusters';
+import { mergeObjects } from '../utils';
+import { TimeGrid } from '../engines/time-grid';
+import { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
+import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
+import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+import UIPlugin from './ui-plugin';
 
-const walk = (treeList, cb, parent = null, level = 0) => {
-    treeList.forEach((child) => {
-        const res = cb(child, parent, level);
+export type TimeframeSelectorPluginStyles = {
+    font: string;
+    fontColor: string;
+    overlayColor: string;
+    graphStrokeColor: string;
+    graphFillColor: string;
+    bottomLineColor: string;
+    knobColor: string;
+    knobStrokeColor: string;
+    knobSize: number;
+    height: number;
+    backgroundColor: string;
+};
 
-        if (child.children) {
-            walk(child.children, cb, res || child, level + 1);
-        }
-    });
-}
+// Replaced the "dot" type from upstream.
+export type DotNode = {
+    color?: string;
+    dots: { pos: number; level: number }[];
+};
 
-export const defaultTimeframeSelectorPluginSettings = {
-    styles: {
-        timeframeSelectorPlugin: {
-            font: '9px sans-serif',
-            fontColor: 'black',            
-            overlayColor: 'rgba(112, 112, 112, 0.5)',
-            graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
-            graphFillColor: 'rgb(0, 0, 0, 0.25)',
-            bottomLineColor: 'rgb(0, 0, 0, 0.25)',
-            knobColor: 'rgb(131, 131, 131)',
-            knobStrokeColor: 'white',
-            knobSize: 6,
-            height: 60,
-            backgroundColor: 'white'
-        }
-    }
-}
+export type TimeframeSelectorPluginSettings = {
+    styles?: Partial<TimeframeSelectorPluginStyles>;
+};
 
-export default class TimeframeSelectorPlugin {
-    constructor(data, settings = {}) {
+export const defaultTimeframeSelectorPluginStyles = {
+    font: '9px sans-serif',
+    fontColor: 'black',
+    overlayColor: 'rgba(112, 112, 112, 0.5)',
+    graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
+    graphFillColor: 'rgb(0, 0, 0, 0.25)',
+    bottomLineColor: 'rgb(0, 0, 0, 0.25)',
+    knobColor: 'rgb(131, 131, 131)',
+    knobStrokeColor: 'white',
+    knobSize: 6,
+    height: 60,
+    backgroundColor: 'white',
+};
+
+export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
+    name = 'timeframeSelectorPlugin';
+
+    override styles: TimeframeSelectorPluginStyles;
+    height: number;
+
+    private data: Data;
+    private shouldRender: boolean;
+    private leftKnobMoving: boolean;
+    private rightKnobMoving: boolean;
+    private selectingActive: boolean;
+    private startSelectingPosition: number;
+    private timeout: number | undefined;
+    private offscreenRenderEngine: OffscreenRenderEngine;
+    private timeGrid: TimeGrid;
+    private actualClusters: ClusterizedFlatTree;
+    private clusters: MetaClusterizedFlatTree;
+    private maxLevel: number;
+    private nodes: DotNode[];
+    private actualClusterizedFlatTree: ClusterizedFlatTree;
+
+    constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
+        super();
         this.data = data;
-        this.settings = settings;
         this.shouldRender = true;
+        this.setSettings(settings);
     }
 
-    init(renderEngine, interactionsEngine) {
-        this.renderEngine = renderEngine;
-        this.interactionsEngine = interactionsEngine;
+    override init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {
+        super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
 
-        this.setSettings(this.settings);
+        this.setSettings();
     }
 
-    handleMouseDown(region, mouse) {
+    handleMouseDown(region, mouse: Mouse) {
         if (region) {
             if (region.type === 'timeframeKnob') {
                 if (region.data === 'left') {
@@ -71,7 +105,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    handleMouseUp(region, mouse, isClick) {
+    handleMouseUp(region, mouse: Mouse, isClick: boolean) {
         let isDoubleClick = false;
 
         if (this.timeout) {
@@ -79,7 +113,7 @@ export default class TimeframeSelectorPlugin {
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => this.timeout = null, 300);
+        this.timeout = setTimeout(() => (this.timeout = void 0), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();
@@ -116,7 +150,7 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    handleMouseMove(region, mouse) {
+    handleMouseMove(region, mouse: Mouse) {
         if (this.leftKnobMoving) {
             this.setLeftKnobPosition(mouse.x);
             this.applyChanges();
@@ -140,39 +174,46 @@ export default class TimeframeSelectorPlugin {
         }
     }
 
-    postInit() {
+    override postInit() {
         this.offscreenRenderEngine = this.renderEngine.makeChild();
-        this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-        this.timeGrid = new TimeGrid(this.offscreenRenderEngine, this.settings);
+        this.offscreenRenderEngine.setSettingsOverrides({ styles: this.styles });
+
+        this.timeGrid = new TimeGrid({ styles: this.renderEngine.parent.timeGrid.styles });
+        this.timeGrid.setDefaultRenderEngine(this.offscreenRenderEngine);
 
         this.offscreenRenderEngine.on('resize', () => {
             this.offscreenRenderEngine.setZoom(this.renderEngine.getInitialZoom());
             this.offscreenRender();
         });
 
-        this.offscreenRenderEngine.on('min-max-change', () => this.shouldRender = true);
+        this.offscreenRenderEngine.on('min-max-change', () => (this.shouldRender = true));
 
         this.setData(this.data);
     }
 
-    setLeftKnobPosition(mouseX) {
+    setLeftKnobPosition(mouseX: number) {
         const maxPosition = this.getRightKnobPosition();
 
         if (mouseX < maxPosition - 1) {
             const realView = this.renderEngine.getRealView();
-            const delta = this.renderEngine.setPositionX(this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
+            const delta = this.renderEngine.setPositionX(
+                this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min
+            );
             const zoom = this.renderEngine.width / (realView - delta);
 
             this.renderEngine.setZoom(zoom);
         }
     }
 
-    setRightKnobPosition(mouseX) {
+    setRightKnobPosition(mouseX: number) {
         const minPosition = this.getLeftKnobPosition();
 
         if (mouseX > minPosition + 1) {
             const realView = this.renderEngine.getRealView();
-            const delta = (this.renderEngine.positionX + realView) - (this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
+            const delta =
+                this.renderEngine.positionX +
+                realView -
+                (this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min);
             const zoom = this.renderEngine.width / (realView - delta);
 
             this.renderEngine.setZoom(zoom);
@@ -184,7 +225,10 @@ export default class TimeframeSelectorPlugin {
     }
 
     getRightKnobPosition() {
-        return (this.renderEngine.positionX - this.renderEngine.min + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
+        return (
+            (this.renderEngine.positionX - this.renderEngine.min + this.renderEngine.getRealView()) *
+            this.renderEngine.getInitialZoom()
+        );
     }
 
     applyChanges() {
@@ -193,24 +237,22 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.parent.render();
     }
 
-    setSettings(settings) {
-        this.settings = deepMerge(defaultTimeframeSelectorPluginSettings, settings);
-        this.styles = this.settings.styles.timeframeSelectorPlugin;
-
+    override setSettings({ styles }: TimeframeSelectorPluginSettings = { styles: this.styles }) {
+        this.styles = mergeObjects(defaultTimeframeSelectorPluginStyles, styles);
         this.height = this.styles.height;
 
         if (this.offscreenRenderEngine) {
-            this.offscreenRenderEngine.setSettingsOverrides({ styles: { main: this.styles } });
-            this.timeGrid.setSettings({ styles: { timeGrid: this.styles } });
+            this.offscreenRenderEngine.setSettingsOverrides({ styles: this.styles });
+            this.timeGrid.setSettings({ styles: this.renderEngine.parent.timeGrid.styles });
         }
 
         this.shouldRender = true;
     }
 
-    setData(data) {
+    setData(data: Data) {
         this.data = data;
 
-        const nodes = [];
+        const nodes: DotNode[] = [];
         const tree = flatTree(this.data);
         const { min, max, maxDepth } = getFlatTreeMinMax(tree);
 
@@ -218,7 +260,7 @@ export default class TimeframeSelectorPlugin {
 
         this.min = min;
         this.max = max;
-        this.maxDepth = maxDepth;
+        this.maxLevel = maxDepth;
 
         this.clusters = metaClusterizeFlatTree(tree, () => true);
         this.actualClusters = clusterizeFlatTree(
@@ -245,20 +287,24 @@ export default class TimeframeSelectorPlugin {
 
             nodes.push({
                 color: color,
-                dots: [{
-                      pos: start,
-                      level: level,
-                  }, {
-                      pos: start,
-                      level: level + 1,
-                  }, {
-                      pos: end,
-                      level: level + 1,
-                  }, {
-                      pos: end,
-                      level: level,
-                  }
-                ]
+                dots: [
+                    {
+                        pos: start,
+                        level: level,
+                    },
+                    {
+                        pos: start,
+                        level: level + 1,
+                    },
+                    {
+                        pos: end,
+                        level: level + 1,
+                    },
+                    {
+                        pos: end,
+                        level: level,
+                    },
+                ],
             });
         });
 
@@ -269,7 +315,7 @@ export default class TimeframeSelectorPlugin {
     }
 
     offscreenRender() {
-        const zoom = this.zoom ? this.zoom : this.offscreenRenderEngine.getInitialZoom();
+        const zoom = this.renderEngine.zoom ?? this.renderEngine.getInitialZoom();
         const positionX = this.renderEngine.positionX || this.offscreenRenderEngine.min;
 
         // Initialize
@@ -286,13 +332,19 @@ export default class TimeframeSelectorPlugin {
         if (this.nodes.length) {
             const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
             this.nodes.forEach((node) => {
-                this.offscreenRenderEngine.setCtxColor(node.color);
+                this.offscreenRenderEngine.setCtxColor(node.color ?? this.styles.graphFillColor);
                 this.offscreenRenderEngine.ctx.beginPath();
-                this.offscreenRenderEngine.ctx.moveTo((node.dots[0].pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(node.dots[0].level, levelHeight));
+                this.offscreenRenderEngine.ctx.moveTo(
+                    (node.dots[0].pos - this.offscreenRenderEngine.min) * zoom,
+                    this.castLevelToHeight(node.dots[0].level, levelHeight)
+                );
 
                 node.dots.forEach((dot) => {
-                    this.offscreenRenderEngine.ctx.lineTo((dot.pos - this.offscreenRenderEngine.min) * zoom, this.castLevelToHeight(dot.level, levelHeight));
-                })
+                    this.offscreenRenderEngine.ctx.lineTo(
+                        (dot.pos - this.offscreenRenderEngine.min) * zoom,
+                        this.castLevelToHeight(dot.level, levelHeight)
+                    );
+                });
                 this.offscreenRenderEngine.ctx.closePath();
                 this.offscreenRenderEngine.ctx.fill();
             });
@@ -303,7 +355,7 @@ export default class TimeframeSelectorPlugin {
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
     }
 
-    castLevelToHeight(level, levelHeight) {
+    castLevelToHeight(level: number, levelHeight: number) {
         return level * levelHeight;
     }
 
@@ -311,14 +363,20 @@ export default class TimeframeSelectorPlugin {
         const relativePositionX = this.renderEngine.positionX - this.renderEngine.min;
 
         const currentLeftPosition = relativePositionX * this.renderEngine.getInitialZoom();
-        const currentRightPosition = (relativePositionX + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
+        const currentRightPosition =
+            (relativePositionX + this.renderEngine.getRealView()) * this.renderEngine.getInitialZoom();
         const currentLeftKnobPosition = currentLeftPosition - this.styles.knobSize / 2;
         const currentRightKnobPosition = currentRightPosition - this.styles.knobSize / 2;
         const knobHeight = this.renderEngine.height / 3;
 
         this.renderEngine.setCtxColor(this.styles.overlayColor);
         this.renderEngine.fillRect(0, 0, currentLeftPosition, this.renderEngine.height);
-        this.renderEngine.fillRect(currentRightPosition, 0, this.renderEngine.width - currentRightPosition, this.renderEngine.height);
+        this.renderEngine.fillRect(
+            currentRightPosition,
+            0,
+            this.renderEngine.width - currentRightPosition,
+            this.renderEngine.height
+        );
 
         this.renderEngine.setCtxColor(this.styles.overlayColor);
         this.renderEngine.fillRect(currentLeftPosition - 1, 0, 1, this.renderEngine.height);
@@ -328,15 +386,51 @@ export default class TimeframeSelectorPlugin {
         this.renderEngine.fillRect(currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
         this.renderEngine.fillRect(currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 
-        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
-        this.renderEngine.renderStroke(this.styles.knobStrokeColor, currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
+        this.renderEngine.renderStroke(
+            this.styles.knobStrokeColor,
+            currentLeftKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight
+        );
+        this.renderEngine.renderStroke(
+            this.styles.knobStrokeColor,
+            currentRightKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight
+        );
 
-        this.interactionsEngine.addHitRegion('timeframeKnob', 'left', currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
-        this.interactionsEngine.addHitRegion('timeframeKnob', 'right', currentRightKnobPosition, 0, this.styles.knobSize, knobHeight, 'ew-resize');
-        this.interactionsEngine.addHitRegion('timeframeArea', null, 0, 0, this.renderEngine.width, this.renderEngine.height, 'text');
+        this.interactionsEngine.addHitRegion(
+            'timeframeKnob',
+            'left',
+            currentLeftKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight,
+            'ew-resize'
+        );
+        this.interactionsEngine.addHitRegion(
+            'timeframeKnob',
+            'right',
+            currentRightKnobPosition,
+            0,
+            this.styles.knobSize,
+            knobHeight,
+            'ew-resize'
+        );
+        this.interactionsEngine.addHitRegion(
+            'timeframeArea',
+            null,
+            0,
+            0,
+            this.renderEngine.width,
+            this.renderEngine.height,
+            'text'
+        );
     }
 
-    render() {
+    override render() {
         if (this.shouldRender) {
             this.shouldRender = false;
             this.offscreenRender();

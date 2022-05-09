@@ -120,6 +120,7 @@ export const clusterizeFlatTree = (
 ): ClusterizedFlatTree => {
     let lastCluster: FlatTreeNode[] | null = null;
     let lastNode: FlatTreeNode | null = null;
+    let largestNode: FlatTreeNode | null = null;
     let index = 0;
 
     return metaClusterizedFlatTree
@@ -151,6 +152,9 @@ export const clusterizeFlatTree = (
                     }
 
                     lastNode = node;
+                    if (!largestNode || node.source.duration > largestNode.source.duration) {
+                        largestNode = node;
+                    }
                 }
             }
 
@@ -165,7 +169,7 @@ export const clusterizeFlatTree = (
                 end: node.source.start + duration,
                 duration,
                 type: node.source.type,
-                color: node.source.color,
+                color: largestNode?.source.color,
                 level: node.level,
                 nodes,
             };

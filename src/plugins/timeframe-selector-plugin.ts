@@ -68,7 +68,6 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     private actualClusters: ClusterizedFlatTree;
     private clusters: MetaClusterizedFlatTree;
     private maxLevel: number;
-    // TODO add type to nodes
     private nodes: DotNode[];
     private actualClusterizedFlatTree: ClusterizedFlatTree;
 
@@ -316,7 +315,6 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
     }
 
     offscreenRender() {
-        // TODO not sure if this zoom lookup is right.
         const zoom = this.renderEngine.zoom ?? this.renderEngine.getInitialZoom();
         const positionX = this.renderEngine.positionX || this.offscreenRenderEngine.min;
 

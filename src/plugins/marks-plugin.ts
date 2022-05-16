@@ -121,7 +121,7 @@ export default class MarksPlugin extends UIPlugin {
             // relativePosition translates according to the current position of the viewport.
             // The constant 3 accounts for 3 blocks comes from various blocks that are inserted between the mark and the actual flamechart. I think.
             const relativePosition =
-                targetBlock - this.renderEngine.parent.flameChartPositionY + this.renderEngine.position;
+                targetBlock - this.renderEngine.parent.flameChartPositionY + this.renderEngine.position * 3;
             if (relativePosition > this.renderEngine.position) {
                 this.renderEngine.parent.ctx.lineTo(position, relativePosition);
             }

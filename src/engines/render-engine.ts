@@ -275,7 +275,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (!tooltipRendered && typeof this.options.tooltip === 'function') {
             // notify tooltip of nothing to render
-            this.options.tooltip(null, this, null);
+            this.options.tooltip(null, this, null, 0);
         }
     }
 

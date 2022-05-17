@@ -136,7 +136,8 @@ export default class MarksPlugin extends UIPlugin {
                 this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
+                    0
                 );
             } else {
                 const {

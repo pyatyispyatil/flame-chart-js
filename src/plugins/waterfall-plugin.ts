@@ -178,7 +178,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
 
                 data.data = this.data.find(({ index: i }) => index === i);
 
-                this.renderEngine.options.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse());
+                this.renderEngine.options.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse(), 0);
             } else {
                 const { data: index } = this.hoveredRegion;
                 const dataItem = this.data.find(({ index: i }) => index === i);

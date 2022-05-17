@@ -27,7 +27,12 @@ const getPixelRatio = (ctx) => {
 
 export type RenderOptions = {
     tooltip?:
-        | ((data: any, renderEngine: RenderEngine | OffscreenRenderEngine, mouse: Mouse | null) => boolean | void)
+        | ((
+              data: any,
+              renderEngine: RenderEngine | OffscreenRenderEngine,
+              mouse: Mouse | null,
+              positionY: number
+          ) => boolean | void)
         | boolean;
     timeUnits: string;
 };

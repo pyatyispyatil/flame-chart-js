@@ -19,12 +19,12 @@ export declare type FlameChartSettings = {
 } & FlameChartContainerSettings<FlameChartStyles>;
 export declare type FlameChartOptions = {
     canvas: HTMLCanvasElement;
-    data: Data;
+    data?: Data;
     marks?: Marks;
     waterfall?: Waterfall;
-    colors: Colors;
-    settings: FlameChartSettings;
-    plugins: UIPlugin[];
+    colors?: Colors;
+    settings?: FlameChartSettings;
+    plugins?: UIPlugin[];
 };
 export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setData: (data: Data) => void;

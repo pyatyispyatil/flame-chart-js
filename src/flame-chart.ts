@@ -24,12 +24,12 @@ export type FlameChartSettings = {
 
 export type FlameChartOptions = {
     canvas: HTMLCanvasElement;
-    data: Data;
+    data?: Data;
     marks?: Marks;
     waterfall?: Waterfall;
-    colors: Colors;
-    settings: FlameChartSettings;
-    plugins: UIPlugin[];
+    colors?: Colors;
+    settings?: FlameChartSettings;
+    plugins?: UIPlugin[];
 };
 
 const defaultSettings: FlameChartSettings = {};

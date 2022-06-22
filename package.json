@@ -1,6 +1,6 @@
 {
   "name": "gflame",
-  "version": "2.9.5",
+  "version": "2.9.7",
   "description": "",
   "main": "src/index.js",
   "scripts": {

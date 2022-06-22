@@ -149,16 +149,23 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    getColor(type, defaultColor) {
+    getColor(type, defaultColor,isFaded) {
         if (defaultColor) {
             return defaultColor;
         } else if (this.colors[type]) {
+            if (isFaded){
+                return this.colors[type+'_f'];
+            }
             return this.colors[type];
         } else if (this.userColors[type]) {
             const color = new Color(this.userColors[type]);
-
+            const colorFaded = new Color(this.userColors[type]).alpha(0.2)
             this.colors[type] = color.rgb().toString();
+            this.colors[type+'_f'] = colorFaded.rgb().toString();
 
+            if (isFaded){
+            return this.colors[type+'_f'];
+            }
             return this.colors[type];
         } else {
             this.lastRandomColor = this.lastRandomColor.rotate(27);
@@ -334,8 +341,7 @@ export default class FlameChartPlugin extends UIPlugin {
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
                 addHitRegion(cluster, x, y, w);
             }
-
-            const calculatedColor = this.getColor(type, color)
+            const calculatedColor = this.getColor(type, color,isInactive);
 
             if (w >= 0.25) {
                 this.renderEngine.addRectToRenderQueue(calculatedColor, x, y, w, flags);

@@ -149,24 +149,26 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    getColor(type, defaultColor,isFaded) {
+    createNewColors(type,isWithFaded) {
+        const color = new Color(this.userColors[type]);
+        const colorFaded = new Color(this.userColors[type]).alpha(0.2)
+        this.colors[type] = color.rgb().toString();
+        this.colors[type+'_f'] = colorFaded.rgb().toString();
+        return this.colors[type+isWithFaded];
+    }
+
+    getColor(type,specialType, defaultColor,isFaded) {
+        const isWithFaded = isFaded ? '_f' : '';
         if (defaultColor) {
             return defaultColor;
-        } else if (this.colors[type]) {
-            if (isFaded){
-                return this.colors[type+'_f'];
-            }
-            return this.colors[type];
+        } else if(specialType &&this.colors[specialType]){
+            return this.colors[specialType+isWithFaded];
+        }else if (this.colors[type]) {
+            return this.colors[type+isWithFaded];
+        } else if (specialType && this.userColors[specialType]) {
+            return this.createNewColors(specialType,isWithFaded);
         } else if (this.userColors[type]) {
-            const color = new Color(this.userColors[type]);
-            const colorFaded = new Color(this.userColors[type]).alpha(0.2)
-            this.colors[type] = color.rgb().toString();
-            this.colors[type+'_f'] = colorFaded.rgb().toString();
-
-            if (isFaded){
-            return this.colors[type+'_f'];
-            }
-            return this.colors[type];
+            return this.createNewColors(type,isWithFaded);
         } else {
             this.lastRandomColor = this.lastRandomColor.rotate(27);
             this.colors[type] = this.lastRandomColor.rgb().toString();
@@ -317,6 +319,7 @@ export default class FlameChartPlugin extends UIPlugin {
         const renderCluster = (cluster, x, y, w) => {
             const {
                 type,
+                specialType,
                 nodes,
                 color,
                 isThirdParty,
@@ -341,7 +344,7 @@ export default class FlameChartPlugin extends UIPlugin {
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
                 addHitRegion(cluster, x, y, w);
             }
-            const calculatedColor = this.getColor(type, color,isInactive);
+            const calculatedColor = this.getColor(type,specialType, color,isInactive);
 
             if (w >= 0.25) {
                 this.renderEngine.addRectToRenderQueue(calculatedColor, x, y, w, flags);

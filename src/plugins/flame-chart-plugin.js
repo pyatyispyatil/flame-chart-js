@@ -25,6 +25,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.data = data;
         this.userColors = colors;
         this.canvasHeight = 5000
+        this.withSelectLogic = true;
         this.parseData(this.data);
         this.reset();
     }
@@ -41,6 +42,10 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.on('double', this.handleMouseDbClick.bind(this));
         this.initData();
     }
+
+    toggleSelectLogic(selectLogic) {
+        this.withSelectLogic = selectLogic;
+    };
 
     handleMouseOut() {
         this.emit('mouseout', this.mouse);
@@ -103,23 +108,30 @@ export default class FlameChartPlugin extends UIPlugin {
     }
 
     handleSelect(region) {
-        const mouse = this.interactionsEngine.getMouse();
-        const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
-        if (this.selectedRegion !== selectedRegion) {
-            this.selectedRegion = selectedRegion;
-            if (selectedRegion && selectedRegion.data){
-            const {start,end,level} = selectedRegion.data
-            const zoom = this.renderEngine.width / (end - start);
-            //this.renderEngine.setPositionX(start);
-            //this.setPositionY(level * 21);
-            this.renderEngine.setPositionX(start);
-            this.renderEngine.setZoom(zoom);
-            }
-            this.renderEngine.render();
 
-            this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
-            //this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
-        }
+            const mouse = this.interactionsEngine.getMouse();
+            const selectedRegion = region ? this.findNodeInCluster(region, mouse) : null;
+            if (this.selectedRegion !== selectedRegion) {
+
+                this.selectedRegion = selectedRegion;
+                if (selectedRegion && selectedRegion.data){
+                    const {start,end,level} = selectedRegion.data
+                    const zoom = this.renderEngine.width / (end - start);
+                    //this.renderEngine.setPositionX(start);
+                    //this.setPositionY(level * 21);
+                    if (this.withSelectLogic){
+                        this.renderEngine.setPositionX(start);
+                        this.renderEngine.setZoom(zoom);
+                    }
+                }
+                if (this.withSelectLogic){
+                this.renderEngine.render();
+                }
+                this.emit('mousedown', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+            }
+                //this.emit('mouseup', this.selectedRegion && this.selectedRegion.data, 'flame-chart-node');
+
+
     }
 
     handleHover(region) {
@@ -130,7 +142,12 @@ export default class FlameChartPlugin extends UIPlugin {
         const mouse = this.interactionsEngine.getMouse();
 
         if (region && region.type === 'cluster') {
-            this.interactionsEngine.setCursor('pointer');
+            if (this.withSelectLogic){
+                this.interactionsEngine.setCursor('pointer');
+            }
+            else{
+                this.interactionsEngine.setCursor('cell');
+            }
             const hoveredNode = region.data.nodes.find(({ level, start, duration }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
 

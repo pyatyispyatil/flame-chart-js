@@ -101,6 +101,11 @@ export default class FlameChart extends FlameChartContainer {
 
                 this.renderEngine.render();
             }
+
+            this.toggleSelectLogic = (selectLogic) => {
+                flameChartPlugin.toggleSelectLogic(selectLogic);
+            };
+
         }
 
         if (marksPlugin) {

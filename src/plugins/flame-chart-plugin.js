@@ -178,18 +178,24 @@ export default class FlameChartPlugin extends UIPlugin {
         const isWithFaded = isFaded ? '_f' : '';
         if (defaultColor) {
             return defaultColor;
-        } else if(specialType &&this.colors[specialType]){
-            return this.colors[specialType+isWithFaded];
-        }else if (this.colors[type]) {
+        }
+        else if (specialType) {
+            if (this.colors[specialType]) {
+                return this.colors[specialType+isWithFaded];
+            }
+            else if (this.userColors[specialType]) {
+                return this.createNewColors(specialType,isWithFaded);
+            }
+        }
+        else if (this.colors[type]) {
             return this.colors[type+isWithFaded];
-        } else if (specialType && this.userColors[specialType]) {
-            return this.createNewColors(specialType,isWithFaded);
-        } else if (this.userColors[type]) {
+        }
+        else if (this.userColors[type]) {
             return this.createNewColors(type,isWithFaded);
-        } else {
+        }
+        else {
             this.lastRandomColor = this.lastRandomColor.rotate(27);
             this.colors[type] = this.lastRandomColor.rgb().toString();
-
             return this.colors[type];
         }
     }

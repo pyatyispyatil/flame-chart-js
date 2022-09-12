@@ -10,7 +10,11 @@
 
 ### Demo
 
-https://pyatyispyatil.github.io/flame-chart-js/example/dist/index.html
+https://pyatyispyatil.github.io/flame-chart-js
+
+### Roadmap
+
+You can find some [plans on the wiki](https://github.com/pyatyispyatil/flame-chart-js/wiki/Roadmap)
 
 ### Usage
 
@@ -59,6 +63,10 @@ const flameChart = new FlameChart({
         'sub-task': '#000000'
     },
     settings: {
+        options: {
+            tooltip: () => {/*...*/}, // see section "Custom Tooltip" below
+            timeUnits: 'ms'
+        },
         styles: customStyles // see section "Styles" below
     }
 });
@@ -72,25 +80,25 @@ flameChart.on('select', (node, type) => {
 
 ```ts
 // set zoom, which start argument is a left bound and end argument is a right bound 
-setZoom = (start: number, end: number) => undefined;
+setZoom = (start: number, end: number) => void;
 
 // set only position of the flame-chart
-setFlameChartPosition = ({x: number, y: number}) => undefined;
+setFlameChartPosition = ({ x: number, y: number }) => void;
 
 // render all when animationFrame fired
-render = () => undefined;
+render = () => void;
 
 // set new data for the flame-chart
-setData = (data: Data) => undefined;
+setData = (data: Data) => void;
 
 // set marks for marks plugin
-setMarks = (data: Marks) => undefined;
+setMarks = (data: Marks) => void;
 
 // resize canvas
-resize = (width: number, height: number) => undefined;
+resize = (width: number, height: number) => void;
 
 // apply new settings, which includes styles or something else
-setSettings = (settings: Object) => undefined
+setSettings = (settings: Object) => void;
 ```
 
 #### Settings
@@ -167,26 +175,29 @@ After applying this style, the blocks of the flame chart will be 20 pixels high 
 
 You can override or prevent the tooltip render by defining this within the settings objet.
 
-```json
-{  
-  "tooltip": undefined,
+```ts
+{
+  options: {
+    tooltip: undefined
+  }
 }
-
 ```
 
 For example:
 
 ```ts
 // prevent tooltip render
-chart.setSettings({ "tooltip": false });
+chart.setSettings({ options: { tooltip: false }});
 
 // override tooltip render
 chart.setSettings({ 
-  "tooltip" : (data, renderEngine, mouse) => undefined
+  options: {
+      tooltip : (data, renderEngine, mouse) => undefined
+  }
 });
 ```
 
-#### Data format
+#### [Data types](https://github.com/pyatyispyatil/flame-chart-js/blob/master/src/types.ts#L1)
 
 ```ts
 type Mark = {

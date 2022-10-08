@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { RenderEngine } from './render-engine';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
-import { HitRegion, Mouse } from '../types';
+import { CursorTypes, HitRegion, Mouse } from '../types';
 import { SeparatedInteractionsEngine } from './separated-interactions-engine';
 
 export class InteractionsEngine extends EventEmitter {
@@ -234,7 +234,7 @@ export class InteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor: string) {
+    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor: CursorTypes) {
         this.hitRegions.push({
             type,
             data,

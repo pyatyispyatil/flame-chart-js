@@ -1,4 +1,6 @@
-interface Mark {
+export const EVENT_NAMES = ['down', 'up', 'move', 'click', 'select'] as const;
+
+export interface Mark {
     shortName: string;
     fullName: string;
     timestamp: number;
@@ -26,12 +28,12 @@ export type WaterfallItems = Array<{
     };
 }>;
 
-type WaterfallInterval = {
+export type WaterfallInterval = {
     name: string;
     color: string;
     type: 'block' | 'line';
-    start: string; // timing name
-    end: string; // timing name
+    start: number; // timing name
+    end: number; // timing name
 };
 
 interface WaterfallIntervals {
@@ -113,13 +115,30 @@ export interface TooltipField {
     text: string;
 }
 
-export interface HitRegion {
-    type: string;
-    data: any;
+export const enum RegionTypes {
+    WATERFALL_NODE = 'waterfall-node',
+    CLUSTER = 'cluster',
+    TIMEFRAME_AREA = 'timeframeArea',
+    TIMEFRAME_KNOB = 'timeframeKnob',
+    KNOB_RESIZE = 'knob-resize',
+    TOGGLE = 'toggle',
+    TIMESTAMP = 'timestamp',
+}
+
+export const enum CursorTypes {
+    TEXT = 'text',
+    ROW_RESIZE = 'row-resize',
+    POINTER = 'pointer',
+    EW_RESIZE = 'ew-resize',
+}
+
+export interface HitRegion<S = any> {
+    type: RegionTypes;
+    data: S;
     x: number;
     y: number;
     w: number;
     h: number;
-    cursor?: string;
+    cursor?: CursorTypes;
     id?: number;
 }

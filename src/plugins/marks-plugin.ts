@@ -1,15 +1,17 @@
 import Color from 'color';
 import UIPlugin from './ui-plugin';
-import { Marks } from '../types';
+import { HitRegion, Mark, Marks, RegionTypes } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+
+type MarkHitRegion = HitRegion<Mark>;
 
 export default class MarksPlugin extends UIPlugin {
     name = 'marksPlugin';
 
     marks: Marks;
-    hoveredRegion;
-    selectedRegion;
+    hoveredRegion: MarkHitRegion | null = null;
+    selectedRegion: MarkHitRegion | null = null;
 
     constructor(marks: Marks) {
         super();
@@ -34,11 +36,11 @@ export default class MarksPlugin extends UIPlugin {
         this.interactionsEngine.on('select', this.handleSelect.bind(this));
     }
 
-    handleHover(region) {
+    handleHover(region: MarkHitRegion) {
         this.hoveredRegion = region;
     }
 
-    handleSelect(region) {
+    handleSelect(region: MarkHitRegion) {
         if (region && region.type === 'timestamp') {
             this.selectedRegion = region;
             this.emit('select', region.data, 'timestamp');
@@ -94,7 +96,7 @@ export default class MarksPlugin extends UIPlugin {
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);
 
             this.interactionsEngine.addHitRegion(
-                'timestamp',
+                RegionTypes.TIMESTAMP,
                 node,
                 blockPosition,
                 0,

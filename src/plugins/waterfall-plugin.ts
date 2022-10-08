@@ -1,11 +1,19 @@
 import { mergeObjects } from '../utils';
 import UIPlugin from './ui-plugin';
-import { Waterfall, WaterfallItems } from '../types';
+import { HitRegion, RegionTypes, Waterfall, WaterfallInterval, WaterfallItems } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
-const getValueByChoice = (array: any[], property: 'end' | 'start', fn) =>
-    array.length ? array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]) : null;
+function getValueByChoice<T extends WaterfallInterval>(
+    array: T[],
+    property: 'end' | 'start',
+    fn: Math['min'] | Math['max']
+): number {
+    if (array.length) {
+        return array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]);
+    }
+    return 0;
+}
 
 export type WaterfallPluginStyles = {
     defaultHeight: number;
@@ -38,8 +46,8 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
 
     data: WatterfallPluginDataItem[] = [];
     positionY = 0;
-    hoveredRegion;
-    selectedRegion;
+    hoveredRegion: HitRegion<number> | null = null;
+    selectedRegion: HitRegion<number> | null = null;
     initialData: WaterfallItems = [];
 
     constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings) {
@@ -80,11 +88,11 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         this.interactionsEngine.clearCursor();
     }
 
-    handleHover(region) {
+    handleHover(region: HitRegion<number> | null) {
         this.hoveredRegion = region;
     }
 
-    handleSelect(region) {
+    handleSelect(region: HitRegion<number> | null) {
         if (region) {
             this.selectedRegion = region;
             this.emit('select', this.initialData[region.data], 'waterfall-node');
@@ -125,11 +133,11 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     .filter(({ start, end }) => typeof start === 'number' && typeof end === 'number');
                 const blocks = preparedIntervals.filter(({ type }) => type === 'block');
 
-                const blockStart = getValueByChoice(blocks, 'start', Math.min) || 0;
-                const blockEnd = getValueByChoice(blocks, 'end', Math.max) || 0;
+                const blockStart = getValueByChoice(blocks, 'start', Math.min);
+                const blockEnd = getValueByChoice(blocks, 'end', Math.max);
 
-                const min = getValueByChoice(preparedIntervals, 'start', Math.min) || 0;
-                const max = getValueByChoice(preparedIntervals, 'end', Math.max) || 0;
+                const min = getValueByChoice(preparedIntervals, 'start', Math.min);
+                const max = getValueByChoice(preparedIntervals, 'end', Math.max);
 
                 return {
                     ...rest,
@@ -176,6 +184,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                 const { data: index } = this.hoveredRegion;
                 const data = { ...this.hoveredRegion };
 
+                // @ts-ignore data type on waterfall item is number but here it is something else?
                 data.data = this.data.find(({ index: i }) => index === i);
 
                 this.renderEngine.options.tooltip(data, this.renderEngine, this.interactionsEngine.getGlobalMouse());
@@ -287,7 +296,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                 }
 
                 this.interactionsEngine.addHitRegion(
-                    'waterfall-node',
+                    RegionTypes.WATERFALL_NODE,
                     index,
                     x ?? 0,
                     y,

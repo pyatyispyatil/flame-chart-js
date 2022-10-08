@@ -113,7 +113,7 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     getChildrenSizes() {
-        const indexes = this.children.map((engine, index) => index);
+        const indexes = this.children.map((_, index) => index);
 
         const enginesTypes = indexes.map((index) => {
             const plugin = this.plugins[index];
@@ -280,7 +280,7 @@ export class RenderEngine extends BasicRenderEngine {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
                 this.timeGrid.recalc();
 
-                this.children.forEach((engine, index) => this.renderPlugin(index));
+                this.children.forEach((_, index) => this.renderPlugin(index));
 
                 this.shallowRender();
 

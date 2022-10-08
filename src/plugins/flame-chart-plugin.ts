@@ -23,21 +23,21 @@ const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 export default class FlameChartPlugin extends UIPlugin {
     name = 'flameChartPlugin';
 
-    height: number;
+    height = 0;
 
     data: Data;
     userColors: Colors;
-    flatTree: FlatTree;
-    positionY: number;
-    colors: Colors;
+    flatTree: FlatTree = [];
+    positionY = 0;
+    colors: Colors = {};
     selectedRegion;
-    lastRandomColor: typeof DEFAULT_COLOR;
+    lastRandomColor: typeof DEFAULT_COLOR = DEFAULT_COLOR;
     hoveredRegion;
-    metaClusterizedFlatTree: MetaClusterizedFlatTree;
-    actualClusterizedFlatTree: ClusterizedFlatTree;
-    initialClusterizedFlatTree: ClusterizedFlatTree;
-    lastUsedColor: string | null;
-    renderChartTimeout: number;
+    metaClusterizedFlatTree: MetaClusterizedFlatTree = [];
+    actualClusterizedFlatTree: ClusterizedFlatTree = [];
+    initialClusterizedFlatTree: ClusterizedFlatTree = [];
+    lastUsedColor: string | null = null;
+    renderChartTimeout = -1;
 
     constructor({ data, colors }) {
         super();

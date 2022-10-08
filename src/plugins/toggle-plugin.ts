@@ -36,13 +36,13 @@ export const defaultTogglePluginStyles: TogglePluginStyles = {
 export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     name = 'togglePlugin';
 
-    override styles: TogglePluginStyles;
-    height: number;
+    override styles: TogglePluginStyles = defaultTogglePluginStyles;
+    height = 0;
 
     title: string;
-    resizeActive: boolean;
-    resizeStartHeight: number;
-    resizeStartPosition: number;
+    resizeActive = false;
+    resizeStartHeight = 0;
+    resizeStartPosition = 0;
 
     constructor(title: string, settings: TogglePluginSettings) {
         super();

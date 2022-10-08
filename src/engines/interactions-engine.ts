@@ -10,13 +10,13 @@ export class InteractionsEngine extends EventEmitter {
     private hitRegions: HitRegion[];
     private instances: SeparatedInteractionsEngine[];
     mouse: Mouse;
-    selectedRegion: HitRegion | null;
-    private hoveredRegion: HitRegion | null;
-    private moveActive: boolean;
+    selectedRegion: HitRegion | null = null;
+    private hoveredRegion: HitRegion | null = null;
+    private moveActive = false;
     private mouseDownPosition: Mouse;
     private mouseDownHoveredInstance: SeparatedInteractionsEngine | undefined;
     private hoveredInstance: SeparatedInteractionsEngine | undefined;
-    private currentCursor: string | null;
+    private currentCursor: string | null = null;
 
     constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine) {
         super();

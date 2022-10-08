@@ -14,9 +14,9 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     parent: RenderEngine;
     id: number | undefined;
     children: OffscreenRenderEngine[];
-    flexible: boolean;
-    collapsed: boolean;
-    position: number;
+    flexible = false;
+    collapsed = false;
+    position = 0;
 
     constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');

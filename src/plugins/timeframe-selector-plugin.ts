@@ -55,23 +55,23 @@ export const defaultTimeframeSelectorPluginStyles = {
 export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
     name = 'timeframeSelectorPlugin';
 
-    override styles: TimeframeSelectorPluginStyles;
-    height: number;
+    override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
+    height = 0;
 
     private data: Data;
     private shouldRender: boolean;
-    private leftKnobMoving: boolean;
-    private rightKnobMoving: boolean;
-    private selectingActive: boolean;
-    private startSelectingPosition: number;
+    private leftKnobMoving = false;
+    private rightKnobMoving = false;
+    private selectingActive = false;
+    private startSelectingPosition = 0;
     private timeout: number | undefined;
     private offscreenRenderEngine: OffscreenRenderEngine;
     private timeGrid: TimeGrid;
-    private actualClusters: ClusterizedFlatTree;
-    private clusters: MetaClusterizedFlatTree;
-    private maxLevel: number;
-    private dots: Dot[];
-    private actualClusterizedFlatTree: ClusterizedFlatTree;
+    private actualClusters: ClusterizedFlatTree = [];
+    private clusters: MetaClusterizedFlatTree = [];
+    private maxLevel = 0;
+    private dots: Dot[] = [];
+    private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
     constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
         super();

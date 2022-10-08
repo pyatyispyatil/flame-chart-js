@@ -23,7 +23,7 @@ export class TimeGrid {
     accuracy: number;
     delta: number;
     styles: TimeGridStyles = defaultTimeGridStyles;
-    timeUnits;
+    timeUnits = 'ms';
 
     constructor(settings: TimeGridSettings) {
         this.start = 0;

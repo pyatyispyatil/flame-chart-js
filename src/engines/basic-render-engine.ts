@@ -12,7 +12,9 @@ const checkSafari = () => {
     return ua.includes('safari') ? !ua.includes('chrome') : false;
 };
 
-const getPixelRatio = (ctx) => {
+function getPixelRatio(context: CanvasRenderingContext2D) {
+    // Unfortunately using any here, since typescript is not aware of all of the browser prefixes
+    const ctx = context as any;
     const dpr = window.devicePixelRatio || 1;
     const bsr =
         ctx.webkitBackingStorePixelRatio ||
@@ -23,7 +25,7 @@ const getPixelRatio = (ctx) => {
         1;
 
     return dpr / bsr;
-};
+}
 
 export type RenderOptions = {
     tooltip?:
@@ -80,7 +82,7 @@ export class BasicRenderEngine extends EventEmitter {
     ctx: CanvasRenderingContext2D;
     pixelRatio: number;
     options: RenderOptions = defaultRenderSettings;
-    timeUnits;
+    timeUnits = 'ms';
     styles: RenderStyles = defaultRenderStyles;
     blockPaddingLeftRight = 0;
     blockHeight = 0;
@@ -171,7 +173,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    fillText(text: string, x: number, y) {
+    fillText(text: string, x: number, y: number) {
         this.ctx.fillText(text, x, y);
     }
 

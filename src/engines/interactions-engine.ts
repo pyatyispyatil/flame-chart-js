@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { RenderEngine } from './render-engine';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
-import { CursorTypes, HitRegion, Mouse } from '../types';
+import { CursorTypes, HitRegion, Mouse, RegionTypes } from '../types';
 import { SeparatedInteractionsEngine } from './separated-interactions-engine';
 
 export class InteractionsEngine extends EventEmitter {
@@ -79,7 +79,7 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
 
-    handleMouseWheel(e) {
+    handleMouseWheel(e: WheelEvent) {
         const { deltaY, deltaX } = e;
         e.preventDefault();
 
@@ -144,7 +144,7 @@ export class InteractionsEngine extends EventEmitter {
         }
     }
 
-    handleMouseMove(e) {
+    handleMouseMove(e: MouseEvent) {
         if (this.moveActive) {
             const mouseDeltaY = this.mouse.y - e.offsetY;
             const mouseDeltaX = (this.mouse.x - e.offsetX) / this.renderEngine.zoom;
@@ -234,7 +234,7 @@ export class InteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor: CursorTypes) {
+    addHitRegion<T>(type: RegionTypes, data: T, x: number, y: number, w: number, h: number, cursor: CursorTypes) {
         this.hitRegions.push({
             type,
             data,

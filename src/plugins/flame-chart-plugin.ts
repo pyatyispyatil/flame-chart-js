@@ -44,7 +44,7 @@ export default class FlameChartPlugin extends UIPlugin {
     lastUsedColor: string | null = null;
     renderChartTimeout = -1;
 
-    constructor({ data, colors }) {
+    constructor({ data, colors = {} }: { data: Data; colors: Colors | undefined }) {
         super();
 
         this.data = data;

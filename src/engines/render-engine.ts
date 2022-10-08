@@ -79,7 +79,7 @@ export class RenderEngine extends BasicRenderEngine {
         this.children.forEach((engine) => engine.setMinMax(min, max));
     }
 
-    override setSettings(data) {
+    override setSettings(data: RenderSettings) {
         super.setSettings(data);
 
         if (this.children) {
@@ -88,7 +88,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    override resize(width, height): boolean {
+    override resize(width: number, height: number): boolean {
         const currentWidth = this.width;
 
         super.resize(width, height);
@@ -151,20 +151,20 @@ export class RenderEngine extends BasicRenderEngine {
             (acc, type, index) => {
                 const engine = this.children[index];
                 const plugin = this.plugins[index];
-                let height;
+                let height = 0;
 
                 if (engine.collapsed) {
                     height = 0;
                 } else {
                     switch (type) {
                         case 'static':
-                            height = plugin.height;
+                            height = plugin.height ?? 0;
                             break;
                         case 'flexibleGrowing':
                             height = (engine.height || 0) + freeSpacePart;
                             break;
                         case 'flexibleStatic':
-                            height = engine.height || this.plugins[index].height;
+                            height = (engine.height || this.plugins[index].height) ?? 0;
                             break;
                     }
                 }

@@ -20,8 +20,8 @@ export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
 export default class TimeGridPlugin extends UIPlugin<TimeGridPluginStyles> {
     name = 'timeGridPlugin';
 
-    override styles: TimeGridPluginStyles;
-    height: number;
+    override styles: TimeGridPluginStyles = defaultTimeGridPluginStyles;
+    height = 0;
 
     constructor(settings: TimeGridPluginSettings = {}) {
         super();

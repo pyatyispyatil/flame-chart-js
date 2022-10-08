@@ -36,7 +36,7 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
     height = defaultWaterfallPluginStyles.defaultHeight;
 
-    data: WatterfallPluginDataItem[];
+    data: WatterfallPluginDataItem[] = [];
     positionY = 0;
     hoveredRegion;
     selectedRegion;

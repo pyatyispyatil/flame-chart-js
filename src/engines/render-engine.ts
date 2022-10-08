@@ -23,9 +23,9 @@ export class RenderEngine extends BasicRenderEngine {
     children: OffscreenRenderEngine[];
     requestedRenders: number[];
     timeGrid: TimeGrid;
-    freeSpace: number;
-    lastPartialAnimationFrame: number | null;
-    lastGlobalAnimationFrame: number | null;
+    freeSpace = 0;
+    lastPartialAnimationFrame: number | null = null;
+    lastGlobalAnimationFrame: number | null = null;
 
     constructor({ canvas, settings, timeGrid, plugins }: RenderEngineArgs) {
         super(canvas, settings);

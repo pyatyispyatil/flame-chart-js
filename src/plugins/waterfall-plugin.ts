@@ -4,7 +4,7 @@ import { HitRegion, RegionTypes, Waterfall, WaterfallInterval, WaterfallItems } 
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
-function getValueByChoice<T extends WaterfallInterval>(
+function getValueByChoice<T extends Omit<WaterfallInterval, 'start' | 'end'> & { start: number; end: number }>(
     array: T[],
     property: 'end' | 'start',
     fn: Math['min'] | Math['max']

@@ -32,8 +32,8 @@ export type WaterfallInterval = {
     name: string;
     color: string;
     type: 'block' | 'line';
-    start: number; // timing name
-    end: number; // timing name
+    start: string; // timing name
+    end: string; // timing name
 };
 
 interface WaterfallIntervals {

@@ -8,11 +8,11 @@ export type TimeGridStyles = {
     color: string;
 };
 
-export type TimeGridSettings = {
+type TimeGridSettings = {
     styles?: Partial<TimeGridStyles>;
 };
 
-export const defaultTimeGridStyles: TimeGridStyles = {
+const defaultTimeGridStyles: TimeGridStyles = {
     color: 'rgba(90,90,90,0.20)',
 };
 

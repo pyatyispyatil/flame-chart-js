@@ -8,11 +8,11 @@ export type TimeGridPluginStyles = {
     fontColor: string;
 };
 
-export type TimeGridPluginSettings = {
+type TimeGridPluginSettings = {
     styles?: Partial<TimeGridPluginStyles>;
 };
 
-export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
+const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
     font: '10px sans-serif',
     fontColor: 'black',
 };

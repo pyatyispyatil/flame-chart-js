@@ -17,11 +17,11 @@ export type TogglePluginStyles = {
     leftPadding: number;
 };
 
-export type TogglePluginSettings = {
+type TogglePluginSettings = {
     styles?: Partial<TogglePluginStyles>;
 };
 
-export const defaultTogglePluginStyles: TogglePluginStyles = {
+const defaultTogglePluginStyles: TogglePluginStyles = {
     height: 16,
     color: 'rgb(202,202,202, 0.25)',
     strokeColor: 'rgb(138,138,138, 0.50)',

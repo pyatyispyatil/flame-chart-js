@@ -6,7 +6,7 @@ import UIPlugin from '../plugins/ui-plugin';
 
 const MAX_ACCURACY = 6;
 
-export type RenderEngineArgs = {
+type RenderEngineArgs = {
     canvas: HTMLCanvasElement;
     settings: RenderSettings;
     timeGrid: TimeGrid;

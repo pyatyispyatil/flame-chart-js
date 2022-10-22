@@ -30,11 +30,11 @@ type WatterfallPluginDataItem = {
     meta?: any[];
 };
 
-export type WaterfallPluginSettings = {
+type WaterfallPluginSettings = {
     styles?: Partial<WaterfallPluginStyles>;
 };
 
-export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
+const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
     defaultHeight: 68,
 };
 

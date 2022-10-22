@@ -42,11 +42,11 @@ export type TimeframeSelectorPluginStyles = {
     backgroundColor: string;
 };
 
-export type TimeframeSelectorPluginSettings = {
+type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
 
-export const defaultTimeframeSelectorPluginStyles = {
+const defaultTimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',

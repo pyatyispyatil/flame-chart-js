@@ -5,7 +5,7 @@ import { TimeGrid, TimeGridStyles } from './engines/time-grid';
 import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
-export type FlameChartContainerStyles<Styles> = {
+type FlameChartContainerStyles<Styles> = {
     timeGrid?: Partial<TimeGridStyles>;
     main?: Partial<RenderStyles>;
 } & Styles;

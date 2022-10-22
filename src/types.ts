@@ -92,7 +92,7 @@ export type FlatTreeNode = {
 
 export type FlatTree = FlatTreeNode[];
 
-export interface MetaClusterizedFlatTreeNode {
+interface MetaClusterizedFlatTreeNode {
     nodes: FlatTreeNode[];
 }
 

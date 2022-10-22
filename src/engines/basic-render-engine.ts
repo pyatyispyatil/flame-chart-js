@@ -54,12 +54,12 @@ export type RenderSettings = {
     styles?: Partial<RenderStyles>;
 };
 
-export const defaultRenderSettings: RenderOptions = {
+const defaultRenderSettings: RenderOptions = {
     tooltip: undefined,
     timeUnits: 'ms',
 };
 
-export const defaultRenderStyles: RenderStyles = {
+const defaultRenderStyles: RenderStyles = {
     blockHeight: 16,
     blockPaddingLeftRight: 4,
     backgroundColor: 'white',

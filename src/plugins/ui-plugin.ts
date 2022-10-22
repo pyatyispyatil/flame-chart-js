@@ -22,13 +22,13 @@ export default abstract class UIPlugin<S = {}> extends EventEmitter {
         this.interactionsEngine = interactionsEngine;
     }
 
-    postInit?();
+    postInit?(): void;
 
-    render?();
+    render?(): void;
 
     setSettings?(settings: { styles: S }): void;
 
-    renderTooltip?();
+    renderTooltip?(): boolean;
 
-    postRender?();
+    postRender?(): void;
 }

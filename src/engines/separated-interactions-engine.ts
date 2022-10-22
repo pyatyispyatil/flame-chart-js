@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
-import { HitRegion } from '../types';
+import { CursorTypes, EVENT_NAMES, HitRegion, Mouse, RegionTypes } from '../types';
 import { InteractionsEngine } from './interactions-engine';
 
 export class SeparatedInteractionsEngine extends EventEmitter {
@@ -23,7 +23,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
 
         renderEngine.on('clear', () => this.clearHitRegions());
 
-        ['down', 'up', 'move', 'click', 'select'].forEach((eventName) =>
+        EVENT_NAMES.forEach((eventName) =>
             parent.on(eventName, (region, mouse, isClick) => {
                 if (!region || region.id === this.id) {
                     this.resend(eventName, region, mouse, isClick);
@@ -48,7 +48,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    resend(event, ...args) {
+    resend(event: string, ...args: [HitRegion, Mouse, boolean]) {
         if (
             this.renderEngine.position <= this.parent.mouse.y &&
             this.renderEngine.height + this.renderEngine.position >= this.parent.mouse.y
@@ -74,7 +74,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
         this.hitRegions = [];
     }
 
-    addHitRegion(type, data, x: number, y: number, w: number, h: number, cursor?: string) {
+    addHitRegion<T>(type: RegionTypes, data: T, x: number, y: number, w: number, h: number, cursor?: CursorTypes) {
         this.hitRegions.push({
             type,
             data,

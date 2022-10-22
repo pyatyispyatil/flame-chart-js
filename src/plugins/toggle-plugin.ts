@@ -2,6 +2,7 @@ import { mergeObjects } from '../utils';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import UIPlugin from './ui-plugin';
+import { CursorTypes, RegionTypes } from '../types';
 
 export type TogglePluginStyles = {
     height: number;
@@ -156,13 +157,13 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         const buttonWidth = titleWidth + triangleFullWidth;
 
         this.interactionsEngine.addHitRegion(
-            'toggle',
+            RegionTypes.TOGGLE,
             this.renderEngine.id,
             0,
             0,
             buttonWidth,
             this.styles.height,
-            'pointer'
+            CursorTypes.POINTER
         );
 
         if (prevEngine.flexible) {
@@ -171,13 +172,13 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
             this.renderEngine.renderCircle(this.styles.dotsColor, centerW + 10, centerH, 1.5);
 
             this.interactionsEngine.addHitRegion(
-                'knob-resize',
+                RegionTypes.KNOB_RESIZE,
                 this.renderEngine.id,
                 buttonWidth,
                 0,
                 this.renderEngine.width - buttonWidth,
                 this.styles.height,
-                'row-resize'
+                CursorTypes.ROW_RESIZE
             );
         }
     }

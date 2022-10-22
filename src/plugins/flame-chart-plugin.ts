@@ -1,9 +1,9 @@
 import {
-    flatTree,
     clusterizeFlatTree,
+    flatTree,
+    getFlatTreeMinMax,
     metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
-    getFlatTreeMinMax,
 } from './utils/tree-clusters';
 import Color from 'color';
 import UIPlugin from './ui-plugin';
@@ -13,10 +13,15 @@ import {
     Colors,
     Data,
     FlatTree,
+    FlatTreeNode,
+    HitRegion,
     MetaClusterizedFlatTree,
+    RegionTypes,
 } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
+
+type ClusterNode = { data: FlatTreeNode; type: string };
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
@@ -30,16 +35,16 @@ export default class FlameChartPlugin extends UIPlugin {
     flatTree: FlatTree = [];
     positionY = 0;
     colors: Colors = {};
-    selectedRegion;
+    selectedRegion: ClusterNode | null = null;
+    hoveredRegion: ClusterNode | null = null;
     lastRandomColor: typeof DEFAULT_COLOR = DEFAULT_COLOR;
-    hoveredRegion;
     metaClusterizedFlatTree: MetaClusterizedFlatTree = [];
     actualClusterizedFlatTree: ClusterizedFlatTree = [];
     initialClusterizedFlatTree: ClusterizedFlatTree = [];
     lastUsedColor: string | null = null;
     renderChartTimeout = -1;
 
-    constructor({ data, colors }) {
+    constructor({ data, colors = {} }: { data: Data; colors: Colors | undefined }) {
         super();
 
         this.data = data;
@@ -104,7 +109,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.max = max;
     }
 
-    handleSelect(region) {
+    handleSelect(region: HitRegion<ClusterizedFlatTreeNode>) {
         const selectedRegion = this.findNodeInCluster(region);
 
         if (this.selectedRegion !== selectedRegion) {
@@ -116,14 +121,14 @@ export default class FlameChartPlugin extends UIPlugin {
         }
     }
 
-    handleHover(region) {
+    handleHover(region: HitRegion<ClusterizedFlatTreeNode>) {
         this.hoveredRegion = this.findNodeInCluster(region);
     }
 
-    findNodeInCluster(region) {
+    findNodeInCluster(region: HitRegion<ClusterizedFlatTreeNode>): ClusterNode | null {
         const mouse = this.interactionsEngine.getMouse();
 
-        if (region && region.type === 'cluster') {
+        if (region && region.type === RegionTypes.CLUSTER) {
             const hoveredNode = region.data.nodes.find(({ level, source: { start, duration } }) => {
                 const { x, y, w } = this.calcRect(start, duration, level);
 
@@ -220,8 +225,7 @@ export default class FlameChartPlugin extends UIPlugin {
             } else {
                 const {
                     data: {
-                        source: { start, duration, name },
-                        children,
+                        source: { start, duration, name, children },
                     },
                 } = this.hoveredRegion;
                 const timeUnits = this.renderEngine.getTimeUnits();
@@ -252,13 +256,15 @@ export default class FlameChartPlugin extends UIPlugin {
 
         this.reclusterizeClusteredFlatTree();
 
-        const processCluster = (cb) => (cluster: ClusterizedFlatTreeNode) => {
-            const { start, duration, level } = cluster;
-            const { x, y, w } = this.calcRect(start, duration, level);
+        const processCluster = (cb: (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => void) => {
+            return (cluster: ClusterizedFlatTreeNode) => {
+                const { start, duration, level } = cluster;
+                const { x, y, w } = this.calcRect(start, duration, level);
 
-            if (x + w > 0 && x < width && y + blockHeight > 0 && y < height) {
-                cb(cluster, x, y, w);
-            }
+                if (x + w > 0 && x < width && y + blockHeight > 0 && y < height) {
+                    cb(cluster, x, y, w);
+                }
+            };
         };
 
         const renderCluster = (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => {
@@ -278,8 +284,8 @@ export default class FlameChartPlugin extends UIPlugin {
             }
         };
 
-        const addHitRegion = (cluster, x: number, y: number, w: number) => {
-            this.interactionsEngine.addHitRegion('cluster', cluster, x, y, w, blockHeight);
+        const addHitRegion = (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => {
+            this.interactionsEngine.addHitRegion(RegionTypes.CLUSTER, cluster, x, y, w, blockHeight);
         };
 
         this.actualClusterizedFlatTree.forEach(processCluster(renderCluster));

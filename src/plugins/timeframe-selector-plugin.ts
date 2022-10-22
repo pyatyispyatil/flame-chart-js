@@ -1,13 +1,21 @@
 import {
-    metaClusterizeFlatTree,
-    flatTree,
     clusterizeFlatTree,
+    flatTree,
     getFlatTreeMinMax,
+    metaClusterizeFlatTree,
     reclusterizeClusteredFlatTree,
 } from './utils/tree-clusters';
 import { mergeObjects } from '../utils';
 import { TimeGrid } from '../engines/time-grid';
-import { ClusterizedFlatTree, MetaClusterizedFlatTree, Data, Mouse } from '../types';
+import {
+    ClusterizedFlatTree,
+    CursorTypes,
+    Data,
+    HitRegion,
+    MetaClusterizedFlatTree,
+    Mouse,
+    RegionTypes,
+} from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
@@ -90,9 +98,9 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         this.setSettings();
     }
 
-    handleMouseDown(region, mouse: Mouse) {
+    handleMouseDown(region: HitRegion<'right' | 'left'>, mouse: Mouse) {
         if (region) {
-            if (region.type === 'timeframeKnob') {
+            if (region.type === RegionTypes.TIMEFRAME_KNOB) {
                 if (region.data === 'left') {
                     this.leftKnobMoving = true;
                 } else {
@@ -100,14 +108,14 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
                 }
 
                 this.interactionsEngine.setCursor('ew-resize');
-            } else if (region.type === 'timeframeArea') {
+            } else if (region.type === RegionTypes.TIMEFRAME_AREA) {
                 this.selectingActive = true;
                 this.startSelectingPosition = mouse.x;
             }
         }
     }
 
-    handleMouseUp(region, mouse: Mouse, isClick: boolean) {
+    handleMouseUp(_: HitRegion, mouse: Mouse, isClick: boolean) {
         let isDoubleClick = false;
 
         if (this.timeout) {
@@ -152,7 +160,7 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         }
     }
 
-    handleMouseMove(region, mouse: Mouse) {
+    handleMouseMove(_: HitRegion, mouse: Mouse) {
         if (this.leftKnobMoving) {
             this.setLeftKnobPosition(mouse.x);
             this.applyChanges();
@@ -427,31 +435,31 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         );
 
         this.interactionsEngine.addHitRegion(
-            'timeframeKnob',
+            RegionTypes.TIMEFRAME_KNOB,
             'left',
             currentLeftKnobPosition,
             0,
             this.styles.knobSize,
             knobHeight,
-            'ew-resize'
+            CursorTypes.EW_RESIZE
         );
         this.interactionsEngine.addHitRegion(
-            'timeframeKnob',
+            RegionTypes.TIMEFRAME_KNOB,
             'right',
             currentRightKnobPosition,
             0,
             this.styles.knobSize,
             knobHeight,
-            'ew-resize'
+            CursorTypes.EW_RESIZE
         );
         this.interactionsEngine.addHitRegion(
-            'timeframeArea',
+            RegionTypes.TIMEFRAME_AREA,
             null,
             0,
             0,
             this.renderEngine.width,
             this.renderEngine.height,
-            'text'
+            CursorTypes.TEXT
         );
     }
 

@@ -12,6 +12,25 @@ const checkSafari = () => {
     return ua.includes('safari') ? !ua.includes('chrome') : false;
 };
 
+function createPatternCanvas(blockHeight: number, parentCtx: CanvasRenderingContext2D): CanvasPattern {
+    const patternCanvas = document.createElement('canvas');
+    const patternContext = patternCanvas.getContext('2d');
+    const lineWidth = blockHeight / 1.5;
+    patternCanvas.width = blockHeight + lineWidth;
+    patternCanvas.height = blockHeight;
+    if (!patternContext) {
+        throw new Error("Couldn't create pattern canvas!");
+    }
+    patternContext.fillStyle = 'rgba(255, 255, 255, 0)';
+    patternContext.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+    patternContext.lineWidth = lineWidth;
+    patternContext.strokeStyle = 'pink';
+    patternContext.moveTo(0, blockHeight + lineWidth);
+    patternContext.lineTo(blockHeight, -lineWidth);
+    patternContext.stroke();
+    return parentCtx.createPattern(patternCanvas, 'repeat')!;
+}
+
 function getPixelRatio(context: CanvasRenderingContext2D) {
     // Unfortunately using any here, since typescript is not aware of all of the browser prefixes
     const ctx = context as any;
@@ -100,6 +119,7 @@ export class BasicRenderEngine extends EventEmitter {
     positionX = 0;
     min = 0;
     max = 0;
+    patternCanvas: CanvasPattern;
 
     constructor(canvas: HTMLCanvasElement, settings: RenderSettings) {
         super();
@@ -116,6 +136,7 @@ export class BasicRenderEngine extends EventEmitter {
 
         this.applyCanvasSize();
         this.reset();
+        this.patternCanvas = createPatternCanvas(this.blockHeight, this.ctx);
     }
 
     setSettings({ options, styles }: RenderSettings) {
@@ -182,6 +203,14 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
+    renderIntervalBlock(_color: string, x: number, y: number, w: number): void {
+        const oldFillStyle = this.ctx.fillStyle;
+        this.ctx.fillStyle = this.patternCanvas;
+        this.ctx.fillStyle.setTransform(new DOMMatrix().translateSelf(x, y));
+        this.ctx.fillRect(x, y, w, this.blockHeight);
+        this.ctx.fillStyle = oldFillStyle;
+    }
+
     renderStroke(color: string, x: number, y: number, w: number, h: number) {
         this.setStrokeColor(color);
         this.ctx.setLineDash([]);
@@ -216,12 +245,12 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color: string, x: number, y: number, w: number) {
+    addRectToRenderQueue(color: string, x: number, y: number, w: number, isInterval = false) {
         if (!this.rectRenderQueue[color]) {
             this.rectRenderQueue[color] = [];
         }
 
-        this.rectRenderQueue[color].push({ x, y, w });
+        this.rectRenderQueue[color].push({ x, y, w, isInterval });
     }
 
     addTextToRenderQueue(text: string, x: number, y: number, w: number) {
@@ -241,8 +270,12 @@ export class BasicRenderEngine extends EventEmitter {
     resolveRectRenderQueue() {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
             this.setCtxColor(color);
-
-            items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
+            items.forEach(({ x, y, w, isInterval }) => {
+                if (isInterval) {
+                    return this.renderIntervalBlock(color, x, y, w);
+                }
+                this.renderBlock(color, x, y, w);
+            });
         });
 
         this.rectRenderQueue = {};

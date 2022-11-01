@@ -40,6 +40,10 @@ export const flatTree = (treeList: Data): FlatTree => {
             index: index++,
         };
 
+        if (node.intervals) {
+            newNode.intervals = node.intervals;
+        }
+
         result.push(newNode);
 
         return newNode;
@@ -156,7 +160,7 @@ export const clusterizeFlatTree = (
             const node = nodes[0];
             const duration = calcClusterDuration(nodes);
 
-            return {
+            const result: ClusterizedFlatTreeNode = {
                 start: node.source.start,
                 end: node.source.start + duration,
                 duration,
@@ -165,6 +169,10 @@ export const clusterizeFlatTree = (
                 level: node.level,
                 nodes,
             };
+            if (node.intervals) {
+                result.intervals = node.intervals;
+            }
+            return result;
         });
 };
 

@@ -127,6 +127,17 @@ export const generateRandomTree = ({
             item.name = randomString(14);
             item.type = currentType;
             item.parent = null;
+            const diff = item.end - item.start;
+
+            if (Math.random() > 0.8) {
+                item.intervals = [{
+                    start: item.start + diff / 9,
+                    end: item.start + diff / 6
+                }, {
+                    start: item.start + diff / 3,
+                    end: item.start + diff
+                }];
+            }
 
             counter++;
         });

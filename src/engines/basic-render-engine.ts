@@ -330,7 +330,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     addTextToRenderQueue(text: string, x: number, y: number, w: number, color: string, flags: any) {
         if (text) {
-            const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
+            const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0)) - 5;
 
             if (textMaxWidth > 0) {
                 this.textRenderQueue.push({ text, x, y, w, textMaxWidth, color, flags });

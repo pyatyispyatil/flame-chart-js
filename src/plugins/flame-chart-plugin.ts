@@ -63,6 +63,7 @@ export default class FlameChartPlugin extends UIPlugin {
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('mouseout', this.handleMouseOut.bind(this));
         this.interactionsEngine.on('double', this.handleMouseDbClick.bind(this));
+        this.interactionsEngine.on('mouseright', this.handleMouseRightClick.bind(this));
         this.toggleSelectLogic = this.toggleSelectLogic.bind(this);
 
         this.initData();
@@ -116,6 +117,17 @@ export default class FlameChartPlugin extends UIPlugin {
                 'flame-chart-node'
             );
         }
+    }
+
+    handleMouseRightClick(region, mouse) {
+        this.interactionsEngine.clearCursor();
+        const selectedRegion = region ? this.findNodeInCluster(region) : null;
+
+        this.emit(
+            'rightClick',
+            selectedRegion ? { ...selectedRegion.data, ...selectedRegion.data.source } : undefined,
+            mouse
+        );
     }
 
     setPositionY(y: number) {

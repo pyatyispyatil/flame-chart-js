@@ -44,7 +44,9 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
             flameChartPlugin.on('mousedown', (node, type) => this.emit('mousedown', node, type));
             flameChartPlugin.on('mouseup', (node, type) => this.emit('mouseup', node, type));
             flameChartPlugin.on('mouseout', (mouse) => this.emit('mouseout', mouse));
+
             flameChartPlugin.on('dblclick', (mouse) => this.emit('dblclick', mouse));
+            flameChartPlugin.on('rightClick', (node, mouse) => this.emit('rightClick', node, mouse));
 
             activePlugins.push(flameChartPlugin);
         }

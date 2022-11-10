@@ -13,6 +13,7 @@ export class InteractionsEngine extends EventEmitter {
     selectedRegion: HitRegion | null;
     private hoveredRegion: HitRegion | null;
     private moveActive: boolean;
+    private isRightClick: boolean;
     private mouseDownPosition: Mouse;
     private mouseDownHoveredInstance: SeparatedInteractionsEngine | undefined;
     private hoveredInstance: SeparatedInteractionsEngine | undefined;
@@ -31,7 +32,7 @@ export class InteractionsEngine extends EventEmitter {
             y: 0,
             isInsideFg: false,
         };
-
+        this.isRightClick = false;
         this.handleMouseWheel = this.handleMouseWheel.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -154,7 +155,7 @@ export class InteractionsEngine extends EventEmitter {
     handleMouseDown(e) {
         const event = e || window.event;
         let btnCode;
-
+        this.isRightClick = false;
         if ('object' === typeof e) {
             btnCode = event.button;
 
@@ -167,7 +168,7 @@ export class InteractionsEngine extends EventEmitter {
                         y: this.mouse.y,
                     };
                     this.mouseDownHoveredInstance = this.hoveredInstance;
-                    this.emit('down', this.hoveredRegion, this.mouse);
+                    //this.emit('down', this.hoveredRegion, this.mouse);
                     break;
 
                 case 1:
@@ -175,7 +176,13 @@ export class InteractionsEngine extends EventEmitter {
                     break;
 
                 case 2:
-                    //console.log('Right');
+                    this.isRightClick = true;
+                    this.mouseDownPosition = {
+                        x: this.mouse.x,
+                        y: this.mouse.y,
+                    };
+                    this.mouseDownHoveredInstance = this.hoveredInstance;
+                    this.emit('mouseright', this.hoveredRegion, this.mouse);
                     break;
             }
         }
@@ -183,16 +190,17 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseUp() {
         this.moveActive = false;
+        if (!this.isRightClick) {
+            const isClick =
+                this.mouseDownPosition &&
+                this.mouseDownPosition.x === this.mouse.x &&
+                this.mouseDownPosition.y === this.mouse.y;
+            if (isClick) {
+                this.emit('click', this.hoveredRegion, this.mouse);
+            }
 
-        const isClick =
-            this.mouseDownPosition &&
-            this.mouseDownPosition.x === this.mouse.x &&
-            this.mouseDownPosition.y === this.mouse.y;
-        if (isClick) {
-            this.emit('click', this.hoveredRegion, this.mouse);
+            this.emit('up', this.hoveredRegion, this.mouse, isClick);
         }
-
-        this.emit('up', this.hoveredRegion, this.mouse, isClick);
     }
 
     handleMouseMove(e) {

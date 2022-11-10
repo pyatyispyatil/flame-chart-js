@@ -2574,6 +2574,7 @@ class FlameChartPlugin extends UIPlugin {
     this.interactionsEngine.on("up", this.handleMouseUp.bind(this));
     this.interactionsEngine.on("mouseout", this.handleMouseOut.bind(this));
     this.interactionsEngine.on("double", this.handleMouseDbClick.bind(this));
+    this.interactionsEngine.on("mouseright", this.handleMouseRightClick.bind(this));
     this.toggleSelectLogic = this.toggleSelectLogic.bind(this);
     this.initData();
   }
@@ -2618,6 +2619,15 @@ class FlameChartPlugin extends UIPlugin {
         "flame-chart-node"
       );
     }
+  }
+  handleMouseRightClick(region, mouse) {
+    this.interactionsEngine.clearCursor();
+    const selectedRegion = region ? this.findNodeInCluster(region) : null;
+    this.emit(
+      "rightClick",
+      selectedRegion ? { ...selectedRegion.data, ...selectedRegion.data.source } : void 0,
+      mouse
+    );
   }
   setPositionY(y) {
     this.positionY = y;
@@ -3765,6 +3775,11 @@ const _SeparatedInteractionsEngine = class extends EventEmitter {
         }
       })
     );
+    ["mouseright"].forEach(
+      (eventName) => parent.on(eventName, (region, mouse) => {
+        this.emit(eventName, region, mouse);
+      })
+    );
     parent.on("change-position", (data, startMouse, endMouse, instance) => {
       if (instance === this) {
         this.emit("change-position", data, startMouse, endMouse);
@@ -3832,6 +3847,7 @@ class InteractionsEngine extends EventEmitter {
       y: 0,
       isInsideFg: false
     };
+    this.isRightClick = false;
     this.handleMouseWheel = this.handleMouseWheel.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -3928,6 +3944,7 @@ class InteractionsEngine extends EventEmitter {
   handleMouseDown(e) {
     const event = e || window.event;
     let btnCode;
+    this.isRightClick = false;
     if ("object" === typeof e) {
       btnCode = event.button;
       switch (btnCode) {
@@ -3938,18 +3955,30 @@ class InteractionsEngine extends EventEmitter {
             y: this.mouse.y
           };
           this.mouseDownHoveredInstance = this.hoveredInstance;
-          this.emit("down", this.hoveredRegion, this.mouse);
+          break;
+        case 1:
+          break;
+        case 2:
+          this.isRightClick = true;
+          this.mouseDownPosition = {
+            x: this.mouse.x,
+            y: this.mouse.y
+          };
+          this.mouseDownHoveredInstance = this.hoveredInstance;
+          this.emit("mouseright", this.hoveredRegion, this.mouse);
           break;
       }
     }
   }
   handleMouseUp() {
     this.moveActive = false;
-    const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
-    if (isClick) {
-      this.emit("click", this.hoveredRegion, this.mouse);
+    if (!this.isRightClick) {
+      const isClick = this.mouseDownPosition && this.mouseDownPosition.x === this.mouse.x && this.mouseDownPosition.y === this.mouse.y;
+      if (isClick) {
+        this.emit("click", this.hoveredRegion, this.mouse);
+      }
+      this.emit("up", this.hoveredRegion, this.mouse, isClick);
     }
-    this.emit("up", this.hoveredRegion, this.mouse, isClick);
   }
   handleMouseMove(e) {
     this.mouse.isInsideFg = true;
@@ -4124,6 +4153,7 @@ class FlameChart extends FlameChartContainer {
       flameChartPlugin.on("mouseup", (node, type) => this.emit("mouseup", node, type));
       flameChartPlugin.on("mouseout", (mouse) => this.emit("mouseout", mouse));
       flameChartPlugin.on("dblclick", (mouse) => this.emit("dblclick", mouse));
+      flameChartPlugin.on("rightClick", (node, mouse) => this.emit("rightClick", node, mouse));
       activePlugins.push(flameChartPlugin);
     }
     super({

@@ -39,6 +39,12 @@ export class SeparatedInteractionsEngine extends EventEmitter {
             })
         );
 
+        ['mouseright'].forEach((eventName) =>
+            parent.on(eventName, (region, mouse) => {
+                this.emit(eventName, region, mouse);
+            })
+        );
+
         parent.on('change-position', (data, startMouse, endMouse, instance) => {
             if (instance === this) {
                 this.emit('change-position', data, startMouse, endMouse);

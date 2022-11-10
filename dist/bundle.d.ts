@@ -299,6 +299,7 @@ declare class InteractionsEngine extends EventEmitter {
     selectedRegion: HitRegion | null;
     private hoveredRegion;
     private moveActive;
+    private isRightClick;
     private mouseDownPosition;
     private mouseDownHoveredInstance;
     private hoveredInstance;
@@ -421,6 +422,7 @@ declare class FlameChartPlugin extends UIPlugin {
         deltaY: number;
     }): void;
     handleMouseUp(hoveredRegion: any, mouse: any, isClick: any): void;
+    handleMouseRightClick(region: any, mouse: any): void;
     setPositionY(y: number): void;
     reset(keepYposition: boolean, newYPosition: number, resetSelected: boolean): void;
     calcMinMax(): void;

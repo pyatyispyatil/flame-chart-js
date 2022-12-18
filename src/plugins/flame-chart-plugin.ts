@@ -25,8 +25,8 @@ type ClusterNode = { data: FlatTreeNode; type: string };
 
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
-export default class FlameChartPlugin extends UIPlugin {
-    name = 'flameChartPlugin';
+export class FlameChartPlugin extends UIPlugin {
+    name :string
 
     height = 0;
 
@@ -44,9 +44,10 @@ export default class FlameChartPlugin extends UIPlugin {
     lastUsedColor: string | null = null;
     renderChartTimeout = -1;
 
-    constructor({ data, colors = {} }: { data: Data; colors: Colors | undefined }) {
+    constructor({ data, colors = {} }: { data: Data; colors: Colors | undefined }, name='flameChartPlugin') {
         super();
 
+        this.name = name;
         this.data = data;
         this.userColors = colors;
 
@@ -308,3 +309,4 @@ export default class FlameChartPlugin extends UIPlugin {
         }, 16);
     }
 }
+export default FlameChartPlugin;

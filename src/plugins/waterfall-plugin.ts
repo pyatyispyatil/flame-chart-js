@@ -38,8 +38,8 @@ export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
     defaultHeight: 68,
 };
 
-export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
-    name = 'waterfallPlugin';
+export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
+    name:string;
 
     override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
     height = defaultWaterfallPluginStyles.defaultHeight;
@@ -50,8 +50,9 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     selectedRegion: HitRegion<number> | null = null;
     initialData: WaterfallItems = [];
 
-    constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings) {
+    constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings, name="waterfallPlugin") {
         super();
+        this.name=name
         this.setData({ items, intervals });
         this.setSettings(settings);
     }
@@ -307,3 +308,5 @@ export default class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         }, 0);
     }
 }
+
+export default WaterfallPlugin;

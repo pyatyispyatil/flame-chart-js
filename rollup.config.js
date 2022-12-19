@@ -8,7 +8,6 @@ import cleaner from 'rollup-plugin-cleaner';
 import { template } from './example/src/template.js';
 import typescript from '@rollup/plugin-typescript';
 
-
 export default {
     input: './example/src/index.js',
     output: {

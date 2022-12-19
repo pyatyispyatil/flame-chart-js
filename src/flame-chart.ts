@@ -8,7 +8,6 @@ import MarksPlugin from './plugins/marks-plugin';
 import { Colors, Data, Marks, Waterfall } from './types';
 import UIPlugin from './plugins/ui-plugin';
 
-
 export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>;
     timeframeSelectorPlugin?: Partial<TimeframeSelectorPluginStyles>;

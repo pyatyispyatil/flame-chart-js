@@ -44,13 +44,11 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     resizeActive = false;
     resizeStartHeight = 0;
     resizeStartPosition = 0;
-    
 
     constructor(title: string, settings: TogglePluginSettings) {
         super();
         this.setSettings(settings);
         this.title = title;
-        
     }
 
     override setSettings({ styles }: TogglePluginSettings) {

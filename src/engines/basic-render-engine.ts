@@ -63,7 +63,7 @@ export const defaultRenderStyles: RenderStyles = {
     blockHeight: 16,
     blockPaddingLeftRight: 4,
     backgroundColor: 'white',
-    font: `10px sans-serif`,
+    font: '10px sans-serif',
     fontColor: 'black',
     tooltipHeaderFontColor: 'black',
     tooltipBodyFontColor: '#688f45',

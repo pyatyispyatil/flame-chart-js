@@ -14,7 +14,8 @@
     "lint:fix": "eslint --fix 'src/**/*.ts'",
     "lint": "eslint 'src/**/*.ts' && echo 'no lint problems found!'",
     "pretty": "prettier --write 'src/**/*.ts'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run test"
   },
   "pre-commit": [
     "lint",

@@ -12,8 +12,14 @@
     "watch:tsc": "tsc -w",
     "test": "jest",
     "lint:fix": "eslint --fix 'src/**/*.ts'",
-    "lint": "eslint 'src/**/*.ts' && echo 'no lint problems found!'"
+    "lint": "eslint 'src/**/*.ts' && echo 'no lint problems found!'",
+    "pretty": "prettier --write 'src/**/*.ts'",
+    "typecheck": "tsc --noEmit"
   },
+  "pre-commit": [
+    "lint",
+    "typecheck"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pyatyispyatil/flame-chart-js.git"
@@ -46,7 +52,8 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^29.1.2",
-    "prettier": "2.6.1",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.6.1",
     "rollup": "^2.39.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",

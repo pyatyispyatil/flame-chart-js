@@ -7,6 +7,14 @@
 	"extends": [
 		"prettier"
 	],
+	"overrides": [
+		{
+			"files": ["src/**/*.ts", "example/src/**/*.js", "example/src/**/*.ts"],
+			"rules": {
+				"quotes": ["error", "single"]
+			}
+		}
+	],
 	"rules": {
 		"prettier/prettier": "error",
 		"no-useless-return": "error",

@@ -1,12 +1,12 @@
-import FlameChartContainer, { FlameChartContainerSettings } from './flame-chart-container';
-import TimeGridPlugin, { TimeGridPluginStyles } from './plugins/time-grid-plugin';
-import TimeframeSelectorPlugin, { TimeframeSelectorPluginStyles } from './plugins/timeframe-selector-plugin';
-import WaterfallPlugin, { WaterfallPluginStyles } from './plugins/waterfall-plugin';
-import TogglePlugin, { TogglePluginStyles } from './plugins/toggle-plugin';
-import FlameChartPlugin from './plugins/flame-chart-plugin';
-import MarksPlugin from './plugins/marks-plugin';
+import { FlameChartContainer, FlameChartContainerSettings } from './flame-chart-container';
+import { TimeGridPlugin, TimeGridPluginStyles } from './plugins/time-grid-plugin';
+import { TimeframeSelectorPlugin, TimeframeSelectorPluginStyles } from './plugins/timeframe-selector-plugin';
+import { WaterfallPlugin, WaterfallPluginStyles } from './plugins/waterfall-plugin';
+import { TogglePlugin, TogglePluginStyles } from './plugins/toggle-plugin';
+import { FlameChartPlugin } from './plugins/flame-chart-plugin';
+import { MarksPlugin } from './plugins/marks-plugin';
 import { Colors, Data, Marks, Waterfall } from './types';
-import UIPlugin from './plugins/ui-plugin';
+import { UIPlugin } from './plugins/ui-plugin';
 
 export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>;
@@ -34,7 +34,7 @@ export type FlameChartOptions = {
 
 const defaultSettings: FlameChartSettings = {};
 
-export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
+export class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setData: (data: Data) => void;
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
@@ -141,3 +141,5 @@ export default class FlameChart extends FlameChartContainer<FlameChartStyles> {
         }
     }
 }
+
+export default FlameChart;

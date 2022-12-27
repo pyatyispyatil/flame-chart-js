@@ -21,7 +21,7 @@ export interface FlameChartContainerOptions<Styles> {
     settings: FlameChartContainerSettings<Styles>;
 }
 
-export default class FlameChartContainer<Styles> extends EventEmitter {
+export class FlameChartContainer<Styles> extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;
     plugins: UIPlugin[];
@@ -104,3 +104,5 @@ export default class FlameChartContainer<Styles> extends EventEmitter {
         this.renderEngine.render();
     }
 }
+
+export default FlameChartContainer;

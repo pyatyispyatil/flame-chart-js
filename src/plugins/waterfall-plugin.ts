@@ -214,9 +214,9 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
                     const metaTexts = meta
                         ? meta.map(({ name, value, color }) => ({
-                            text: `${name}: ${value}`,
-                            color,
-                        }))
+                              text: `${name}: ${value}`,
+                              color,
+                          }))
                         : [];
 
                     this.renderEngine.renderTooltipFromData(

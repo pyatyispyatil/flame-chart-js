@@ -12,7 +12,7 @@
     "watch:tsc": "tsc -w",
     "start": "rollup --config=rollup.local-dev.config.js -w -m",
     "test": "jest",
-    "lint:fix": "eslint --fix 'src/**/*.ts'",
+    "lint:fix": "eslint --fix src/**/*.ts",
     "lint": "eslint 'src/**/*.ts' && echo 'no lint problems found!'"
   },
   "repository": {

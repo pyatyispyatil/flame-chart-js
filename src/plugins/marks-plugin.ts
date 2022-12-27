@@ -6,7 +6,7 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 
 type MarkHitRegion = HitRegion<Mark>;
 
-export default class MarksPlugin extends UIPlugin {
+export class MarksPlugin extends UIPlugin {
     name = 'marksPlugin';
 
     marks: Marks;
@@ -151,3 +151,5 @@ export default class MarksPlugin extends UIPlugin {
         return false;
     }
 }
+
+export default MarksPlugin;

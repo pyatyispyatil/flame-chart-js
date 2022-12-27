@@ -60,7 +60,7 @@ export const defaultTimeframeSelectorPluginStyles = {
     backgroundColor: 'white',
 };
 
-export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
+export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
     name = 'timeframeSelectorPlugin';
 
     override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
@@ -475,3 +475,5 @@ export default class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorP
         return true;
     }
 }
+
+export default TimeframeSelectorPlugin;

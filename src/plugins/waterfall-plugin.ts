@@ -39,7 +39,7 @@ export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
 };
 
 export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
-    name:string;
+    name: string;
 
     override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
     height = defaultWaterfallPluginStyles.defaultHeight;
@@ -50,9 +50,9 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     selectedRegion: HitRegion<number> | null = null;
     initialData: WaterfallItems = [];
 
-    constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings, name="waterfallPlugin") {
+    constructor({ items, intervals }: Waterfall, settings: WaterfallPluginSettings, name = 'waterfallPlugin') {
         super();
-        this.name=name
+        this.name = name;
         this.setData({ items, intervals });
         this.setSettings(settings);
     }
@@ -214,9 +214,9 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     const metaHeader = { text: 'meta', color: this.renderEngine.styles.tooltipHeaderFontColor };
                     const metaTexts = meta
                         ? meta.map(({ name, value, color }) => ({
-                              text: `${name}: ${value}`,
-                              color,
-                          }))
+                            text: `${name}: ${value}`,
+                            color,
+                        }))
                         : [];
 
                     this.renderEngine.renderTooltipFromData(

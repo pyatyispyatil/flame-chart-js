@@ -34,7 +34,7 @@ export const defaultTogglePluginStyles: TogglePluginStyles = {
     leftPadding: 10,
 };
 
-export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
+export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     name = 'togglePlugin';
 
     override styles: TogglePluginStyles = defaultTogglePluginStyles;
@@ -183,3 +183,5 @@ export default class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         }
     }
 }
+
+export default TogglePlugin;

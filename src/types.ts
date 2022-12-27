@@ -9,7 +9,12 @@ export interface Mark {
 
 export type Marks = Array<Mark>;
 
+interface NodeInterval {
+    start: number;
+    end: number;
+}
 export interface Node {
+    intervals?: NodeInterval[];
     name: string; // node name
     start: number; // node start time
     duration: number; // node duration
@@ -61,10 +66,9 @@ interface Rect {
     x: number;
     y: number;
     w: number;
+    isInterval?: boolean;
 }
-export interface RectRenderQueue {
-    [color: string]: Rect[];
-}
+export type RectRenderQueue = Record<string, Rect[]>;
 
 export interface Text {
     text: string;
@@ -88,6 +92,7 @@ export type FlatTreeNode = {
     parent: FlatTreeNode | null;
     level: number;
     index: number;
+    intervals?: NodeInterval[];
 };
 
 export type FlatTree = FlatTreeNode[];
@@ -105,6 +110,7 @@ export interface ClusterizedFlatTreeNode {
     type?: string;
     color?: string;
     level: number;
+    intervals?: NodeInterval[];
     nodes: FlatTreeNode[];
 }
 

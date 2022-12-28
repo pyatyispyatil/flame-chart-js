@@ -36,7 +36,7 @@ export type WaterfallInterval = {
     end: string; // timing name
 };
 
-interface WaterfallIntervals {
+export interface WaterfallIntervals {
     [intervalName: string]: WaterfallInterval[];
 }
 

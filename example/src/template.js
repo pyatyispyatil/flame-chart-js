@@ -1,4 +1,4 @@
-export const template = ({ bundle }) => (
+export const template = ({ bundle }) =>
     `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,11 +160,9 @@ export const template = ({ bundle }) => (
         </div>
     </div>
 </div>
-${
-        Object.keys(bundle).filter((name) => name && name.endsWith('js')).map((name) => (
-            `<script src="${name}"></script>`
-        )).join('')
-    }
+${Object.keys(bundle)
+    .filter((name) => name && name.endsWith('js'))
+    .map((name) => `<script src="${name}"></script>`)
+    .join('')}
 </body>
-</html>`
-)
+</html>`;

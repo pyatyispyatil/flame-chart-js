@@ -20,7 +20,6 @@ You can find some [plans on the wiki](https://github.com/pyatyispyatil/flame-cha
 
 #### Initialization
 
-
 You can ignore any of the marks, data, or waterfall arguments to initialize only the items you want. The flame chart will automatically adjust and hide unused plugins.
 
 ```js
@@ -45,30 +44,34 @@ const flameChart = new FlameChart({
                     start: 310,
                     duration: 50,
                     type: 'sub-task',
-                    color: '#AA0000'
-                }
-            ]
-        }
+                    color: '#AA0000',
+                },
+            ],
+        },
     ],
     marks: [
         {
             shortName: 'DCL',
             fullName: 'DOMContentLoaded',
-            timestamp: 500
-        }
+            timestamp: 500,
+        },
     ],
-    waterfall: { /* ... */ },
+    waterfall: {
+        /* ... */
+    },
     colors: {
-        'task': '#FFFFFF',
-        'sub-task': '#000000'
+        task: '#FFFFFF',
+        'sub-task': '#000000',
     },
     settings: {
         options: {
-            tooltip: () => {/*...*/}, // see section "Custom Tooltip" below
-            timeUnits: 'ms'
+            tooltip: () => {
+                /*...*/
+            }, // see section "Custom Tooltip" below
+            timeUnits: 'ms',
         },
-        styles: customStyles // see section "Styles" below
-    }
+        styles: customStyles, // see section "Styles" below
+    },
 });
 
 flameChart.on('select', (node, type) => {
@@ -79,7 +82,7 @@ flameChart.on('select', (node, type) => {
 #### Public methods
 
 ```ts
-// set zoom, which start argument is a left bound and end argument is a right bound 
+// set zoom, which start argument is a left bound and end argument is a right bound
 setZoom = (start: number, end: number) => void;
 
 // set only position of the flame-chart
@@ -107,55 +110,55 @@ setSettings = (settings: Object) => void;
 
 ```json
 {
-  "main": {
-    "blockHeight": 16,
-    "blockPaddingLeftRight": 4,
-    "backgroundColor": "white",
-    "font": "10px sans-serif",
-    "fontColor": "black",
-    "tooltipHeaderFontColor": "black",
-    "tooltipBodyFontColor": "#688f45",
-    "tooltipBackgroundColor": "white",
-    "headerHeight": 14,
-    "headerColor": "rgba(112, 112, 112, 0.25)",
-    "headerStrokeColor": "rgba(112, 112, 112, 0.5)",
-    "headerTitleLeftPadding": 16
-  },
-  "timeGrid": {
-    "color": "rgb(126, 126, 126, 0.5)"
-  },
-  "timeGridPlugin": {
-    "font": "10px sans-serif",
-    "fontColor": "black"
-  },
-  "timeframeSelectorPlugin": {
-    "font": "9px sans-serif",
-    "fontColor": "black",
-    "overlayColor": "rgba(112, 112, 112, 0.5)",
-    "graphStrokeColor": "rgb(0, 0, 0, 0.2)",
-    "graphFillColor": "rgb(0, 0, 0, 0.25)",
-    "bottomLineColor": "rgb(0, 0, 0, 0.25)",
-    "knobColor": "rgb(131, 131, 131)",
-    "knobStrokeColor": "white",
-    "knobSize": 6,
-    "height": 60,
-    "backgroundColor": "white"
-  },
-  "waterfallPlugin": {
-    "defaultHeight": 150
-  },
-  "togglePlugin": {
-    "height": 16,
-    "color": "rgb(202,202,202, 0.25)",
-    "strokeColor": "rgb(138,138,138, 0.50)",
-    "dotsColor": "rgb(97,97,97)",
-    "fontColor": "black",
-    "font": "10px sans-serif",
-    "triangleWidth": 10,
-    "triangleHeight": 7,
-    "triangleColor": "black",
-    "leftPadding": 10
-  }
+    "main": {
+        "blockHeight": 16,
+        "blockPaddingLeftRight": 4,
+        "backgroundColor": "white",
+        "font": "10px sans-serif",
+        "fontColor": "black",
+        "tooltipHeaderFontColor": "black",
+        "tooltipBodyFontColor": "#688f45",
+        "tooltipBackgroundColor": "white",
+        "headerHeight": 14,
+        "headerColor": "rgba(112, 112, 112, 0.25)",
+        "headerStrokeColor": "rgba(112, 112, 112, 0.5)",
+        "headerTitleLeftPadding": 16
+    },
+    "timeGrid": {
+        "color": "rgb(126, 126, 126, 0.5)"
+    },
+    "timeGridPlugin": {
+        "font": "10px sans-serif",
+        "fontColor": "black"
+    },
+    "timeframeSelectorPlugin": {
+        "font": "9px sans-serif",
+        "fontColor": "black",
+        "overlayColor": "rgba(112, 112, 112, 0.5)",
+        "graphStrokeColor": "rgb(0, 0, 0, 0.2)",
+        "graphFillColor": "rgb(0, 0, 0, 0.25)",
+        "bottomLineColor": "rgb(0, 0, 0, 0.25)",
+        "knobColor": "rgb(131, 131, 131)",
+        "knobStrokeColor": "white",
+        "knobSize": 6,
+        "height": 60,
+        "backgroundColor": "white"
+    },
+    "waterfallPlugin": {
+        "defaultHeight": 150
+    },
+    "togglePlugin": {
+        "height": 16,
+        "color": "rgb(202,202,202, 0.25)",
+        "strokeColor": "rgb(138,138,138, 0.50)",
+        "dotsColor": "rgb(97,97,97)",
+        "fontColor": "black",
+        "font": "10px sans-serif",
+        "triangleWidth": 10,
+        "triangleHeight": 7,
+        "triangleColor": "black",
+        "leftPadding": 10
+    }
 }
 ```
 
@@ -163,9 +166,9 @@ You can override whatever style you want. For example:
 
 ```json
 {
-  "main": {
-    "blockHeight": 20
-  }
+    "main": {
+        "blockHeight": 20
+    }
 }
 ```
 
@@ -177,9 +180,9 @@ You can override or prevent the tooltip render by defining this within the setti
 
 ```ts
 {
-  options: {
-    tooltip: undefined
-  }
+    options: {
+        tooltip: undefined;
+    }
 }
 ```
 
@@ -187,13 +190,13 @@ For example:
 
 ```ts
 // prevent tooltip render
-chart.setSettings({ options: { tooltip: false }});
+chart.setSettings({ options: { tooltip: false } });
 
 // override tooltip render
-chart.setSettings({ 
-  options: {
-      tooltip : (data, renderEngine, mouse) => undefined
-  }
+chart.setSettings({
+    options: {
+        tooltip: (data, renderEngine, mouse) => undefined,
+    },
 });
 ```
 
@@ -201,49 +204,49 @@ chart.setSettings({
 
 ```ts
 type Mark = {
-    shortName: string,
-    fullName: string,
-    timestamp: number,
-    color: string
+    shortName: string;
+    fullName: string;
+    timestamp: number;
+    color: string;
 };
 
 type Marks = Array<Mark>;
 
 type Node = {
-    name: string, // node name
-    start: number, // node start time
-    duration: number, // node duration
-    type?: string, // node type (use it for custom colorization)
-    color?: string, // node color (use it for current node colorization)
-    children?: Array<Node>, // node children (same structure as for node)
+    name: string; // node name
+    start: number; // node start time
+    duration: number; // node duration
+    type?: string; // node type (use it for custom colorization)
+    color?: string; // node color (use it for current node colorization)
+    children?: Array<Node>; // node children (same structure as for node)
 };
 
 type Data = Array<Node>;
 
 type WaterfallItems = Array<{
-    name: string,
-    intervals: string | WaterfallInterval,
+    name: string;
+    intervals: string | WaterfallInterval;
     timing: {
-        [string: key]: number
-    }
-}>
+        [string: key]: number;
+    };
+}>;
 
 type WaterfallInterval = {
-    name: string,
-    color: string,
-    type: 'block' | 'line',
-    start: string, // timing name
-    end: string // timing name
-}
+    name: string;
+    color: string;
+    type: 'block' | 'line';
+    start: string; // timing name
+    end: string; // timing name
+};
 
 type WaterfallIntervals = {
-    [string: intervalName]: WaterfallInterval
-}
+    [string: intervalName]: WaterfallInterval;
+};
 
 type Waterfall = {
-    items: WaterfallItems,
-    intervals: WaterfallIntervals
-}
+    items: WaterfallItems;
+    intervals: WaterfallIntervals;
+};
 ```
 
 #### Updating
@@ -262,11 +265,9 @@ window.addEventListener('resize', () => {
 });
 ```
 
-
 ## Local Development
 
 1 - Checkout this repository
 2 - npm i
 3 - npm start
 4 - Open browser "[http://localhost:10001/](http://localhost:10001/)"
-

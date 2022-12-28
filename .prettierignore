@@ -1,3 +1,4 @@
 # Ignore artifacts:
 example/dist
 dist
+package-lock.json

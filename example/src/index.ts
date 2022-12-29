@@ -1,4 +1,4 @@
-import { Data, FlameChart, WaterfallIntervals } from '../../src/index';
+import { Data, FlameChart } from '../../src/index';
 import { defaultTimeGridStyles } from '../../src/engines/time-grid';
 import { defaultRenderStyles } from '../../src/engines/basic-render-engine';
 import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
@@ -6,7 +6,7 @@ import { defaultTimeframeSelectorPluginStyles } from '../../src/plugins/timefram
 import { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin';
 import { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin';
 
-import { generateRandomTree } from './test-data';
+import { generateRandomTree, marks, waterfallIntervals, waterfallItems } from './test-data';
 import { query, initQuery } from './query';
 import {
     initView,
@@ -37,27 +37,6 @@ const treeConfig: TreeConfigItem[] = [
     { name: 'colorsCount', value: 10 },
 ];
 
-const marks = [
-    {
-        shortName: 'DCL',
-        fullName: 'DOMContentLoaded',
-        timestamp: 2000,
-        color: '#d7c44c',
-    },
-    {
-        shortName: 'LE',
-        fullName: 'LoadEvent',
-        timestamp: 2100,
-        color: '#4fd24a',
-    },
-    {
-        shortName: 'TTI',
-        fullName: 'Time To Interactive',
-        timestamp: 3000,
-        color: '#4b7ad7',
-    },
-];
-
 const colors = {
     task: '#696969',
     event: '#a4775b',
@@ -74,88 +53,13 @@ const canvas = getCanvas();
 canvas.width = width;
 canvas.height = height;
 
-const testItems = [
-    {
-        name: 'foo',
-        intervals: 'default',
-        timing: {
-            requestStart: 2050,
-            responseStart: 2500,
-            responseEnd: 2600,
-        },
-    },
-    {
-        name: 'bar',
-        intervals: 'default',
-        timing: {
-            requestStart: 2120,
-            responseStart: 2180,
-            responseEnd: 2300,
-        },
-    },
-    {
-        name: 'bar2',
-        intervals: 'default',
-        timing: {
-            requestStart: 2120,
-            responseStart: 2180,
-            responseEnd: 2300,
-        },
-    },
-    {
-        name: 'bar3',
-        intervals: 'default',
-        timing: {
-            requestStart: 2130,
-            responseStart: 2180,
-            responseEnd: 2320,
-        },
-    },
-    {
-        name: 'bar4',
-        intervals: 'default',
-        timing: {
-            requestStart: 2300,
-            responseStart: 2350,
-            responseEnd: 2400,
-        },
-    },
-    {
-        name: 'bar5',
-        intervals: 'default',
-        timing: {
-            requestStart: 2500,
-            responseStart: 2520,
-            responseEnd: 2550,
-        },
-    },
-];
-const testIntervals: WaterfallIntervals = {
-    default: [
-        {
-            name: 'waiting',
-            color: 'rgb(207,196,152)',
-            type: 'block',
-            start: 'requestStart',
-            end: 'responseStart',
-        },
-        {
-            name: 'downloading',
-            color: 'rgb(207,180,81)',
-            type: 'block',
-            start: 'responseStart',
-            end: 'responseEnd',
-        },
-    ],
-};
-
 const flameChart = new FlameChart({
     canvas,
     data: currentData,
     marks,
     waterfall: {
-        items: testItems,
-        intervals: testIntervals,
+        items: waterfallItems,
+        intervals: waterfallIntervals,
     },
     colors,
 });

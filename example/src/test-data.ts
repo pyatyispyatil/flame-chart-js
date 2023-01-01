@@ -1,4 +1,4 @@
-import { Node } from '../../src/index';
+import { Node, WaterfallIntervals } from '../../src/index';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -16,52 +16,47 @@ const randomString = (length, minLength = 4) => {
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
 
-type Level = {
-    children: Level[];
-    parent: Level;
-} | null;
+type Layer = { rest: number; nodes: Node[] };
 
-type Layer = { rest: number; items: Level[] };
-
-const generateRandomLevel = (count: number, minChild = 1, maxChild = 10, parent: Level): Layer => {
+const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer => {
     const childrenCount = count ? rnd(Math.min(count, maxChild), Math.min(count, minChild)) : 0;
     const items = Array(childrenCount)
         .fill(null)
-        .map((): Level => ({ children: [], parent }));
+        .map((): Node => ({ children: [], duration: 0, name: '', start: 0 }));
     const rest = count - childrenCount;
-
-    if (parent) {
-        parent.children = items;
-    }
 
     return {
         rest,
-        items,
+        nodes: items,
     };
 };
 
-const generateRandomNesting = (count: number, minChild: number, maxChild: number, parent: Level) => {
-    const levels: any[] = [];
+const generateRandomNesting = (count: number, minChild: number, maxChild: number) => {
+    const levels: Node[][][] = [];
+    let rootFlameNodes: Node[] = [];
 
     let rest = count;
     let isStopped = false;
 
     while (rest > 0 && !isStopped) {
         if (!levels.length) {
-            const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild, parent);
+            const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild);
 
-            levels.push([layer.items]);
+            levels.push([layer.nodes]);
+            rootFlameNodes = layer.nodes;
             rest = layer.rest;
         } else {
-            const level: Level[][] = levels[levels.length - 1];
-            const innerLevel: Level[][] = [];
+            const level: Node[][] = levels[levels.length - 1];
+            const innerLevel: Node[][] = [];
 
             for (const ll of level) {
                 for (const l of ll) {
-                    const layer = generateRandomLevel(rest, minChild, maxChild, l);
+                    const layer = generateRandomLevel(rest, minChild, maxChild);
+
+                    l.children = layer.nodes;
 
                     rest = layer.rest;
-                    innerLevel.push(layer.items);
+                    innerLevel.push(layer.nodes);
                 }
             }
 
@@ -79,14 +74,18 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
     );
 
     return {
-        root: levels[0][0],
-        rest,
+        root: rootFlameNodes,
+        rest: rest,
     };
 };
 
-const map = (treeList, cb, parent = null) => {
-    return cb(treeList, parent).map((item) => {
-        item.children = map(item.children, cb, item);
+const flattenFlameNodeAndMap = (
+    flameNodes: Node[],
+    cb: (items: Node[], parent: Node | undefined) => Node[],
+    parent?: Node | undefined
+) => {
+    return cb(flameNodes, parent).map((item) => {
+        item.children = flattenFlameNodeAndMap(item.children ?? [], cb, item);
 
         return item;
     });
@@ -113,7 +112,7 @@ export const generateRandomTree = ({
     colorsMonotony,
     colorsCount,
 }: TreeConfig): Node[] => {
-    const { root: nestingArrays } = generateRandomNesting(count, minChild, maxChild, null);
+    const rootNodes = generateRandomNesting(count, minChild, maxChild);
     const types = Array(colorsCount)
         .fill(null)
         .map(() => randomString(10));
@@ -121,47 +120,145 @@ export const generateRandomTree = ({
     let typesCounter = 0;
     let currentType = types[typesCounter];
 
-    const mappedNestingArrays = map(nestingArrays, (items: Node[], parent: Node) => {
-        const itemsCount = items.length;
-        const innerStart = parent?.start ? parent.start : start;
-        const innerEnd = parent?.duration ? innerStart + parent?.duration : end;
+    const mappedNestingArrays = flattenFlameNodeAndMap(
+        rootNodes.root,
+        (items: Node[], parent: Node | undefined): Node[] => {
+            const itemsCount = items.length;
+            const innerStart = parent?.start ? parent.start : start;
+            const innerEnd = parent?.duration ? innerStart + parent?.duration : end;
 
-        const timestamps =
-            itemsCount > 1
-                ? Array(itemsCount - 1)
-                      .fill(null)
-                      .map(() => rndFloat(innerStart, innerEnd))
-                      .concat(innerStart, innerEnd)
-                      .sort((a, b) => a - b)
-                : [innerStart, innerEnd];
+            const timestamps =
+                itemsCount > 1
+                    ? Array(itemsCount - 1)
+                          .fill(null)
+                          .map(() => rndFloat(innerStart, innerEnd))
+                          .concat(innerStart, innerEnd)
+                          .sort((a, b) => a - b)
+                    : [innerStart, innerEnd];
 
-        items.forEach((item, index) => {
-            const currentWindow = timestamps[index + 1] - timestamps[index];
+            items.forEach((item, index) => {
+                const currentWindow = timestamps[index + 1] - timestamps[index];
 
-            if (counter > colorsMonotony) {
-                counter = 0;
-                currentType = types[typesCounter];
-                typesCounter++;
+                if (counter > colorsMonotony) {
+                    counter = 0;
+                    currentType = types[typesCounter];
+                    typesCounter++;
 
-                if (typesCounter >= types.length) {
-                    typesCounter = 0;
+                    if (typesCounter >= types.length) {
+                        typesCounter = 0;
+                    }
                 }
-            }
 
-            item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-            const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-            item.duration = end - item.start;
-            item.name = randomString(14);
-            item.type = currentType;
-            // ??? fix ?item.parent = null;
+                item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+                const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+                item.duration = end - item.start;
+                item.name = randomString(14);
+                item.type = currentType;
 
-            counter++;
-        });
+                counter++;
+            });
 
-        return items;
-    });
+            return items;
+        }
+    );
 
-    console.log('Data:', mappedNestingArrays);
+    console.log('[generateRandomTree]', mappedNestingArrays);
 
     return mappedNestingArrays;
 };
+
+export const waterfallItems = [
+    {
+        name: 'foo',
+        intervals: 'default',
+        timing: {
+            requestStart: 2050,
+            responseStart: 2500,
+            responseEnd: 2600,
+        },
+    },
+    {
+        name: 'bar',
+        intervals: 'default',
+        timing: {
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300,
+        },
+    },
+    {
+        name: 'bar2',
+        intervals: 'default',
+        timing: {
+            requestStart: 2120,
+            responseStart: 2180,
+            responseEnd: 2300,
+        },
+    },
+    {
+        name: 'bar3',
+        intervals: 'default',
+        timing: {
+            requestStart: 2130,
+            responseStart: 2180,
+            responseEnd: 2320,
+        },
+    },
+    {
+        name: 'bar4',
+        intervals: 'default',
+        timing: {
+            requestStart: 2300,
+            responseStart: 2350,
+            responseEnd: 2400,
+        },
+    },
+    {
+        name: 'bar5',
+        intervals: 'default',
+        timing: {
+            requestStart: 2500,
+            responseStart: 2520,
+            responseEnd: 2550,
+        },
+    },
+];
+export const waterfallIntervals: WaterfallIntervals = {
+    default: [
+        {
+            name: 'waiting',
+            color: 'rgb(207,196,152)',
+            type: 'block',
+            start: 'requestStart',
+            end: 'responseStart',
+        },
+        {
+            name: 'downloading',
+            color: 'rgb(207,180,81)',
+            type: 'block',
+            start: 'responseStart',
+            end: 'responseEnd',
+        },
+    ],
+};
+
+export const marks = [
+    {
+        shortName: 'DCL',
+        fullName: 'DOMContentLoaded',
+        timestamp: 2000,
+        color: '#d7c44c',
+    },
+    {
+        shortName: 'LE',
+        fullName: 'LoadEvent',
+        timestamp: 2100,
+        color: '#4fd24a',
+    },
+    {
+        shortName: 'TTI',
+        fullName: 'Time To Interactive',
+        timestamp: 3000,
+        color: '#4b7ad7',
+    },
+];

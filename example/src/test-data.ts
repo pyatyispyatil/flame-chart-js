@@ -16,7 +16,7 @@ const randomString = (length, minLength = 4) => {
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
 
-type Layer = { rest: number; nodes: Node[] };
+type Layer = { rest: number; flameNodes: Node[] };
 
 const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer => {
     const childrenCount = count ? rnd(Math.min(count, maxChild), Math.min(count, minChild)) : 0;
@@ -27,13 +27,13 @@ const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer 
 
     return {
         rest,
-        nodes: items,
+        flameNodes: items,
     };
 };
 
 const generateRandomNesting = (count: number, minChild: number, maxChild: number) => {
     const levels: Node[][][] = [];
-    let rootFlameNodes: Node[] = [];
+    let rootNodes: Node[] = [];
 
     let rest = count;
     let isStopped = false;
@@ -42,8 +42,8 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
         if (!levels.length) {
             const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild);
 
-            levels.push([layer.nodes]);
-            rootFlameNodes = layer.nodes;
+            levels.push([layer.flameNodes]);
+            rootNodes = layer.flameNodes;
             rest = layer.rest;
         } else {
             const level: Node[][] = levels[levels.length - 1];
@@ -53,10 +53,10 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
                 for (const l of ll) {
                     const layer = generateRandomLevel(rest, minChild, maxChild);
 
-                    l.children = layer.nodes;
+                    l.children = layer.flameNodes;
 
                     rest = layer.rest;
-                    innerLevel.push(layer.nodes);
+                    innerLevel.push(layer.flameNodes);
                 }
             }
 
@@ -74,18 +74,18 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
     );
 
     return {
-        root: rootFlameNodes,
+        root: rootNodes,
         rest: rest,
     };
 };
 
-const flattenFlameNodeAndMap = (
+const flattenNodeAndMap = (
     flameNodes: Node[],
     cb: (items: Node[], parent: Node | undefined) => Node[],
     parent?: Node | undefined
 ) => {
     return cb(flameNodes, parent).map((item) => {
-        item.children = flattenFlameNodeAndMap(item.children ?? [], cb, item);
+        item.children = flattenNodeAndMap(item.children ?? [], cb, item);
 
         return item;
     });
@@ -120,47 +120,44 @@ export const generateRandomTree = ({
     let typesCounter = 0;
     let currentType = types[typesCounter];
 
-    const mappedNestingArrays = flattenFlameNodeAndMap(
-        rootNodes.root,
-        (items: Node[], parent: Node | undefined): Node[] => {
-            const itemsCount = items.length;
-            const innerStart = parent?.start ? parent.start : start;
-            const innerEnd = parent?.duration ? innerStart + parent?.duration : end;
+    const mappedNestingArrays = flattenNodeAndMap(rootNodes.root, (items: Node[], parent: Node | undefined): Node[] => {
+        const itemsCount = items.length;
+        const innerStart = parent?.start ? parent.start : start;
+        const innerEnd = parent?.duration ? innerStart + parent?.duration : end;
 
-            const timestamps =
-                itemsCount > 1
-                    ? Array(itemsCount - 1)
-                          .fill(null)
-                          .map(() => rndFloat(innerStart, innerEnd))
-                          .concat(innerStart, innerEnd)
-                          .sort((a, b) => a - b)
-                    : [innerStart, innerEnd];
+        const timestamps =
+            itemsCount > 1
+                ? Array(itemsCount - 1)
+                      .fill(null)
+                      .map(() => rndFloat(innerStart, innerEnd))
+                      .concat(innerStart, innerEnd)
+                      .sort((a, b) => a - b)
+                : [innerStart, innerEnd];
 
-            items.forEach((item, index) => {
-                const currentWindow = timestamps[index + 1] - timestamps[index];
+        items.forEach((item, index) => {
+            const currentWindow = timestamps[index + 1] - timestamps[index];
 
-                if (counter > colorsMonotony) {
-                    counter = 0;
-                    currentType = types[typesCounter];
-                    typesCounter++;
+            if (counter > colorsMonotony) {
+                counter = 0;
+                currentType = types[typesCounter];
+                typesCounter++;
 
-                    if (typesCounter >= types.length) {
-                        typesCounter = 0;
-                    }
+                if (typesCounter >= types.length) {
+                    typesCounter = 0;
                 }
+            }
 
-                item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-                const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-                item.duration = end - item.start;
-                item.name = randomString(14);
-                item.type = currentType;
+            item.start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            item.duration = end - item.start;
+            item.name = randomString(14);
+            item.type = currentType;
 
-                counter++;
-            });
+            counter++;
+        });
 
-            return items;
-        }
-    );
+        return items;
+    });
 
     console.log('[generateRandomTree]', mappedNestingArrays);
 
@@ -242,23 +239,15 @@ export const waterfallIntervals: WaterfallIntervals = {
     ],
 };
 
-export const marks = [
-    {
-        shortName: 'DCL',
-        fullName: 'DOMContentLoaded',
-        timestamp: 2000,
-        color: '#d7c44c',
-    },
-    {
-        shortName: 'LE',
-        fullName: 'LoadEvent',
-        timestamp: 2100,
-        color: '#4fd24a',
-    },
-    {
-        shortName: 'TTI',
-        fullName: 'Time To Interactive',
-        timestamp: 3000,
-        color: '#4b7ad7',
-    },
-];
+export function generateTimeseriesData(inputs: TreeConfig) {
+    const timeseriesData: [number, number][] = [];
+    const period = inputs.end - inputs.start;
+    const kk = period / 100.0;
+
+    for (let idx = inputs.start; idx < inputs.end; idx += kk) {
+        const i = Math.random() * 1000;
+        timeseriesData.push([idx, i]);
+        timeseriesData.push([idx + kk / 2, i]);
+    }
+    return timeseriesData;
+}

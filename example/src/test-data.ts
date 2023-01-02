@@ -16,7 +16,7 @@ const randomString = (length, minLength = 4) => {
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
 
-type Layer = { rest: number; flameNodes: Node[] };
+type Layer = { rest: number; nodes: Node[] };
 
 const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer => {
     const childrenCount = count ? rnd(Math.min(count, maxChild), Math.min(count, minChild)) : 0;
@@ -27,7 +27,7 @@ const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer 
 
     return {
         rest,
-        flameNodes: items,
+        nodes: items,
     };
 };
 
@@ -42,8 +42,8 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
         if (!levels.length) {
             const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild);
 
-            levels.push([layer.flameNodes]);
-            rootNodes = layer.flameNodes;
+            levels.push([layer.nodes]);
+            rootNodes = layer.nodes;
             rest = layer.rest;
         } else {
             const level: Node[][] = levels[levels.length - 1];
@@ -53,10 +53,10 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
                 for (const l of ll) {
                     const layer = generateRandomLevel(rest, minChild, maxChild);
 
-                    l.children = layer.flameNodes;
+                    l.children = layer.nodes;
 
                     rest = layer.rest;
-                    innerLevel.push(layer.flameNodes);
+                    innerLevel.push(layer.nodes);
                 }
             }
 

@@ -33,7 +33,6 @@ describe('TimeseriesPlugin', () => {
         } as unknown as any;
         tsp.render();
         console.log('[positions]', positions);
-        return;
 
         expect(positions[0][1]).toBe(100);
         expect(positions[positions.length - 1][1]).toBe(100);

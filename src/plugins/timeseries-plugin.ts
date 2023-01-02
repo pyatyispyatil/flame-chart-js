@@ -19,6 +19,16 @@ export const defaultCPUPluginStyles: TimeseriesPluginStyles = {
     defaultHeight: 68,
 };
 
+type TimeseriesPointWithIndex = [idx: number, ts: number, value: number, normalizedTs: number, normalizedValue: number];
+
+enum TimeseriesPointWithIndexX {
+    idx = 0,
+    ts = 1,
+    value = 2,
+    normalizedTs = 3,
+    normalizedValue = 4,
+}
+
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
     height: number;
     name: string;
@@ -137,28 +147,6 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
 
         const timestampEnd = this.renderEngine.positionX + this.renderEngine.getRealView();
         const timestampStart = this.renderEngine.positionX;
-        this.renderEngine.setCtxColor(this.color);
-
-        this.renderEngine.ctx.beginPath();
-
-        const d: [number, number][] = [];
-
-        let firstIdx = 0;
-
-        this.data.forEach(([ts, v], idx) => {
-            if (ts >= timestampStart && firstIdx === 0) {
-                firstIdx = idx;
-            }
-
-            if (ts >= timestampStart && ts < timestampEnd) {
-                d.push([ts, v]);
-            }
-        });
-
-        const firstValue = this.data[firstIdx];
-        if (firstValue === undefined) {
-            return;
-        }
 
         const padding = 5;
         const heightPerValueUnit = (this.height - padding) / Math.max(this.summary.max - this.summary.min, 1);
@@ -167,49 +155,61 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
             return this.height - v * heightPerValueUnit;
         };
 
-        let lastTs = firstValue[0];
-        let lastValue = firstValue[1];
-        let normalizedValue = normalizeValue(firstValue[1]);
-        let lastNormalizedValue = normalizedValue;
-        let lastTimeToPosition = 0;
+        const d: TimeseriesPointWithIndex[] = [];
+
+        this.data.forEach(([ts, v], idx) => {
+            if (ts >= timestampStart && ts < timestampEnd) {
+                d.push([idx, ts, v, this.renderEngine.timeToPosition(ts), normalizeValue(v)]);
+            }
+        });
+
+        if (d.length === 0) {
+            return;
+        }
+
         let timeToPosition = this.renderEngine.timeToPosition(timestampStart);
+        let prevTPI: TimeseriesPointWithIndex =
+            (d[0][TimeseriesPointWithIndexX.idx] > 0 ? d[d[0][TimeseriesPointWithIndexX.idx] - 1] : d[0]) || d[0];
+
+        this.renderEngine.setCtxColor(this.color);
+        this.renderEngine.ctx.beginPath();
         this.renderEngine.ctx.moveTo(timeToPosition, this.height);
-        this.renderEngine.ctx.lineTo(timeToPosition, normalizedValue);
+        this.renderEngine.ctx.lineTo(timeToPosition, prevTPI[TimeseriesPointWithIndexX.normalizedValue]);
 
-        for (const [ts, v] of d) {
-            timeToPosition = this.renderEngine.timeToPosition(ts);
+        for (const dp of d) {
+            this.renderEngine.ctx.lineTo(
+                dp[TimeseriesPointWithIndexX.normalizedTs],
+                prevTPI[TimeseriesPointWithIndexX.normalizedValue]
+            );
 
-            this.renderEngine.ctx.lineTo(timeToPosition, lastNormalizedValue);
-
-            normalizedValue = normalizeValue(v);
-            this.renderEngine.ctx.lineTo(timeToPosition, normalizedValue);
+            this.renderEngine.ctx.lineTo(
+                dp[TimeseriesPointWithIndexX.normalizedTs],
+                dp[TimeseriesPointWithIndexX.normalizedValue]
+            );
 
             this.interactionsEngine.addHitRegion(
                 RegionTypes.CLUSTER,
-                { ts, v } as HitRegionData,
-                lastTimeToPosition,
+                { ts: dp[TimeseriesPointWithIndexX.ts], v: dp[TimeseriesPointWithIndexX.value] } as HitRegionData,
+                prevTPI[TimeseriesPointWithIndexX.normalizedTs],
                 0,
-                timeToPosition - lastTimeToPosition,
+                timeToPosition - prevTPI[TimeseriesPointWithIndexX.normalizedTs],
                 this.height
             );
 
-            lastTimeToPosition = timeToPosition;
-            lastNormalizedValue = normalizedValue;
-            lastValue = v;
-            lastTs = ts;
+            prevTPI = dp;
         }
 
         timeToPosition = this.renderEngine.timeToPosition(timestampEnd);
-        this.interactionsEngine.addHitRegion(
-            RegionTypes.CLUSTER,
-            { ts: lastTs, v: lastValue } as HitRegionData,
-            lastTimeToPosition,
-            0,
-            timeToPosition - lastTimeToPosition,
-            this.height
-        );
+        // this.interactionsEngine.addHitRegion(
+        //     RegionTypes.CLUSTER,
+        //     { ts: lastTs, v: lastValue } as HitRegionData,
+        //     lastTimeToPosition,
+        //     0,
+        //     timeToPosition - lastTimeToPosition,
+        //     this.height
+        // );
 
-        this.renderEngine.ctx.lineTo(timeToPosition, normalizedValue);
+        this.renderEngine.ctx.lineTo(timeToPosition, prevTPI[3]);
         this.renderEngine.ctx.lineTo(timeToPosition, this.height);
 
         this.renderEngine.ctx.closePath();

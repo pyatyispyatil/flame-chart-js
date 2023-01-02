@@ -33,7 +33,7 @@ const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer 
 
 const generateRandomNesting = (count: number, minChild: number, maxChild: number) => {
     const levels: Node[][][] = [];
-    let rootNodes: Node[] = [];
+    let rootFlameNodes: Node[] = [];
 
     let rest = count;
     let isStopped = false;
@@ -43,7 +43,7 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
             const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild);
 
             levels.push([layer.nodes]);
-            rootNodes = layer.nodes;
+            rootFlameNodes = layer.nodes;
             rest = layer.rest;
         } else {
             const level: Node[][] = levels[levels.length - 1];
@@ -74,7 +74,7 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
     );
 
     return {
-        root: rootNodes,
+        root: rootFlameNodes,
         rest: rest,
     };
 };

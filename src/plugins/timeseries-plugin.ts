@@ -146,11 +146,11 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
         let firstIdx = 0;
 
         this.data.forEach(([ts, v], idx) => {
-            if (ts > timestampStart && firstIdx === 0) {
+            if (ts >= timestampStart && firstIdx === 0) {
                 firstIdx = idx;
             }
 
-            if (ts > timestampStart && ts < timestampEnd) {
+            if (ts >= timestampStart && ts < timestampEnd) {
                 d.push([ts, v]);
             }
         });

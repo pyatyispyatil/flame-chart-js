@@ -251,3 +251,24 @@ export function generateTimeseriesData(inputs: TreeConfig) {
     }
     return timeseriesData;
 }
+
+export const marks = [
+    {
+        shortName: 'DCL',
+        fullName: 'DOMContentLoaded',
+        timestamp: 2000,
+        color: '#d7c44c',
+    },
+    {
+        shortName: 'LE',
+        fullName: 'LoadEvent',
+        timestamp: 2100,
+        color: '#4fd24a',
+    },
+    {
+        shortName: 'TTI',
+        fullName: 'Time To Interactive',
+        timestamp: 3000,
+        color: '#4b7ad7',
+    },
+];

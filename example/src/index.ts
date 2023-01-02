@@ -8,7 +8,7 @@ import TimeframeSelectorPlugin, {
 import TogglePlugin, { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin';
 import WaterfallPlugin, { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin';
 
-import { generateRandomTree, generateTimeseriesData, waterfallIntervals, waterfallItems } from './test-data';
+import { generateRandomTree, generateTimeseriesData, waterfallIntervals, waterfallItems, marks } from './test-data';
 import { query, initQuery } from './query';
 import {
     initView,
@@ -38,27 +38,6 @@ const treeConfig: TreeConfigItem[] = [
     { name: 'thinning', units: '%', value: 12 },
     { name: 'colorsMonotony', value: 40 },
     { name: 'colorsCount', value: 10 },
-];
-
-const marks = [
-    {
-        shortName: 'DCL',
-        fullName: 'DOMContentLoaded',
-        timestamp: 2000,
-        color: '#d7c44c',
-    },
-    {
-        shortName: 'LE',
-        fullName: 'LoadEvent',
-        timestamp: 2100,
-        color: '#4fd24a',
-    },
-    {
-        shortName: 'TTI',
-        fullName: 'Time To Interactive',
-        timestamp: 3000,
-        color: '#4b7ad7',
-    },
 ];
 
 const colors = {

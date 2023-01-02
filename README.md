@@ -306,19 +306,18 @@ class MyPlugin extends UIPlugin {
         super(name);
     }
     
-    heigh = 100; // heigh of the plugin in pixels
+    height = 100; // height of the plugin in pixels
 
     // this method will be called on each render
-    render = () => {
+    override render() {
         // do something
         this.renderEngine.addRectToRenderQueue('red', 10, 10, 20);
-    };
+    }
 }
 ```
 
 ## Local Development
 
-1 - Checkout this repository
-2 - npm i
-3 - npm start
-4 - Open browser "[http://localhost:10001/](http://localhost:10001/)"
+```bash
+npm i && npm start
+```

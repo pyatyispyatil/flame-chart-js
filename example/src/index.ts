@@ -1,4 +1,4 @@
-import { Data, FlameChart } from '../../src/index';
+import { Data, FlameChart } from '../../src';
 import { defaultTimeGridStyles } from '../../src/engines/time-grid';
 import { defaultRenderStyles } from '../../src/engines/basic-render-engine';
 import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
@@ -42,8 +42,11 @@ const colors = {
     event: '#a4775b',
 };
 
-const inputs = getInputValues(treeConfig);
-const generateData = () => generateRandomTree(inputs);
+const generateData = () => {
+    const inputs = getInputValues(treeConfig);
+
+    return generateRandomTree(inputs);
+};
 
 let currentData: Data = query ? [] : generateData();
 
@@ -65,6 +68,7 @@ const flameChart = new FlameChart({
 });
 
 flameChart.on('select', (node, type) => {
+    console.log('select', node, type);
     setNodeView(
         node
             ? `${type}\r\n${JSON.stringify(
@@ -72,7 +76,7 @@ flameChart.on('select', (node, type) => {
                       ...node,
                       source: {
                           ...node.source,
-                          children: '[]',
+                          children: '...',
                       },
                       parent: undefined,
                   },

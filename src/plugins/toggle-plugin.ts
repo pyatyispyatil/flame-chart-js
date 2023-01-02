@@ -35,8 +35,6 @@ export const defaultTogglePluginStyles: TogglePluginStyles = {
 };
 
 export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
-    name = 'togglePlugin';
-
     override styles: TogglePluginStyles = defaultTogglePluginStyles;
     height = 0;
 
@@ -46,7 +44,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     resizeStartPosition = 0;
 
     constructor(title: string, settings: TogglePluginSettings) {
-        super();
+        super('togglePlugin');
         this.setSettings(settings);
         this.title = title;
     }
@@ -183,5 +181,3 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         }
     }
 }
-
-export default TogglePlugin;

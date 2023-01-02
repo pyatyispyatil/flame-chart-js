@@ -7,15 +7,13 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 type MarkHitRegion = HitRegion<Mark>;
 
 export class MarksPlugin extends UIPlugin {
-    name = 'marksPlugin';
-
     marks: Marks;
     hoveredRegion: MarkHitRegion | null = null;
     selectedRegion: MarkHitRegion | null = null;
 
-    constructor(marks: Marks) {
-        super();
-        this.marks = this.prepareMarks(marks);
+    constructor({ data, name = 'marksPlugin' }: { data: Marks; name?: string }) {
+        super(name);
+        this.marks = this.prepareMarks(data);
 
         this.calcMinMax();
     }
@@ -151,5 +149,3 @@ export class MarksPlugin extends UIPlugin {
         return false;
     }
 }
-
-export default MarksPlugin;

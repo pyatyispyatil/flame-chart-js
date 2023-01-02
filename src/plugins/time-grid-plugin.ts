@@ -18,13 +18,11 @@ export const defaultTimeGridPluginStyles: TimeGridPluginStyles = {
 };
 
 export class TimeGridPlugin extends UIPlugin<TimeGridPluginStyles> {
-    name = 'timeGridPlugin';
-
     override styles: TimeGridPluginStyles = defaultTimeGridPluginStyles;
     height = 0;
 
     constructor(settings: TimeGridPluginSettings = {}) {
-        super();
+        super('timeGridPlugin');
         this.setSettings(settings);
     }
 
@@ -54,5 +52,3 @@ export class TimeGridPlugin extends UIPlugin<TimeGridPluginStyles> {
         return true;
     }
 }
-
-export default TimeGridPlugin;

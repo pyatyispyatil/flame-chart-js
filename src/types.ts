@@ -15,7 +15,7 @@ export interface Node {
     duration: number; // node duration
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
-    children?: Array<Node>; // node children (same structure as for node)
+    children?: Node[]; // node children (same structure as for node)
 }
 
 export type Data = Array<Node>;
@@ -32,8 +32,8 @@ export type WaterfallInterval = {
     name: string;
     color: string;
     type: 'block' | 'line';
-    start: string; // timing name
-    end: string; // timing name
+    start: string | number; // timing name or timestamp
+    end: string | number; // timing name or timestamp
 };
 
 export interface WaterfallIntervals {

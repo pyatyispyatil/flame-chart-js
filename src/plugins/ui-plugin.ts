@@ -3,7 +3,7 @@ import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 
 export abstract class UIPlugin<S = {}> extends EventEmitter {
-    abstract name: string;
+    name: string;
     abstract height?: number;
 
     interactionsEngine: SeparatedInteractionsEngine;
@@ -13,8 +13,9 @@ export abstract class UIPlugin<S = {}> extends EventEmitter {
     max?: number;
     styles?: S;
 
-    protected constructor() {
+    protected constructor(name: string) {
         super();
+        this.name = name;
     }
 
     init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {

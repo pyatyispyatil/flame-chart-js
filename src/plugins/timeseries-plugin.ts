@@ -174,7 +174,6 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
         this.renderEngine.setCtxColor(this.color);
         this.renderEngine.ctx.beginPath();
         this.renderEngine.ctx.moveTo(timeToPosition, this.height);
-        this.renderEngine.ctx.lineTo(timeToPosition, prevTPI[TimeseriesPointWithIndexX.normalizedValue]);
 
         for (const dp of d) {
             this.renderEngine.ctx.lineTo(

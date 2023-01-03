@@ -10,6 +10,7 @@ describe('TimeseriesPlugin', () => {
             [4, 40],
             [5, 50],
         ]);
+        tsp.height = 105;
 
         let positions: [number, number][] = [];
         tsp.renderEngine = {

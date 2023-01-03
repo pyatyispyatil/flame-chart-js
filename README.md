@@ -267,7 +267,7 @@ window.addEventListener('resize', () => {
 
 ## Local Development
 
-1. - Checkout this repository
-2. - npm i
-3. - npm start
-4. - Open browser "[http://localhost:10001/](http://localhost:10001/)"
+1. Checkout this repository
+2. npm i
+3. npm start
+4. Open browser "[http://localhost:10001/](http://localhost:10001/)"

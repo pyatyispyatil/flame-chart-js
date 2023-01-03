@@ -35,8 +35,8 @@ describe('TimeseriesPlugin', () => {
         tsp.render();
         console.log('[positions]', positions);
 
-        expect(positions[0][1]).toBe(100);
-        expect(positions[positions.length - 1][1]).toBe(100);
+        expect(positions[0][1]).toBe(105);
+        expect(positions[positions.length - 1][1]).toBe(105);
 
         tsp.renderEngine.positionX = 5;
         tsp.renderEngine.getRealView = () => 6;

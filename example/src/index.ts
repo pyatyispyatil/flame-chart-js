@@ -86,7 +86,7 @@ switch (constructionMethod) {
             plugins: [
                 new TimeframeSelectorPlugin(currentData, { styles: {} }),
                 new TogglePlugin(timeseries1, { styles: {} }),
-                new TimeseriesPlugin(timeseries1, 'red', timeseriesData),
+                new TimeseriesPlugin(timeseries1, timeseriesData, { color: 'pink' }),
                 new TogglePlugin('waterfall plugin', { styles: {} }),
                 new WaterfallPlugin(
                     {

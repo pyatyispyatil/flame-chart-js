@@ -13,10 +13,21 @@ interface TimeseriesPointsSummary {
 }
 
 export type TimeseriesPluginStyles = {
-    defaultHeight: number;
+    defaultHeight?: number;
+    padding?: number;
+    color?: string;
 };
-export const defaultCPUPluginStyles: TimeseriesPluginStyles = {
+
+type TimeseriesPluginStylesNoOptional = {
+    defaultHeight: number;
+    padding: number;
+    color: string;
+};
+
+export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
     defaultHeight: 68,
+    padding: 5,
+    color: 'red',
 };
 
 type TimeseriesPointWithIndex = [idx: number, ts: number, value: number, normalizedTs: number, normalizedValue: number];
@@ -29,23 +40,23 @@ enum TimeseriesPointWithIndexX {
     normalizedValue = 4,
 }
 
-export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
+export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional> {
     height: number;
     name: string;
-    color: string;
     data: TimeseriesPoint[];
     maxValue: number;
     hoveredRegion: HitRegion<{}> | null = null;
     selectedRegion: HitRegion<{}> | null = null;
     summary: TimeseriesPointsSummary | null = null;
+    override styles: TimeseriesPluginStylesNoOptional;
 
-    constructor(name: string, color: string, data: TimeseriesPoint[], maxValue = 100) {
+    constructor(name: string, data: TimeseriesPoint[], styles?: TimeseriesPluginStyles) {
         super();
 
-        this.maxValue = maxValue;
+        this.styles = { ...defaultCPUPluginStyles, ...(styles ?? {}) };
         this.data = [];
         this.name = name;
-        this.color = color;
+
         this.height = 100;
 
         this.setData(data);
@@ -151,38 +162,42 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
         const positionStart = this.renderEngine.timeToPosition(timestampStart);
         const positionEnd = this.renderEngine.timeToPosition(timestampEnd);
 
-        const padding = 5;
-        const heightPerValueUnit = (this.height - padding) / Math.max(this.summary.max - this.summary.min, 1);
+        const heightPerValueUnit =
+            (this.height - this.styles.padding) / Math.max(this.summary.max - this.summary.min, 1);
 
-        const normalizeValue = (v: number) => {
-            return this.height - v * heightPerValueUnit;
+        const normalizeValue = (value: number) => {
+            return this.height - value * heightPerValueUnit;
         };
 
-        const convertDataPointToPointWithIndex = (idx: number, ts: number, v: number): TimeseriesPointWithIndex => {
-            return [idx, ts, v, this.renderEngine.timeToPosition(ts), normalizeValue(v)];
+        const convertDataPointToPointWithIndex = (
+            idx: number,
+            time: number,
+            value: number
+        ): TimeseriesPointWithIndex => {
+            return [idx, time, value, this.renderEngine.timeToPosition(time), normalizeValue(value)];
         };
 
         const datapoints: TimeseriesPointWithIndex[] = [];
 
         let indexStart = 0;
 
-        this.data.forEach(([timestamp, value], idx: number) => {
-            if (timestamp <= timestampStart) {
+        this.data.forEach(([time, value], idx: number) => {
+            if (time < timestampStart) {
                 indexStart = idx;
             }
 
-            if (timestamp >= timestampStart && timestamp <= timestampEnd) {
-                datapoints.push(convertDataPointToPointWithIndex(idx, timestamp, value));
+            if (time >= timestampStart && time <= timestampEnd) {
+                datapoints.push(convertDataPointToPointWithIndex(idx, time, value));
             }
         });
 
-        let prevTPI: TimeseriesPointWithIndex =
-            (datapoints.length && datapoints[0][TimeseriesPointWithIndexX.idx] > 0
-                ? datapoints[datapoints[0][TimeseriesPointWithIndexX.idx] - 1]
-                : datapoints[0]) ||
-            convertDataPointToPointWithIndex(indexStart, this.data[indexStart][0], this.data[indexStart][1]);
+        let prevTPI: TimeseriesPointWithIndex = convertDataPointToPointWithIndex(
+            indexStart,
+            this.data[indexStart][0],
+            this.data[indexStart][1]
+        );
 
-        this.renderEngine.setCtxColor(this.color);
+        this.renderEngine.setCtxColor(this.styles.color);
         this.renderEngine.ctx.beginPath();
         this.renderEngine.ctx.moveTo(positionStart, this.height);
         this.renderEngine.ctx.lineTo(positionStart, prevTPI[TimeseriesPointWithIndexX.normalizedValue]);

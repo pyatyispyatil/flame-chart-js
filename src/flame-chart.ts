@@ -101,7 +101,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (timeseries) {
             timeseries.forEach((ts, idx) => {
-                plugins.push(new TimeseriesPlugin(`Timeseries${idx}`, colors ? colors[idx] ?? 'red' : 'red', ts));
+                plugins.push(new TimeseriesPlugin(`Timeseries${idx}`, ts));
             });
         }
 

@@ -2,7 +2,8 @@ import { describe, it, expect } from '@jest/globals';
 import { TimeseriesPlugin } from './timeseries-plugin';
 
 function createTimeseriesPlugin(start: number, end: number) {
-    const tsp = new TimeseriesPlugin('name', 'pink', [
+    const tsp = new TimeseriesPlugin('name', [
+        [0, 0],
         [1, 10],
         [2, 20],
         [3, 30],
@@ -12,6 +13,7 @@ function createTimeseriesPlugin(start: number, end: number) {
         [7, 70],
         [8, 80],
         [9, 90],
+        [10, 100],
     ]);
     tsp.height = 105;
 
@@ -50,64 +52,18 @@ function createTimeseriesPlugin(start: number, end: number) {
 describe('TimeseriesPlugin', () => {
     it('before start and after end', () => {
         const positions = createTimeseriesPlugin(0, 10);
-        expect(positions).toEqual([
-            [0, 105],
-            [0, 92.5],
-            [1, 92.5],
-            [1, 92.5],
-            [2, 92.5],
-            [2, 80],
-            [3, 80],
-            [3, 67.5],
-            [4, 67.5],
-            [4, 55],
-            [5, 55],
-            [5, 42.5],
-            [6, 42.5],
-            [6, 30],
-            [7, 30],
-            [7, 17.5],
-            [8, 17.5],
-            [8, 5],
-            [9, 5],
-            [9, -7.5],
-            [9, -7.5],
-            [10, -7.5],
-            [10, 105],
-        ]);
+        expect(positions).toMatchSnapshot();
     });
 
     it('in middle after end', () => {
         const positions = createTimeseriesPlugin(5, 10);
 
-        expect(positions).toEqual([
-            [5, 105],
-            [5, 5],
-            [5, 5],
-            [5, 42.5],
-            [6, 42.5],
-            [6, 30],
-            [7, 30],
-            [7, 17.5],
-            [8, 17.5],
-            [8, 5],
-            [9, 5],
-            [9, -7.5],
-            [9, -7.5],
-            [15, -7.5],
-            [15, 105],
-        ]);
+        expect(positions).toMatchSnapshot();
     });
 
-    it('in after start', () => {
+    it('start after end', () => {
         const positions = createTimeseriesPlugin(11, 12);
-        console.log(positions);
-        expect(positions).toEqual([
-            [11, 105],
-            [11, -7.5],
-            [11, -7.5],
-            [23, -7.5],
-            [23, 105],
-        ]);
+
+        expect(positions).toMatchSnapshot();
     });
 });

@@ -1,4 +1,5 @@
 import { Node, WaterfallIntervals } from '../../src/index';
+import { TimeseriesPoint } from '../../src/plugins/timeseries-plugin';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -240,7 +241,7 @@ export const waterfallIntervals: WaterfallIntervals = {
 };
 
 export function generateTimeseriesData(inputs: TreeConfig) {
-    const timeseriesData: [number, number][] = [];
+    const timeseriesData: TimeseriesPoint[] = [];
     const period = inputs.end - inputs.start;
     const kk = period / 100.0;
 
@@ -272,3 +273,18 @@ export const marks = [
         color: '#4b7ad7',
     },
 ];
+
+export const generateSimpleFlameData = (inputs: TreeConfig) => {
+    return [
+        {
+            name: 'testing',
+            start: inputs.start,
+            duration: 200,
+            color: 'yellow',
+            children: [
+                { name: 'testing', start: inputs.start + 50, duration: 50, color: 'orange' },
+                { name: 'testing', start: inputs.start + 100, duration: 50, color: 'orange' },
+            ],
+        },
+    ];
+};

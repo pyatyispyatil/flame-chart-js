@@ -33,8 +33,8 @@ export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
 type TimeseriesPointWithIndex = [idx: number, ts: number, value: number, normalizedTs: number, normalizedValue: number];
 
 enum TimeseriesPointWithIndexX {
-    idx = 0,
-    ts = 1,
+    index = 0,
+    timestamp = 1,
     value = 2,
     normalizedTs = 3,
     normalizedValue = 4,
@@ -94,19 +94,19 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         let first = Number.MAX_VALUE;
         let last = Number.MIN_VALUE;
 
-        this.data.forEach(([ts, v]) => {
-            if (v < min) {
-                min = v;
+        this.data.forEach(([timestamp, value]) => {
+            if (value < min) {
+                min = value;
             }
-            if (v > max) {
-                max = v;
+            if (value > max) {
+                max = value;
             }
 
-            if (ts < first) {
-                first = ts;
+            if (timestamp < first) {
+                first = timestamp;
             }
-            if (ts > last) {
-                last = ts;
+            if (timestamp > last) {
+                last = timestamp;
             }
         });
 
@@ -133,14 +133,14 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
 
     override renderTooltip() {
         if (this.hoveredRegion) {
-            const round = (v) => Math.round(v * 100) / 100;
+            const round = (value: number) => Math.round(value * 100) / 100;
             const data = this.hoveredRegion.data as TimeseriesPointWithIndex;
 
             this.renderEngine.renderTooltipFromData(
                 [
                     { text: `Value: ${round(data[TimeseriesPointWithIndexX.value])}` },
                     {
-                        text: `Timestamp: ${round(data[TimeseriesPointWithIndexX.ts])}ms`,
+                        text: `Timestamp: ${round(data[TimeseriesPointWithIndexX.timestamp])}ms`,
                     },
                 ],
                 this.interactionsEngine.getGlobalMouse()

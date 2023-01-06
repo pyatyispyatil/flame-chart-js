@@ -17,7 +17,6 @@ import {
     generateSimpleFlameData,
 } from './test-data';
 import { query, initQuery } from './query';
-import queryString from 'query-string';
 
 import {
     initView,
@@ -71,8 +70,8 @@ const timeseriesData = generateTimeseriesData(inputs);
 
 let flameChart: FlameChart | null = null;
 
-const searchParams = queryString.parse(window.location.search);
-const constructionMethod = searchParams.method ?? 'classic';
+const searchParams = new URLSearchParams(window.location.search);
+const constructionMethod = searchParams.get('method') ?? 'classic';
 
 switch (constructionMethod) {
     case 'baseline': {

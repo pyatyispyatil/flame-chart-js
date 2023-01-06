@@ -153,9 +153,9 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
 
     override render() {
         if (this.data?.length === 0 || !this.summary) {
-            console.log('[render] no data - returned');
             return;
         }
+
         const timestampStart = this.renderEngine.positionX;
         const timestampEnd = this.renderEngine.positionX + this.renderEngine.getRealView();
 

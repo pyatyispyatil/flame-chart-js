@@ -115,21 +115,22 @@ canvas.width = 800;
 canvas.height = 400;
 
 const flameChart = new FlameChartContainer({
-  canvas, // mandatory
-  plugins: [
-    new TimeGridPlugin({ styles: timeGridPluginStyles }),
-    new MarksPlugin({ data: marks }),
-    new FlameChartPlugin({ data: flameChartData1, colors: flameChartColors, name: 'flameChart1' }),
-    new FlameChartPlugin({ data: flameChartData2, colors: flameChartColors, name: 'flameChart2' }),
-  ],
-  settings: {
-    options: {
-      tooltip: () => {/*...*/
-      }, // see section "Custom Tooltip" below
-      timeUnits: 'ms'
+    canvas, // mandatory
+    plugins: [
+        new TimeGridPlugin({ styles: timeGridPluginStyles }),
+        new MarksPlugin({ data: marks }),
+        new FlameChartPlugin({ data: flameChartData1, colors: flameChartColors, name: 'flameChart1' }),
+        new FlameChartPlugin({ data: flameChartData2, colors: flameChartColors, name: 'flameChart2' }),
+    ],
+    settings: {
+        options: {
+            tooltip: () => {
+                /*...*/
+            }, // see section "Custom Tooltip" below
+            timeUnits: 'ms',
+        },
+        styles: customStyles, // see section "Styles" below
     },
-    styles: customStyles // see section "Styles" below
-  }
 });
 ```
 
@@ -305,7 +306,7 @@ class MyPlugin extends UIPlugin {
     constructor({ name = 'myOwnPlugin' }) {
         super(name);
     }
-    
+
     height = 100; // height of the plugin in pixels
 
     // this method will be called on each render

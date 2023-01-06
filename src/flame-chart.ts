@@ -40,7 +40,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setData: (data: Data) => void;
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
-    setFlameChartPosition: ({ x, y }: { x: number; y: number }) => void;
+    setFlameChartPosition: ({ x, y }: { x?: number; y?: number }) => void;
 
     constructor(options: FlameChartOptions) {
         const {
@@ -69,14 +69,14 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         let flameChartPlugin: FlameChartPlugin | undefined;
 
         if (marks) {
-            marksPlugin = new MarksPlugin(marks);
+            marksPlugin = new MarksPlugin({ data: marks });
             marksPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             activePlugins.push(marksPlugin);
         }
 
         if (waterfall) {
-            waterfallPlugin = new WaterfallPlugin(waterfall, { styles: styles?.waterfallPlugin });
+            waterfallPlugin = new WaterfallPlugin({ data: waterfall, settings: { styles: styles?.waterfallPlugin } });
             waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (data) {
@@ -87,7 +87,10 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         }
 
         if (data) {
-            timeframeSelectorPlugin = new TimeframeSelectorPlugin(data, { styles: styles?.timeframeSelectorPlugin });
+            timeframeSelectorPlugin = new TimeframeSelectorPlugin({
+                data,
+                settings: { styles: styles?.timeframeSelectorPlugin },
+            });
             flameChartPlugin = new FlameChartPlugin({ data, colors });
             flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
 

@@ -17,24 +17,27 @@ const randomString = (length, minLength = 4) => {
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
 
-type Layer = { rest: number; nodes: Node[] };
+type Level = {
+    children?: Level[];
+};
+
+type Layer = { rest: number; children: Level[] };
 
 const generateRandomLevel = (count: number, minChild = 1, maxChild = 10): Layer => {
     const childrenCount = count ? rnd(Math.min(count, maxChild), Math.min(count, minChild)) : 0;
-    const items = Array(childrenCount)
+    const children = Array(childrenCount)
         .fill(null)
-        .map((): Node => ({ children: [], duration: 0, name: '', start: 0 }));
+        .map((): Level => ({ children: [] }));
     const rest = count - childrenCount;
 
     return {
         rest,
-        nodes: items,
+        children,
     };
 };
 
 const generateRandomNesting = (count: number, minChild: number, maxChild: number) => {
-    const levels: Node[][][] = [];
-    let rootFlameNodes: Node[] = [];
+    const levels: Level[][][] = [];
 
     let rest = count;
     let isStopped = false;
@@ -43,23 +46,21 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
         if (!levels.length) {
             const layer = generateRandomLevel(rest, Math.min(minChild, 1), maxChild);
 
-            levels.push([layer.nodes]);
-            rootFlameNodes = layer.nodes;
+            levels.push([layer.children]);
             rest = layer.rest;
         } else {
-            const level: Node[][] = levels[levels.length - 1];
-            const innerLevel: Node[][] = [];
+            const level: Level[][] = levels[levels.length - 1];
+            const innerLevel: Level[][] = [];
 
-            for (const ll of level) {
-                for (const l of ll) {
+            level.forEach((subLevel) => {
+                subLevel.forEach((subSubLevel) => {
                     const layer = generateRandomLevel(rest, minChild, maxChild);
 
-                    l.children = layer.nodes;
-
+                    subSubLevel.children = layer.children;
                     rest = layer.rest;
-                    innerLevel.push(layer.nodes);
-                }
-            }
+                    innerLevel.push(layer.children);
+                });
+            });
 
             if (!innerLevel.length) {
                 isStopped = true;
@@ -74,10 +75,7 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
         levels.reduce((acc, level) => level.reduce((acc, subLevel) => acc + subLevel.length, acc), 0)
     );
 
-    return {
-        root: rootFlameNodes,
-        rest: rest,
-    };
+    return levels[0][0];
 };
 
 const flattenNodeAndMap = (
@@ -113,7 +111,7 @@ export const generateRandomTree = ({
     colorsMonotony,
     colorsCount,
 }: TreeConfig): Node[] => {
-    const rootNodes = generateRandomNesting(count, minChild, maxChild);
+    const rootNodes = generateRandomNesting(count, minChild, maxChild) as Node[];
     const types = Array(colorsCount)
         .fill(null)
         .map(() => randomString(10));
@@ -121,7 +119,7 @@ export const generateRandomTree = ({
     let typesCounter = 0;
     let currentType = types[typesCounter];
 
-    const mappedNestingArrays = flattenNodeAndMap(rootNodes.root, (items: Node[], parent: Node | undefined): Node[] => {
+    const mappedNestingArrays = flattenNodeAndMap(rootNodes, (items: Node[], parent: Node | undefined): Node[] => {
         const itemsCount = items.length;
         const innerStart = parent?.start ? parent.start : start;
         const innerEnd = parent?.duration ? innerStart + parent?.duration : end;

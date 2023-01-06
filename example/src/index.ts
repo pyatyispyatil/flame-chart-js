@@ -2,11 +2,12 @@ import { FlameChart, FlameChartPlugin, Node, MarksPlugin } from '../../src/index
 import { defaultTimeGridStyles } from '../../src/engines/time-grid';
 import { defaultRenderStyles } from '../../src/engines/basic-render-engine';
 import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
-import TimeframeSelectorPlugin, {
+import {
+    TimeframeSelectorPlugin,
     defaultTimeframeSelectorPluginStyles,
 } from '../../src/plugins/timeframe-selector-plugin';
-import TogglePlugin, { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin';
-import WaterfallPlugin, { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin';
+import { TogglePlugin, defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin';
+import { WaterfallPlugin, defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin';
 
 import {
     generateRandomTree,
@@ -83,24 +84,24 @@ switch (constructionMethod) {
             canvas,
             colors,
             plugins: [
-                new TimeframeSelectorPlugin(currentData, { styles: {} }),
+                new TimeframeSelectorPlugin({ data: currentData, settings: { styles: {} } }),
                 new TogglePlugin(timeseries1, { styles: {} }),
                 new TimeseriesPlugin(timeseries1, timeseriesData, { color: 'pink' }),
                 new TogglePlugin('waterfall plugin', { styles: {} }),
-                new WaterfallPlugin(
-                    {
+                new WaterfallPlugin({
+                    data: {
                         items: waterfallItems,
                         intervals: waterfallIntervals,
                     },
-                    { styles: {} },
-                    'waterfall plugin'
-                ),
+                    settings: { styles: {} },
+                    name: 'waterfall plugin',
+                }),
                 new TogglePlugin(MarksPlugin.name, { styles: {} }),
-                new MarksPlugin(marks),
+                new MarksPlugin({ data: marks }),
                 new TogglePlugin(flame1, { styles: {} }),
-                new FlameChartPlugin({ data: currentData, colors }, flame1),
+                new FlameChartPlugin({ data: currentData, colors, name: flame1 }),
                 new TogglePlugin(flame2, { styles: {} }),
-                new FlameChartPlugin({ data: baselineCurrentData, colors }, flame2),
+                new FlameChartPlugin({ data: baselineCurrentData, colors, name: flame2 }),
             ],
         });
         break;

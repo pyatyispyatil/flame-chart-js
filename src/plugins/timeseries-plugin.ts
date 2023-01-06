@@ -42,7 +42,6 @@ enum TimeseriesPointWithIndexX {
 
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional> {
     height: number;
-    name: string;
     data: TimeseriesPoint[];
     maxValue: number;
     hoveredRegion: HitRegion<{}> | null = null;
@@ -51,7 +50,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
     override styles: TimeseriesPluginStylesNoOptional;
 
     constructor(name: string, data: TimeseriesPoint[], styles?: TimeseriesPluginStyles) {
-        super();
+        super(name);
 
         this.styles = { ...defaultCPUPluginStyles, ...(styles ?? {}) };
         this.data = [];

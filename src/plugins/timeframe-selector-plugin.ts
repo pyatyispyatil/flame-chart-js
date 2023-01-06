@@ -60,12 +60,6 @@ export const defaultTimeframeSelectorPluginStyles = {
     backgroundColor: 'white',
 };
 
-export interface TimeframeSelectorPluginConstructor {
-    data: Data;
-    settings: TimeframeSelectorPluginSettings;
-    name?: string;
-}
-
 export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
     override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
     height = 0;
@@ -85,7 +79,15 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private dots: Dot[] = [];
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
-    constructor({ data, settings, name = 'timeframeSelectorPlugin' }: TimeframeSelectorPluginConstructor) {
+    constructor({
+        data,
+        settings,
+        name = 'timeframeSelectorPlugin',
+    }: {
+        data: Data;
+        settings: TimeframeSelectorPluginSettings;
+        name?: string;
+    }) {
         super(name);
         this.data = data;
         this.shouldRender = true;

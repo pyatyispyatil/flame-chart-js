@@ -100,6 +100,5 @@
         "skipLibCheck": true /* Skip type checking all .d.ts files. */
     },
     "types": ["color", "events"],
-    "include": ["./src/**/*.ts", "./example/src/**/*.ts"],
-    "exclude": ["./src/**/*.spec.ts"]
+    "include": ["./src/**/*.ts", "./example/src/**/*.ts"]
 }

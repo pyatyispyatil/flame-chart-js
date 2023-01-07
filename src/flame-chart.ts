@@ -80,7 +80,9 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (data) {
-                activePlugins.push(new TogglePlugin(waterfallName, { styles: styles?.togglePlugin }));
+                activePlugins.push(
+                    new TogglePlugin({ title: waterfallName, settings: { styles: styles?.togglePlugin } })
+                );
             }
 
             activePlugins.push(waterfallPlugin);
@@ -95,7 +97,9 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
 
             if (waterfall) {
-                activePlugins.push(new TogglePlugin(flameChartName, { styles: styles?.togglePlugin }));
+                activePlugins.push(
+                    new TogglePlugin({ title: flameChartName, settings: { styles: styles?.togglePlugin } })
+                );
             }
 
             activePlugins.push(flameChartPlugin);
@@ -104,7 +108,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (timeseries) {
             timeseries.forEach((ts, idx) => {
-                plugins.push(new TimeseriesPlugin(`Timeseries${idx}`, ts));
+                plugins.push(new TimeseriesPlugin({ name: `Timeseries${idx}`, data: ts }));
             });
         }
 

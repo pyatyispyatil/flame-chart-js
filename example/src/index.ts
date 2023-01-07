@@ -85,9 +85,9 @@ switch (constructionMethod) {
             colors,
             plugins: [
                 new TimeframeSelectorPlugin({ data: currentData, settings: { styles: {} } }),
-                new TogglePlugin(timeseries1, { styles: {} }),
-                new TimeseriesPlugin(timeseries1, timeseriesData, { color: 'pink' }),
-                new TogglePlugin('waterfall plugin', { styles: {} }),
+                new TogglePlugin({ title: timeseries1, settings: { styles: {} } }),
+                new TimeseriesPlugin({ name: timeseries1, data: timeseriesData, styles: { color: 'pink' } }),
+                new TogglePlugin({ title: 'waterfall plugin', settings: { styles: {} } }),
                 new WaterfallPlugin({
                     data: {
                         items: waterfallItems,
@@ -96,11 +96,11 @@ switch (constructionMethod) {
                     settings: { styles: {} },
                     name: 'waterfall plugin',
                 }),
-                new TogglePlugin(MarksPlugin.name, { styles: {} }),
+                new TogglePlugin({ title: MarksPlugin.name, settings: { styles: {} } }),
                 new MarksPlugin({ data: marks }),
-                new TogglePlugin(flame1, { styles: {} }),
+                new TogglePlugin({ title: flame1, settings: { styles: {} } }),
                 new FlameChartPlugin({ data: currentData, colors, name: flame1 }),
-                new TogglePlugin(flame2, { styles: {} }),
+                new TogglePlugin({ title: flame2, settings: { styles: {} } }),
                 new FlameChartPlugin({ data: baselineCurrentData, colors, name: flame2 }),
             ],
         });

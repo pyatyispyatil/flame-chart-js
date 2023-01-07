@@ -49,7 +49,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
     summary: TimeseriesPointsSummary | null = null;
     override styles: TimeseriesPluginStylesNoOptional;
 
-    constructor(name: string, data: TimeseriesPoint[], styles?: TimeseriesPluginStyles) {
+    constructor({ name, data, styles }: { name: string; data: TimeseriesPoint[]; styles?: TimeseriesPluginStyles }) {
         super(name);
 
         this.styles = { ...defaultCPUPluginStyles, ...(styles ?? {}) };

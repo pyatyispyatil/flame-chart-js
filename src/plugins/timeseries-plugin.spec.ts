@@ -2,19 +2,22 @@ import { describe, it, expect } from '@jest/globals';
 import { TimeseriesPlugin } from './timeseries-plugin';
 
 function createTimeseriesPlugin(start: number, end: number) {
-    const tsp = new TimeseriesPlugin('name', [
-        [0, 0],
-        [1, 10],
-        [2, 20],
-        [3, 30],
-        [4, 40],
-        [5, 50],
-        [6, 60],
-        [7, 70],
-        [8, 80],
-        [9, 90],
-        [10, 100],
-    ]);
+    const tsp = new TimeseriesPlugin({
+        name: 'name',
+        data: [
+            [0, 0],
+            [1, 10],
+            [2, 20],
+            [3, 30],
+            [4, 40],
+            [5, 50],
+            [6, 60],
+            [7, 70],
+            [8, 80],
+            [9, 90],
+            [10, 100],
+        ],
+    });
     tsp.height = 105;
 
     let positions: [number, number][] = [];

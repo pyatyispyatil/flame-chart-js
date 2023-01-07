@@ -77,6 +77,7 @@ const constructionMethod = searchParams.get('method') ?? 'classic';
 switch (constructionMethod) {
     case 'baseline': {
         const timeseries1 = 'time-series-1';
+        const timeseries2 = 'time-series-2';
         const flame1 = 'flame';
         const flame2 = 'flame-baseline';
 
@@ -87,6 +88,12 @@ switch (constructionMethod) {
                 new TimeframeSelectorPlugin({ data: currentData, settings: { styles: {} } }),
                 new TogglePlugin({ title: timeseries1, settings: { styles: {} } }),
                 new TimeseriesPlugin({ name: timeseries1, data: timeseriesData, styles: { color: 'pink' } }),
+                new TogglePlugin({ title: timeseries2, settings: { styles: {} } }),
+                new TimeseriesPlugin({
+                    name: timeseries2,
+                    data: timeseriesData,
+                    styles: { color: 'cyan', height: 20 },
+                }),
                 new TogglePlugin({ title: 'waterfall plugin', settings: { styles: {} } }),
                 new WaterfallPlugin({
                     data: {

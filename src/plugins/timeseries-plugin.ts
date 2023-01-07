@@ -13,19 +13,19 @@ interface TimeseriesPointsSummary {
 }
 
 export type TimeseriesPluginStyles = {
-    defaultHeight?: number;
+    height?: number;
     padding?: number;
     color?: string;
 };
 
 type TimeseriesPluginStylesNoOptional = {
-    defaultHeight: number;
+    height: number;
     padding: number;
     color: string;
 };
 
 export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
-    defaultHeight: 68,
+    height: 68,
     padding: 5,
     color: 'red',
 };
@@ -56,7 +56,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         this.data = [];
         this.name = name;
 
-        this.height = 100;
+        this.height = this.styles.height;
 
         this.setData(data);
     }

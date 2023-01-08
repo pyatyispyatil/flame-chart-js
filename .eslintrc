@@ -3,28 +3,13 @@
     "parserOptions": {
         "project": "./tsconfig.eslint.json"
     },
-    "env": {
-        "browser": true,
-    },
-    "plugins": [
-        "prettier",
-        "@typescript-eslint"
-    ],
-    "extends": [
-        "prettier"
-    ],
+    "plugins": ["prettier", "@typescript-eslint"],
+    "extends": ["prettier"],
     "overrides": [
         {
-            "files": [
-                "src/**/*.ts",
-                "example/src/**/*.js",
-                "example/src/**/*.ts"
-            ],
+            "files": ["src/**/*.ts", "example/src/**/*.js", "example/src/**/*.ts"],
             "rules": {
-                "quotes": [
-                    "error",
-                    "single"
-                ]
+                "quotes": ["error", "single"]
             }
         }
     ],
@@ -67,20 +52,11 @@
         "no-self-assign": "error",
         "no-self-compare": "error",
         "no-setter-return": "error",
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
+        "object-curly-spacing": ["error", "always"],
+
         // TS rules
         "@typescript-eslint/prefer-optional-chain": "error",
-        "@typescript-eslint/no-unused-vars": [
-            "error",
-            {
-                "argsIgnorePattern": "^_",
-                "varsIgnorePattern": "^_",
-                "caughtErrorsIgnorePattern": "^_"
-            }
-        ],
+        "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unnecessary-type-arguments": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",

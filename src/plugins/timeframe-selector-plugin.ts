@@ -79,16 +79,9 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private dots: Dot[] = [];
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
-    constructor({
-        data,
-        settings,
-        name = 'timeframeSelectorPlugin',
-    }: {
-        data: Data;
-        settings: TimeframeSelectorPluginSettings;
-        name?: string;
-    }) {
-        super(name);
+    constructor({ data, settings }: { data: Data; settings: TimeframeSelectorPluginSettings }) {
+        super('timeframeSelectorPlugin');
+
         this.data = data;
         this.shouldRender = true;
         this.setSettings(settings);
@@ -129,7 +122,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => (this.timeout = void 0), 300) as unknown as number;
+        this.timeout = setTimeout(() => (this.timeout = void 0), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();
@@ -481,3 +474,5 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         return true;
     }
 }
+
+export default TimeframeSelectorPlugin;

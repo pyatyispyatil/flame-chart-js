@@ -150,6 +150,25 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         return false;
     }
 
+    private normalizeValue(value: number, heightPerValueUnit: number) {
+        return this.height - value * heightPerValueUnit;
+    }
+
+    private convertDataPointToPointWithIndex(
+        idx: number,
+        time: number,
+        value: number,
+        heightPerValueUnit: number
+    ): TimeseriesPointWithIndex {
+        return [
+            idx,
+            time,
+            value,
+            this.renderEngine.timeToPosition(time),
+            this.normalizeValue(value, heightPerValueUnit),
+        ];
+    }
+
     override render() {
         if (this.data?.length === 0 || !this.summary) {
             return;
@@ -164,18 +183,6 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         const heightPerValueUnit =
             (this.height - this.styles.padding) / Math.max(this.summary.max - this.summary.min, 1);
 
-        const normalizeValue = (value: number) => {
-            return this.height - value * heightPerValueUnit;
-        };
-
-        const convertDataPointToPointWithIndex = (
-            idx: number,
-            time: number,
-            value: number
-        ): TimeseriesPointWithIndex => {
-            return [idx, time, value, this.renderEngine.timeToPosition(time), normalizeValue(value)];
-        };
-
         const datapoints: TimeseriesPointWithIndex[] = [];
 
         let indexStart = 0;
@@ -186,14 +193,15 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
             }
 
             if (time >= timestampStart && time <= timestampEnd) {
-                datapoints.push(convertDataPointToPointWithIndex(idx, time, value));
+                datapoints.push(this.convertDataPointToPointWithIndex(idx, time, value, heightPerValueUnit));
             }
         });
 
-        let prevTPI: TimeseriesPointWithIndex = convertDataPointToPointWithIndex(
+        let prevTPI: TimeseriesPointWithIndex = this.convertDataPointToPointWithIndex(
             indexStart,
             this.data[indexStart][0],
-            this.data[indexStart][1]
+            this.data[indexStart][1],
+            heightPerValueUnit
         );
 
         this.renderEngine.setCtxColor(this.styles.color);

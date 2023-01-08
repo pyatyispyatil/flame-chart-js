@@ -32,7 +32,8 @@ export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
 
 type TimeseriesPointWithIndex = [idx: number, ts: number, value: number, normalizedTs: number, normalizedValue: number];
 
-enum TimeseriesPointWithIndexX {
+// Indexes of the tuple TimeseriesPointWithIndex
+enum TSI {
     index = 0,
     timestamp = 1,
     value = 2,
@@ -138,9 +139,9 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
 
             this.renderEngine.renderTooltipFromData(
                 [
-                    { text: `Value: ${round(data[TimeseriesPointWithIndexX.value])}` },
+                    { text: `Value: ${round(data[TSI.value])}` },
                     {
-                        text: `Timestamp: ${round(data[TimeseriesPointWithIndexX.timestamp])}ms`,
+                        text: `Timestamp: ${round(data[TSI.timestamp])}ms`,
                     },
                 ],
                 this.interactionsEngine.getGlobalMouse()
@@ -207,26 +208,20 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         this.renderEngine.setCtxColor(this.styles.color);
         this.renderEngine.ctx.beginPath();
         this.renderEngine.ctx.moveTo(positionStart, this.height);
-        this.renderEngine.ctx.lineTo(positionStart, prevTPI[TimeseriesPointWithIndexX.normalizedValue]);
+        this.renderEngine.ctx.lineTo(positionStart, prevTPI[TSI.normalizedValue]);
 
         for (const dp of datapoints) {
-            if (dp[TimeseriesPointWithIndexX.normalizedTs] > prevTPI[TimeseriesPointWithIndexX.normalizedTs]) {
-                this.renderEngine.ctx.lineTo(
-                    dp[TimeseriesPointWithIndexX.normalizedTs],
-                    prevTPI[TimeseriesPointWithIndexX.normalizedValue]
-                );
+            if (dp[TSI.normalizedTs] > prevTPI[TSI.normalizedTs]) {
+                this.renderEngine.ctx.lineTo(dp[TSI.normalizedTs], prevTPI[TSI.normalizedValue]);
 
-                this.renderEngine.ctx.lineTo(
-                    dp[TimeseriesPointWithIndexX.normalizedTs],
-                    dp[TimeseriesPointWithIndexX.normalizedValue]
-                );
+                this.renderEngine.ctx.lineTo(dp[TSI.normalizedTs], dp[TSI.normalizedValue]);
 
                 this.interactionsEngine.addHitRegion(
                     RegionTypes.CLUSTER,
                     prevTPI,
-                    prevTPI[TimeseriesPointWithIndexX.normalizedTs],
+                    prevTPI[TSI.normalizedTs],
                     0,
-                    dp[TimeseriesPointWithIndexX.normalizedTs] - prevTPI[TimeseriesPointWithIndexX.normalizedTs],
+                    dp[TSI.normalizedTs] - prevTPI[TSI.normalizedTs],
                     this.height
                 );
 
@@ -237,17 +232,14 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         this.interactionsEngine.addHitRegion(
             RegionTypes.CLUSTER,
             prevTPI,
-            prevTPI[TimeseriesPointWithIndexX.normalizedTs],
+            prevTPI[TSI.normalizedTs],
             0,
-            prevTPI[TimeseriesPointWithIndexX.normalizedTs] - positionEnd,
+            prevTPI[TSI.normalizedTs] - positionEnd,
             this.height
         );
 
-        this.renderEngine.ctx.lineTo(
-            Math.max(positionStart, prevTPI[TimeseriesPointWithIndexX.normalizedTs]),
-            prevTPI[TimeseriesPointWithIndexX.normalizedValue]
-        );
-        this.renderEngine.ctx.lineTo(positionEnd, prevTPI[TimeseriesPointWithIndexX.normalizedValue]);
+        this.renderEngine.ctx.lineTo(Math.max(positionStart, prevTPI[TSI.normalizedTs]), prevTPI[TSI.normalizedValue]);
+        this.renderEngine.ctx.lineTo(positionEnd, prevTPI[TSI.normalizedValue]);
         this.renderEngine.ctx.lineTo(positionEnd, this.height);
 
         this.renderEngine.ctx.closePath();

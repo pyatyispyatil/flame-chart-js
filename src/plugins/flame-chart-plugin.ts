@@ -311,6 +311,6 @@ export class FlameChartPlugin extends UIPlugin {
         this.renderChartTimeout = setTimeout(() => {
             this.interactionsEngine.clearHitRegions();
             this.actualClusterizedFlatTree.forEach(processCluster(addHitRegion));
-        }, 16) as unknown as number;
+        }, 16);
     }
 }

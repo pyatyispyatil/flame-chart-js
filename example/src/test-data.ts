@@ -1,4 +1,4 @@
-import { Node, WaterfallIntervals } from '../../src/index';
+import { Node, TimeseriesPoint, WaterfallIntervals } from '../../src/index';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -262,3 +262,16 @@ export const marks = [
         color: '#4b7ad7',
     },
 ];
+
+export function generateTimeseriesData(inputs: TreeConfig) {
+    const timeseriesData: TimeseriesPoint[] = [];
+    const period = inputs.end - inputs.start;
+    const kk = period / 100.0;
+
+    for (let idx = inputs.start; idx < inputs.end; idx += kk) {
+        const i = Math.random() * 1000;
+        timeseriesData.push([idx, i]);
+        timeseriesData.push([idx + kk / 2, i]);
+    }
+    return timeseriesData;
+}

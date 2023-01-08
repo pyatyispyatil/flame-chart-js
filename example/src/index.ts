@@ -6,7 +6,7 @@ import { defaultTimeframeSelectorPluginStyles } from '../../src/plugins/timefram
 import { defaultTogglePluginStyles } from '../../src/plugins/toggle-plugin';
 import { defaultWaterfallPluginStyles } from '../../src/plugins/waterfall-plugin';
 
-import { generateRandomTree, marks, waterfallIntervals, waterfallItems } from './test-data';
+import { generateRandomTree, generateTimeseriesData, marks, waterfallIntervals, waterfallItems } from './test-data';
 import { query, initQuery } from './query';
 import {
     initView,
@@ -62,6 +62,7 @@ const flameChart = new FlameChart({
         intervals: waterfallIntervals,
     },
     colors,
+    timeseries: [generateTimeseriesData(inputs), generateTimeseriesData(inputs)],
 });
 
 flameChart.on('select', (node, type) => {

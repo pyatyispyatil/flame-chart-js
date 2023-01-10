@@ -9,8 +9,8 @@
     "module": "dist/index.esm.js",
     "sideEffects": false,
     "scripts": {
-        "build:example": "rollup --config=rollup.example.prod.config.js",
-        "build:npm": "rollup --config=rollup.npm.config.js",
+        "build:example": "rollup --config=rollup.example.prod.config.js --bundleConfigAsCjs",
+        "build:npm": "rollup --config=rollup.npm.config.js --bundleConfigAsCjs",
         "start": "rollup --config=rollup.example.dev.config.js -w -m --bundleConfigAsCjs",
         "test": "jest",
         "snapshot": "jest -u",

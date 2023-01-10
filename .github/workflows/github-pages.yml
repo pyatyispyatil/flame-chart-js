@@ -29,7 +29,8 @@ jobs:
               uses: actions/checkout@v2.4.0
 
             - name: Build Example
-              run: npm ci && npm run build
+            - run: npm ci
+            - run: npm run build:example
 
             - name: GitHub Pages Deploy
               uses: peaceiris/actions-gh-pages@v3.7.3

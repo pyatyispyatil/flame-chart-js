@@ -308,7 +308,7 @@ export class FlameChartPlugin extends UIPlugin {
 
         clearTimeout(this.renderChartTimeout);
 
-        this.renderChartTimeout = setTimeout(() => {
+        this.renderChartTimeout = window.setTimeout(() => {
             this.interactionsEngine.clearHitRegions();
             this.actualClusterizedFlatTree.forEach(processCluster(addHitRegion));
         }, 16);

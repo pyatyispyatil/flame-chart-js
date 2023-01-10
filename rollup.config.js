@@ -1,12 +1,25 @@
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import html from '@rollup/plugin-html';
 import cleaner from 'rollup-plugin-cleaner';
-import { template } from './example/src/template.js';
 import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
+import autoprefixer from 'autoprefixer';
+import postcss from 'rollup-plugin-postcss';
+import replace from '@rollup/plugin-replace';
+import html from '@rollup/plugin-html';
 
-export function generate(compilerOptions) {
+import { template } from './example/src/template.js';
+
+const defaultOptions = { env: 'production' };
+
+export function generate(compilerOptions = {}) {
+    const options = {
+        ...defaultOptions,
+        ...compilerOptions,
+    };
+
+    console.log('Environment:', options.env);
+
     return {
         input: './example/src/index.ts',
         output: {
@@ -17,19 +30,30 @@ export function generate(compilerOptions) {
             sourcemap: 'inline',
         },
         plugins: [
-            typescript({ compilerOptions: { outDir: './example/dist', ...(compilerOptions || {}) } }),
+            typescript({
+                compilerOptions: { outDir: './example/dist' },
+                include: ['./example/src/**/*', './src/**/*'],
+            }),
             resolve({
                 browser: true,
                 preferBuiltins: true,
             }),
-
-            commonjs(),
-            builtins(),
             html({
                 template,
             }),
+            postcss({
+                plugins: [autoprefixer()],
+                sourceMap: true,
+                extract: true,
+                minimize: true,
+            }),
+            commonjs(),
+            builtins(),
             cleaner({
                 targets: ['./example/dist'],
+            }),
+            replace({
+                ENVIRONMENT: JSON.stringify(options.env),
             }),
         ],
     };

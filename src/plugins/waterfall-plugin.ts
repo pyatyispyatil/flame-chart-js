@@ -99,13 +99,12 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     }
 
     handleSelect(region: HitRegion<number> | null) {
-        if (region) {
+        if (this.selectedRegion !== region) {
             this.selectedRegion = region;
-            this.emit('select', this.initialData[region.data], 'waterfall-node');
-            this.renderEngine.render();
-        } else if (this.selectedRegion && !region) {
-            this.selectedRegion = null;
-            this.emit('select', null, 'waterfall-node');
+            this.emit('select', {
+                node: region?.data ? this.initialData[region.data] : null,
+                type: 'waterfall-node',
+            });
             this.renderEngine.render();
         }
     }

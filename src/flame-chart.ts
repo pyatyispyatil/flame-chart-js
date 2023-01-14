@@ -65,14 +65,14 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (marks) {
             marksPlugin = new MarksPlugin({ data: marks });
-            marksPlugin.on('select', (node, type) => this.emit('select', node, type));
+            marksPlugin.on('select', (data) => this.emit('select', data));
 
             activePlugins.push(marksPlugin);
         }
 
         if (waterfall) {
             waterfallPlugin = new WaterfallPlugin({ data: waterfall, settings: { styles: styles?.waterfallPlugin } });
-            waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
+            waterfallPlugin.on('select', (data) => this.emit('select', data));
 
             if (data) {
                 activePlugins.push(new TogglePlugin(waterfallName, { styles: styles?.togglePlugin }));
@@ -87,7 +87,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
                 settings: { styles: styles?.timeframeSelectorPlugin },
             });
             flameChartPlugin = new FlameChartPlugin({ data, colors });
-            flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
+            flameChartPlugin.on('select', (data) => this.emit('select', data));
 
             if (waterfall) {
                 activePlugins.push(new TogglePlugin(flameChartName, { styles: styles?.togglePlugin }));

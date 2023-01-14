@@ -268,7 +268,7 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    render() {
+    render(prepare?: () => void) {
         if (typeof this.lastPartialAnimationFrame === 'number') {
             cancelAnimationFrame(this.lastPartialAnimationFrame);
         }
@@ -278,6 +278,8 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (!this.lastGlobalAnimationFrame) {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
+                prepare?.();
+
                 this.timeGrid.recalc();
 
                 this.children.forEach((_, index) => this.renderPlugin(index));

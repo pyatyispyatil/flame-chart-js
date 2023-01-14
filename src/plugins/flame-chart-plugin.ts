@@ -123,7 +123,7 @@ export class FlameChartPlugin extends UIPlugin {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion?.data, 'flame-chart-node');
+            this.emit('select', { node: this.selectedRegion?.data ?? null, type: 'flame-chart-node' });
         }
     }
 

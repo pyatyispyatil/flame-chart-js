@@ -73,8 +73,7 @@ export class FlameChartContainer<Styles> extends EventEmitter {
     }
 
     resize(width: number, height: number) {
-        this.renderEngine.resize(width, height);
-        this.renderEngine.render();
+        this.renderEngine.render(() => this.renderEngine.resize(width, height));
     }
 
     execOnPlugins(fnName: string, ...args) {

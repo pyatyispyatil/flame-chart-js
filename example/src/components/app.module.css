@@ -1,3 +1,18 @@
+:global(#root) {
+    height: 100vh;
+}
+
+:global(#root *) {
+    box-sizing: border-box;
+}
+
 .root {
     background: #fff;
+    padding: 8px;
+    height: 100%;
+}
+
+:root {
+    --primary-color: #f1f3f4;
+    --secondary-color: #cbcdd1;
 }

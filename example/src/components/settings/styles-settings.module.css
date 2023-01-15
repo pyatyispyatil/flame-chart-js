@@ -11,25 +11,27 @@
     flex-direction: column;
 }
 
+.section {
+    margin-bottom: 8px;
+}
+
 .input {
     display: flex;
     justify-content: space-between;
 }
 
-.fileInput {
-    display: none;
+.sectionsWrapper {
+    max-height: 300px;
+    overflow: auto;
 }
 
-.fileButtons {
-    display: flex;
-    justify-content: space-between;
-}
-
-.fileButton {
-    flex: 1;
-}
-
-.generateButton {
-    width: 100%;
+.sectionHeader {
+    font-weight: 600;
+    font-size: 1.2rem;
     margin-bottom: 8px;
+}
+
+.applyButton {
+    width: 100%;
+    margin-top: 8px;
 }

@@ -21,7 +21,7 @@ export const Input = (props: PropsWithChildren<InputProps>) => {
 
     return (
         <label className={cn(styles.root, props.className)}>
-            {props.label}
+            <span className={styles.label}>{props.label}</span>
             <input type={props.type} value={props.value} onChange={handleChange} placeholder={props.placeholder} />
         </label>
     );

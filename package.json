@@ -14,8 +14,8 @@
         "start": "rollup --config=rollup.example.dev.config.js -w -m --bundleConfigAsCjs",
         "test": "jest",
         "snapshot": "jest -u",
-        "lint:fix": "eslint --fix src/**/*.ts && eslint --fix example/src/**/*.{ts,tsx,js} && eslint --fix *.md",
-        "lint": "eslint src/**/*.ts && eslint example/src/**/*.{ts,tsx,js} && eslint *.md && echo 'no lint problems found!'",
+        "lint:fix": "eslint --fix src/**/*.ts && eslint --fix example/src/**/*.{ts,tsx,js} && eslint --fix *.md && stylelint example/src/**/*.css --fix",
+        "lint": "eslint src/**/*.ts && eslint example/src/**/*.{ts,tsx,js} && eslint *.md && stylelint example/src/**/*.css && echo 'no lint problems found!'",
         "pretty": "prettier --write .",
         "typecheck": "tsc --noEmit",
         "check": "npm run lint && npm run typecheck && npm run test"
@@ -78,6 +78,11 @@
         "rollup-plugin-node-builtins": "^2.1.2",
         "rollup-plugin-postcss": "^4.0.2",
         "rollup-plugin-serve": "^2.0.2",
+        "stylelint": "^14.16.1",
+        "stylelint-config-css-modules": "^4.1.0",
+        "stylelint-config-prettier": "^9.0.4",
+        "stylelint-config-standard": "^29.0.0",
+        "stylelint-prettier": "^2.0.0",
         "typescript": "^4.9.4",
         "typescript-plugin-css-modules": "^4.1.1",
         "use-resize-observer": "^9.1.0"

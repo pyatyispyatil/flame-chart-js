@@ -1,4 +1,15 @@
+.root {
+    display: flex;
+    height: 100%;
+}
+
 .flameChart {
-    height: 500px;
+    flex: 1;
+    margin-left: 8px;
     width: 100%;
+    border: 1px solid var(--secondary-color);
+}
+
+.sidebar {
+    width: 350px;
 }

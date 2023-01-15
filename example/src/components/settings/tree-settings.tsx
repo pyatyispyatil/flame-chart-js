@@ -3,6 +3,7 @@ import { Input } from '../shared/input';
 import { generateRandomTree, TreeConfig, treeConfigDefaults } from '../../test-data';
 import styles from './tree-settings.module.css';
 import { FlameChartNode } from '../../../../src';
+import { Button } from '../shared/button';
 
 const units: Partial<Record<keyof TreeConfig, string>> = {
     thinning: '%',
@@ -12,19 +13,28 @@ export const TreeSettings = (props: { onChange: (data: FlameChartNode[]) => void
     const [values, setValues] = useState<TreeConfig>({
         ...treeConfigDefaults,
     });
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const generateData = useCallback(() => {
-        const newData = generateRandomTree(values);
+        setIsGenerating(true);
 
-        props.onChange(newData);
-    }, [props.onChange]);
+        setTimeout(() => {
+            const newData = generateRandomTree(values);
+
+            props.onChange(newData);
+
+            setTimeout(() => {
+                setIsGenerating(false);
+            });
+        });
+    }, [props.onChange, values]);
 
     useEffect(() => {
         generateData();
     }, [generateData]);
 
     return (
-        <div>
+        <div className={styles.root}>
             <div className={styles.inputsWrapper}>
                 {Object.entries(values).map(([name, value]) => (
                     <Input
@@ -40,15 +50,17 @@ export const TreeSettings = (props: { onChange: (data: FlameChartNode[]) => void
                     />
                 ))}
             </div>
-            <div className={styles.buttonsWrapper}>
+            <div>
                 <div>
-                    <button onClick={generateData}>Generate random tree</button>
+                    <Button onClick={generateData} disabled={isGenerating} className={styles.generateButton}>
+                        Generate random tree
+                    </Button>
                 </div>
-                <div className='fileButtons'>
-                    <button>Export</button>
-                    <button>Import</button>
-                    <input type='file' />
+                <div className={styles.fileButtons}>
+                    <Button className={styles.fileButton}>Export</Button>
+                    <Button className={styles.fileButton}>Import</Button>
                 </div>
+                <input type='file' className={styles.fileInput} />
             </div>
         </div>
     );

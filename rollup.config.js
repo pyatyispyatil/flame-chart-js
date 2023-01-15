@@ -32,7 +32,7 @@ export function generate(compilerOptions = {}) {
         plugins: [
             typescript({
                 compilerOptions: { outDir: './example/dist' },
-                include: ['./example/src/**/*', './src/**/*'],
+                include: ['./example/src/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
             }),
             resolve({
                 browser: true,

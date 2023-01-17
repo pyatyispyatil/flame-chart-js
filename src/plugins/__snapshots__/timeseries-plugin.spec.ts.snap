@@ -11,6 +11,14 @@ exports[`TimeseriesPlugin before start and after end 1`] = `
     105,
   ],
   [
+    0,
+    105,
+  ],
+  [
+    0,
+    105,
+  ],
+  [
     1,
     105,
   ],
@@ -183,18 +191,6 @@ exports[`TimeseriesPlugin start after end 1`] = `
   [
     11,
     105,
-  ],
-  [
-    11,
-    5,
-  ],
-  [
-    11,
-    5,
-  ],
-  [
-    23,
-    5,
   ],
   [
     23,

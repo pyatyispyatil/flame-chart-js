@@ -16,30 +16,38 @@ export type TimeseriesPluginStyles = {
     height?: number;
     padding?: number;
     color?: string;
+    lineStyle?: 'step' | 'interpolate';
 };
 
 type TimeseriesPluginStylesNoOptional = {
     height: number;
     padding: number;
     color: string;
+    lineStyle: 'step' | 'interpolate';
 };
 
 export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
     height: 68,
     padding: 5,
+    lineStyle: 'interpolate',
     color: 'red',
 };
 
-type TimeseriesPointWithIndex = [idx: number, ts: number, value: number, normalizedTs: number, normalizedValue: number];
-
-// Indexes of the tuple TimeseriesPointWithIndex
-enum TSI {
-    index = 0,
-    timestamp = 1,
-    value = 2,
-    normalizedTs = 3,
-    normalizedValue = 4,
+interface TimeseriesPointWithExtra {
+    idx: number;
+    timestamp: number;
+    value: number;
+    position: number;
+    normalizedValue: number;
 }
+
+const EmptyTimeseriesPoint: TimeseriesPointWithExtra = {
+    idx: -1,
+    normalizedValue: -1,
+    position: -1,
+    timestamp: -1,
+    value: -1,
+};
 
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional> {
     height: number;
@@ -135,13 +143,13 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
     override renderTooltip() {
         if (this.hoveredRegion) {
             const round = (value: number) => Math.round(value * 100) / 100;
-            const data = this.hoveredRegion.data as TimeseriesPointWithIndex;
+            const data = this.hoveredRegion.data as TimeseriesPointWithExtra;
 
             this.renderEngine.renderTooltipFromData(
                 [
-                    { text: `Value: ${round(data[TSI.value])}` },
+                    { text: `Value: ${round(data.value)}` },
                     {
-                        text: `Timestamp: ${round(data[TSI.timestamp])}ms`,
+                        text: `Timestamp: ${round(data.timestamp)}ms`,
                     },
                 ],
                 this.interactionsEngine.getGlobalMouse()
@@ -157,17 +165,17 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
 
     private convertDataPointToPointWithIndex(
         idx: number,
-        time: number,
+        timestamp: number,
         value: number,
         heightPerValueUnit: number
-    ): TimeseriesPointWithIndex {
-        return [
+    ): TimeseriesPointWithExtra {
+        return {
             idx,
-            time,
+            timestamp,
             value,
-            this.renderEngine.timeToPosition(time),
-            this.normalizeValue(value, heightPerValueUnit),
-        ];
+            position: this.renderEngine.timeToPosition(timestamp),
+            normalizedValue: this.normalizeValue(value, heightPerValueUnit),
+        };
     }
 
     override render() {
@@ -184,75 +192,79 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         const heightPerValueUnit =
             (this.height - this.styles.padding) / Math.max(this.summary.max - this.summary.min, 1);
 
-        const datapoints: TimeseriesPointWithIndex[] = [];
-
         let indexStart = 0;
 
-        this.data.forEach(([time, value], idx: number) => {
+        this.renderEngine.setCtxColor(this.styles.color);
+        this.renderEngine.ctx.beginPath();
+        this.renderEngine.ctx.moveTo(positionStart, this.height);
+
+        let foundStart: boolean = false;
+        let prevTPI: TimeseriesPointWithExtra = EmptyTimeseriesPoint;
+        let tpi: TimeseriesPointWithExtra = EmptyTimeseriesPoint;
+
+        let idx = 0;
+        for (const [time, value] of this.data) {
             if (time < timestampStart) {
                 indexStart = idx;
             }
 
             if (time >= timestampStart && time <= timestampEnd) {
-                datapoints.push(this.convertDataPointToPointWithIndex(idx, time, value, heightPerValueUnit));
+                if (!foundStart) {
+                    foundStart = true;
+
+                    prevTPI = this.convertDataPointToPointWithIndex(
+                        indexStart,
+                        this.data[indexStart][0],
+                        this.data[indexStart][1],
+                        heightPerValueUnit
+                    );
+                    this.renderEngine.ctx.lineTo(positionStart, prevTPI.normalizedValue);
+                }
+
+                tpi = this.convertDataPointToPointWithIndex(indexStart, time, value, heightPerValueUnit);
+
+                if (prevTPI.idx > -1) {
+                    if (this.styles.lineStyle === 'step') {
+                        this.renderEngine.ctx.lineTo(tpi.position, prevTPI.normalizedValue);
+                    }
+
+                    this.renderEngine.ctx.lineTo(tpi.position, tpi.normalizedValue);
+
+                    this.interactionsEngine.addHitRegion(
+                        RegionTypes.CLUSTER,
+                        prevTPI,
+                        prevTPI.position,
+                        0,
+                        tpi.position - prevTPI.position,
+                        this.height
+                    );
+                }
+
+                prevTPI = tpi;
+            } else if (time > timestampEnd) {
+                break;
             }
-        });
 
-        let prevTPI: TimeseriesPointWithIndex = this.convertDataPointToPointWithIndex(
-            indexStart,
-            this.data[indexStart][0],
-            this.data[indexStart][1],
-            heightPerValueUnit
-        );
-
-        this.renderEngine.setCtxColor(this.styles.color);
-        this.renderEngine.ctx.beginPath();
-        this.renderEngine.ctx.moveTo(positionStart, this.height);
-        this.renderEngine.ctx.lineTo(positionStart, prevTPI[TSI.normalizedValue]);
-
-        for (const dp of datapoints) {
-            if (dp[TSI.normalizedTs] > prevTPI[TSI.normalizedTs]) {
-                this.renderEngine.ctx.lineTo(dp[TSI.normalizedTs], prevTPI[TSI.normalizedValue]);
-
-                this.renderEngine.ctx.lineTo(dp[TSI.normalizedTs], dp[TSI.normalizedValue]);
-
-                this.interactionsEngine.addHitRegion(
-                    RegionTypes.CLUSTER,
-                    prevTPI,
-                    prevTPI[TSI.normalizedTs],
-                    0,
-                    dp[TSI.normalizedTs] - prevTPI[TSI.normalizedTs],
-                    this.height
-                );
-
-                prevTPI = dp;
-            }
+            idx++;
         }
 
-        this.interactionsEngine.addHitRegion(
-            RegionTypes.CLUSTER,
-            prevTPI,
-            prevTPI[TSI.normalizedTs],
-            0,
-            prevTPI[TSI.normalizedTs] - positionEnd,
-            this.height
-        );
+        if (prevTPI.idx > -1) {
+            this.interactionsEngine.addHitRegion(
+                RegionTypes.CLUSTER,
+                prevTPI,
+                prevTPI.position,
+                0,
+                prevTPI.position - positionEnd,
+                this.height
+            );
 
-        this.renderEngine.ctx.lineTo(Math.max(positionStart, prevTPI[TSI.normalizedTs]), prevTPI[TSI.normalizedValue]);
-        this.renderEngine.ctx.lineTo(positionEnd, prevTPI[TSI.normalizedValue]);
+            this.renderEngine.ctx.lineTo(Math.max(positionStart, prevTPI.position), prevTPI.normalizedValue);
+            this.renderEngine.ctx.lineTo(positionEnd, prevTPI.normalizedValue);
+        }
+
         this.renderEngine.ctx.lineTo(positionEnd, this.height);
-
         this.renderEngine.ctx.closePath();
         this.renderEngine.ctx.stroke();
         this.renderEngine.ctx.fill();
-
-        const textHeight = 10;
-        const leftMargin = 5;
-        this.renderEngine.ctx.strokeText(`${Math.round(this.summary?.max ?? 0)}`, leftMargin, textHeight);
-        this.renderEngine.ctx.strokeText(
-            `${Math.round(this.summary?.min ?? 0)}`,
-            leftMargin,
-            this.height - textHeight - 5
-        );
     }
 }

@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es2019" ,
+        "lib": [
+            "es5",
+            "es6",
+            "DOM",
+            "ESNext",
+            "es2020"
+        ] ,
+        "module": "es2020",
+        "moduleResolution": "node",
+        "declaration": true,
+        "outDir": "./dist",
+        "importsNotUsedAsValues": "remove",
+        "declarationDir": "./../dist",
+        "allowSyntheticDefaultImports": true
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["./src/**/*.spec.ts", "dist/**/*"]
+}

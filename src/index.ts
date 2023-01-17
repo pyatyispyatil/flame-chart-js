@@ -7,6 +7,10 @@ export { WaterfallPlugin, WaterfallPluginSettings } from './plugins/waterfall-pl
 export { TogglePlugin, TogglePluginSettings } from './plugins/toggle-plugin';
 export { TimeseriesPlugin, TimeseriesPluginStyles, TimeseriesPoint } from './plugins/timeseries-plugin';
 export { FlameChart, FlameChart as default } from './flame-chart';
+
+
+
+
 export type { FlameChartStyles, FlameChartSettings, FlameChartOptions } from './flame-chart';
 export * from './types';
 

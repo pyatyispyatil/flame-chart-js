@@ -122,7 +122,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => (this.timeout = void 0), 300);
+        this.timeout = window.setTimeout(() => (this.timeout = void 0), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();

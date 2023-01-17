@@ -1,19 +1,46 @@
 {
     "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "./tsconfig.eslint.json"
-    },
-    "plugins": ["prettier", "@typescript-eslint"],
-    "extends": ["prettier"],
+    "plugins": ["prettier", "@typescript-eslint", "react", "markdown"],
+    "extends": ["prettier", "plugin:react/recommended", "plugin:markdown/recommended"],
     "overrides": [
         {
-            "files": ["src/**/*.ts", "example/src/**/*.js", "example/src/**/*.ts"],
+            "files": ["**/*.md"],
+            "processor": "markdown/markdown"
+        },
+        {
+            "files": ["**.md/*.{ts,tsx,js,jsx}"],
             "rules": {
-                "quotes": ["error", "single"]
+                "@typescript-eslint/no-unused-vars": "off",
+                "@typescript-eslint/no-unused-expressions": "off",
+                "@typescript-eslint/no-unnecessary-type-arguments": "off",
+                "@typescript-eslint/no-unnecessary-type-assertion": "off",
+                "@typescript-eslint/no-unnecessary-type-constraint": "off",
+                "@typescript-eslint/no-useless-constructor": "off",
+                "@typescript-eslint/no-useless-empty-export": "off",
+                "@typescript-eslint/no-unnecessary-qualifier": "off",
+                "@typescript-eslint/prefer-includes": "off",
+                "@typescript-eslint/prefer-nullish-coalescing": "off",
+                "@typescript-eslint/prefer-string-starts-ends-with": "off"
             }
+        },
+        {
+            "files": ["*.{ts,tsx,js,jsx}"],
+            "parserOptions": {
+                "project": "./tsconfig.eslint.json",
+                "ecmaFeatures": {
+                    "jsx": true
+                }
+            },
+            "excludedFiles": ["**/*.md/*.{ts,tsx,js,jsx}"]
         }
     ],
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
     "rules": {
+        "quotes": ["error", "single"],
         "prettier/prettier": "error",
         "no-useless-return": "error",
         "no-unreachable": "error",
@@ -56,7 +83,7 @@
 
         // TS rules
         "@typescript-eslint/prefer-optional-chain": "error",
-        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^React" }],
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unnecessary-type-arguments": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",

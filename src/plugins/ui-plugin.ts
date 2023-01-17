@@ -25,7 +25,7 @@ export abstract class UIPlugin<S = {}> extends EventEmitter {
 
     postInit?(): void;
 
-    render?(): void;
+    render?(): boolean | undefined | void;
 
     setSettings?(settings: { styles: S }): void;
 

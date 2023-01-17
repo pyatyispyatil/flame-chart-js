@@ -161,7 +161,7 @@ export const template = ({ bundle }) =>
     </div>
 </div>
 ${Object.keys(bundle)
-    .filter((name) => name && name.endsWith('js'))
+    .filter((name) => name?.endsWith('js'))
     .map((name) => `<script src="${name}"></script>`)
     .join('')}
 </body>

@@ -1,6 +1,6 @@
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
-import { HitRegion, RegionTypes } from '../types';
+import { HitRegion } from '../types';
 import UIPlugin from './ui-plugin';
 
 export type TimeseriesPoint = [number, number];
@@ -33,22 +33,6 @@ export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
     color: 'red',
 };
 
-interface TimeseriesPointWithExtra {
-    idx: number;
-    timestamp: number;
-    value: number;
-    position: number;
-    normalizedValue: number;
-}
-
-const EmptyTimeseriesPoint: TimeseriesPointWithExtra = {
-    idx: -1,
-    normalizedValue: -1,
-    position: -1,
-    timestamp: -1,
-    value: -1,
-};
-
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional> {
     height: number;
     data: TimeseriesPoint[];
@@ -74,9 +58,20 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-        this.interactionsEngine.on('hover', this.handleHover.bind(this));
-
+        this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
+    }
+    handleMouseMove(_, mouse) {
+        // this isn't doing the right thing????
+        this.renderEngine.renderTooltipFromData(
+            [
+                { text: `Value: ${1}` },
+                {
+                    text: `Timestamp: ${1}ms`,
+                },
+            ],
+            mouse
+        );
     }
 
     handlePositionChange(position: { deltaX: number }) {
@@ -136,46 +131,12 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         };
     }
 
-    handleHover(region: HitRegion<number> | null) {
-        this.hoveredRegion = region;
-    }
-
     override renderTooltip() {
-        if (this.hoveredRegion) {
-            const round = (value: number) => Math.round(value * 100) / 100;
-            const data = this.hoveredRegion.data as TimeseriesPointWithExtra;
-
-            this.renderEngine.renderTooltipFromData(
-                [
-                    { text: `Value: ${round(data.value)}` },
-                    {
-                        text: `Timestamp: ${round(data.timestamp)}ms`,
-                    },
-                ],
-                this.interactionsEngine.getGlobalMouse()
-            );
-            return true;
-        }
         return false;
     }
 
     private normalizeValue(value: number, heightPerValueUnit: number) {
         return this.height - value * heightPerValueUnit;
-    }
-
-    private convertDataPointToPointWithIndex(
-        idx: number,
-        timestamp: number,
-        value: number,
-        heightPerValueUnit: number
-    ): TimeseriesPointWithExtra {
-        return {
-            idx,
-            timestamp,
-            value,
-            position: this.renderEngine.timeToPosition(timestamp),
-            normalizedValue: this.normalizeValue(value, heightPerValueUnit),
-        };
     }
 
     override render() {
@@ -199,10 +160,10 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         this.renderEngine.ctx.moveTo(positionStart, this.height);
 
         let foundStart: boolean = false;
-        let prevTPI: TimeseriesPointWithExtra = EmptyTimeseriesPoint;
-        let tpi: TimeseriesPointWithExtra = EmptyTimeseriesPoint;
-
+        let normalizedValue: number = -1;
+        let position: number = -1;
         let idx = 0;
+
         for (const [time, value] of this.data) {
             if (time < timestampStart) {
                 indexStart = idx;
@@ -212,35 +173,22 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
                 if (!foundStart) {
                     foundStart = true;
 
-                    prevTPI = this.convertDataPointToPointWithIndex(
-                        indexStart,
-                        this.data[indexStart][0],
-                        this.data[indexStart][1],
-                        heightPerValueUnit
-                    );
-                    this.renderEngine.ctx.lineTo(positionStart, prevTPI.normalizedValue);
+                    position = this.renderEngine.timeToPosition(time);
+
+                    normalizedValue = this.normalizeValue(this.data[indexStart][1], heightPerValueUnit);
+                    this.renderEngine.ctx.lineTo(positionStart, normalizedValue);
                 }
 
-                tpi = this.convertDataPointToPointWithIndex(indexStart, time, value, heightPerValueUnit);
+                if (position > -1) {
+                    position = this.renderEngine.timeToPosition(time);
 
-                if (prevTPI.idx > -1) {
                     if (this.styles.lineStyle === 'step') {
-                        this.renderEngine.ctx.lineTo(tpi.position, prevTPI.normalizedValue);
+                        this.renderEngine.ctx.lineTo(position, normalizedValue);
                     }
+                    normalizedValue = this.normalizeValue(value, heightPerValueUnit);
 
-                    this.renderEngine.ctx.lineTo(tpi.position, tpi.normalizedValue);
-
-                    this.interactionsEngine.addHitRegion(
-                        RegionTypes.CLUSTER,
-                        prevTPI,
-                        prevTPI.position,
-                        0,
-                        tpi.position - prevTPI.position,
-                        this.height
-                    );
+                    this.renderEngine.ctx.lineTo(position, normalizedValue);
                 }
-
-                prevTPI = tpi;
             } else if (time > timestampEnd) {
                 break;
             }
@@ -248,18 +196,9 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
             idx++;
         }
 
-        if (prevTPI.idx > -1) {
-            this.interactionsEngine.addHitRegion(
-                RegionTypes.CLUSTER,
-                prevTPI,
-                prevTPI.position,
-                0,
-                prevTPI.position - positionEnd,
-                this.height
-            );
-
-            this.renderEngine.ctx.lineTo(Math.max(positionStart, prevTPI.position), prevTPI.normalizedValue);
-            this.renderEngine.ctx.lineTo(positionEnd, prevTPI.normalizedValue);
+        if (position > -1) {
+            this.renderEngine.ctx.lineTo(Math.max(positionStart, position), normalizedValue);
+            this.renderEngine.ctx.lineTo(positionEnd, normalizedValue);
         }
 
         this.renderEngine.ctx.lineTo(positionEnd, this.height);

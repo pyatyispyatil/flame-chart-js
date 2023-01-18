@@ -79,9 +79,16 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private dots: Dot[] = [];
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
-    constructor({ data, settings }: { data: Data; settings: TimeframeSelectorPluginSettings }) {
-        super('timeframeSelectorPlugin');
-
+    constructor({
+        data,
+        settings,
+        name = 'timeframeSelectorPlugin',
+    }: {
+        data: Data;
+        settings: TimeframeSelectorPluginSettings;
+        name?: string;
+    }) {
+        super(name);
         this.data = data;
         this.shouldRender = true;
         this.setSettings(settings);
@@ -474,5 +481,3 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         return true;
     }
 }
-
-export default TimeframeSelectorPlugin;

@@ -44,16 +44,9 @@ export const TreeSettings = (props: TreeSettingsProps) => {
                 ))}
             </div>
             <div>
-                <div>
-                    <Button onClick={applyConfig} disabled={props.isGenerating} className={styles.generateButton}>
-                        Generate random tree
-                    </Button>
-                </div>
-                <div className={styles.fileButtons}>
-                    <Button className={styles.fileButton}>Export</Button>
-                    <Button className={styles.fileButton}>Import</Button>
-                </div>
-                <input type='file' className={styles.fileInput} />
+                <Button onClick={applyConfig} disabled={props.isGenerating} className={styles.generateButton}>
+                    Generate random tree
+                </Button>
             </div>
         </div>
     );

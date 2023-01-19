@@ -5,17 +5,18 @@ import {
     Marks,
     Waterfall,
     FlameChart,
-    FlameChartNode,
     WaterfallItem,
     Mark,
     UIPlugin,
+    FlatTreeNode,
 } from '../../../../src';
 import useResizeObserver from 'use-resize-observer';
 
-type NodeTypes =
-    | { node: FlameChartNode | null; type: 'flame-chart-node' }
+export type NodeTypes =
+    | { node: FlatTreeNode | null; type: 'flame-chart-node' }
     | { node: WaterfallItem | null; type: 'waterfall-node' }
-    | { node: Mark | null; type: 'mark' };
+    | { node: Mark | null; type: 'mark' }
+    | null;
 
 export type FlameChartProps = {
     data?: FlameChartNodes;
@@ -120,6 +121,18 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
             flameChart.current?.setZoom(props.zoom.start, props.zoom.end);
         }
     }, [props.zoom]);
+
+    useEffect(() => {
+        if (props.onSelect) {
+            flameChart.current?.on('select', props.onSelect);
+        }
+
+        return () => {
+            if (props.onSelect) {
+                flameChart.current?.removeListener('select', props.onSelect);
+            }
+        };
+    }, [props.onSelect]);
 
     return (
         <div className={props.className} ref={setBoxRef}>

@@ -9,6 +9,8 @@ import { generateRandomTree, TreeConfig } from '../test-data';
 import { DefaultFlameChart } from './charts/default-flame-chart';
 import { FlameChartNode, FlameChartNodes } from '../../../src';
 import { CustomFlameChart } from './charts/custom-flame-chart';
+import { NodeTypes } from './charts/flame-chart-wrapper';
+import { SelectedData } from './charts/selected-data';
 
 enum ChartType {
     Default = 'default',
@@ -33,6 +35,7 @@ export const App = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [data, setData] = useState<FlameChartNode[] | null>(null);
     const [customData, setCustomData] = useState<FlameChartNodes[] | null>(null);
+    const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
     const generate = useCallback((chart: ChartType, config?: TreeConfig) => {
         setIsGenerating(true);
@@ -77,8 +80,15 @@ export const App = () => {
                 <Collapse title='Styles settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
+                {selectedData?.node && (
+                    <Collapse title='Selected node' isCollapsed={false}>
+                        <SelectedData data={selectedData} />
+                    </Collapse>
+                )}
             </div>
-            {currentChart === 'default' && data && <DefaultFlameChart data={data} stylesSettings={stylesSettings} />}
+            {currentChart === 'default' && data && (
+                <DefaultFlameChart data={data} stylesSettings={stylesSettings} onSelect={setSelectedData} />
+            )}
             {currentChart === 'custom' && customData && (
                 <CustomFlameChart data={customData} stylesSettings={stylesSettings} />
             )}

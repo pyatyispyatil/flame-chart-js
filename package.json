@@ -14,8 +14,8 @@
         "start": "rollup --config=rollup.example.dev.config.js -w -m --bundleConfigAsCjs",
         "test": "jest",
         "snapshot": "jest -u",
-        "lint:fix": "eslint --fix src/**/*.ts && eslint --fix example/src/**/*.{ts,tsx,js} && eslint --fix *.md && stylelint example/src/**/*.css --fix",
-        "lint": "eslint src/**/*.ts && eslint example/src/**/*.{ts,tsx,js} && eslint *.md && stylelint example/src/**/*.css && echo 'no lint problems found!'",
+        "lint:fix": "eslint --fix '**/*.{ts,tsx,js,md}' && stylelint example/src/**/*.css --fix",
+        "lint": "eslint '**/*.{ts,tsx,js,md}' && stylelint example/src/**/*.css && echo 'no lint problems found!'",
         "pretty": "prettier --write .",
         "typecheck": "tsc --noEmit",
         "check": "npm run lint && npm run typecheck && npm run test"

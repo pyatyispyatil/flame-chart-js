@@ -1,6 +1,6 @@
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
-import { HitRegion } from '../types';
+import { RegionTypes } from '../types';
 import UIPlugin from './ui-plugin';
 
 export type TimeseriesPoint = [number, number];
@@ -36,9 +36,6 @@ export const defaultCPUPluginStyles: TimeseriesPluginStylesNoOptional = {
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional> {
     height: number;
     data: TimeseriesPoint[];
-    maxValue: number;
-    hoveredRegion: HitRegion<{}> | null = null;
-    selectedRegion: HitRegion<{}> | null = null;
     summary: TimeseriesPointsSummary | null = null;
     override styles: TimeseriesPluginStylesNoOptional;
 
@@ -58,20 +55,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         super.init(renderEngine, interactionsEngine);
 
         this.interactionsEngine.on('change-position', this.handlePositionChange.bind(this));
-        this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
-    }
-    handleMouseMove(_, mouse) {
-        // this isn't doing the right thing????
-        this.renderEngine.renderTooltipFromData(
-            [
-                { text: `Value: ${1}` },
-                {
-                    text: `Timestamp: ${1}ms`,
-                },
-            ],
-            mouse
-        );
     }
 
     handlePositionChange(position: { deltaX: number }) {
@@ -131,8 +115,27 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         };
     }
 
+    findClosestDataPoint(timestamp: number): TimeseriesPoint {
+        return [timestamp, -1];
+    }
+
     override renderTooltip() {
-        return false;
+        const mouse = this.interactionsEngine.getGlobalMouse();
+        //QUESTION: how do i convert mouse.x to position
+        const timestamp = mouse.x;
+        const tp = this.findClosestDataPoint(timestamp);
+        //TODO - ...
+
+        this.renderEngine.renderTooltipFromData(
+            [
+                { text: `Value:${tp[1]}` },
+                {
+                    text: `Timestamp: ${tp[0]}ms`,
+                },
+            ],
+            this.interactionsEngine.getGlobalMouse()
+        );
+        return true;
     }
 
     private normalizeValue(value: number, heightPerValueUnit: number) {
@@ -145,13 +148,16 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         }
 
         const timestampStart = this.renderEngine.positionX;
-        const timestampEnd = this.renderEngine.positionX + this.renderEngine.getRealView();
+        const width = this.renderEngine.getRealView();
+        const timestampEnd = this.renderEngine.positionX + width;
 
         const positionStart = this.renderEngine.timeToPosition(timestampStart);
         const positionEnd = this.renderEngine.timeToPosition(timestampEnd);
 
         const heightPerValueUnit =
             (this.height - this.styles.padding) / Math.max(this.summary.max - this.summary.min, 1);
+
+        this.interactionsEngine.addHitRegion(RegionTypes.CLUSTER, 'not-used', 0, 0, width, this.height);
 
         let indexStart = 0;
 

@@ -7,5 +7,5 @@ const config = generate({ env: 'development' });
 
 export default {
     ...config,
-    plugins: [...config.plugins, serve({ contentBase: './example/dist' }), livereload({ verbose: true, delay: 5 })],
+    plugins: [...config.plugins, serve({ contentBase: './example/dist' }), livereload({ verbose: true })],
 };

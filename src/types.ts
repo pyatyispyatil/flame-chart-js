@@ -18,7 +18,7 @@ export interface FlameChartNode {
     children?: FlameChartNode[]; // node children (same structure as for node)
 }
 
-export type Data = Array<FlameChartNode>;
+export type FlameChartNodes = FlameChartNode[];
 
 export type WaterfallItems = WaterfallItem[];
 

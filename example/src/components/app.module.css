@@ -1,5 +1,6 @@
 :global(#root) {
     height: 100vh;
+    font-family: sans-serif;
 }
 
 :global(#root *) {
@@ -10,9 +11,14 @@
     background: #fff;
     padding: 8px;
     height: 100%;
+    display: flex;
 }
 
 :root {
     --primary-color: #f1f3f4;
     --secondary-color: #cbcdd1;
+}
+
+.sidebar {
+    width: 350px;
 }

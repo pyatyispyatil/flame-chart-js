@@ -1,0 +1,6 @@
+.radio {
+    display: flex;
+    align-items: baseline;
+    padding: 8px;
+    cursor: pointer;
+}

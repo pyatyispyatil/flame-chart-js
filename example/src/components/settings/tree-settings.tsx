@@ -1,37 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Input } from '../shared/input';
-import { generateRandomTree, TreeConfig, treeConfigDefaults } from '../../test-data';
+import { TreeConfig, treeConfigDefaults } from '../../test-data';
 import styles from './tree-settings.module.css';
-import { FlameChartNode } from '../../../../src';
 import { Button } from '../shared/button';
+
+export type TreeSettingsProps = {
+    onChange: (config: TreeConfig) => void;
+    isGenerating: boolean;
+};
 
 const units: Partial<Record<keyof TreeConfig, string>> = {
     thinning: '%',
 };
 
-export const TreeSettings = (props: { onChange: (data: FlameChartNode[]) => void }) => {
+export const TreeSettings = (props: TreeSettingsProps) => {
     const [values, setValues] = useState<TreeConfig>({
         ...treeConfigDefaults,
     });
-    const [isGenerating, setIsGenerating] = useState(false);
 
-    const generateData = useCallback(() => {
-        setIsGenerating(true);
-
-        setTimeout(() => {
-            const newData = generateRandomTree(values);
-
-            props.onChange(newData);
-
-            setTimeout(() => {
-                setIsGenerating(false);
-            });
-        });
+    const applyConfig = useCallback(() => {
+        props.onChange(values);
     }, [props.onChange, values]);
 
     useEffect(() => {
-        generateData();
-    }, [generateData]);
+        props.onChange(values);
+    }, []);
 
     return (
         <div className={styles.root}>
@@ -52,7 +45,7 @@ export const TreeSettings = (props: { onChange: (data: FlameChartNode[]) => void
             </div>
             <div>
                 <div>
-                    <Button onClick={generateData} disabled={isGenerating} className={styles.generateButton}>
+                    <Button onClick={applyConfig} disabled={props.isGenerating} className={styles.generateButton}>
                         Generate random tree
                     </Button>
                 </div>

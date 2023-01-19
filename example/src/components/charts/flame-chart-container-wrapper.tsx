@@ -1,43 +1,22 @@
 import { useCallback, useEffect, useRef } from 'react';
-import {
-    FlameChartNodes,
-    FlameChartSettings,
-    Marks,
-    Waterfall,
-    FlameChart,
-    FlameChartNode,
-    WaterfallItem,
-    Mark,
-    UIPlugin,
-} from '../../../../src';
+import { UIPlugin, FlameChartContainer, FlameChartContainerSettings } from '../../../../src';
 import useResizeObserver from 'use-resize-observer';
 
-type NodeTypes =
-    | { node: FlameChartNode | null; type: 'flame-chart-node' }
-    | { node: WaterfallItem | null; type: 'waterfall-node' }
-    | { node: Mark | null; type: 'mark' };
-
-export type FlameChartProps = {
-    data?: FlameChartNodes;
-    marks?: Marks;
-    waterfall?: Waterfall;
-    colors?: Record<string, string>;
-    settings?: FlameChartSettings;
+export type FlameChartContainerProps = {
+    settings?: FlameChartContainerSettings;
     position?: { x: number; y: number };
     zoom?: {
         start: number;
         end: number;
     };
-    plugins?: UIPlugin[];
+    plugins: UIPlugin[];
     className?: string;
-
-    onSelect?: (data: NodeTypes) => void;
 };
 
-export const FlameChartWrapper = (props: FlameChartProps) => {
+export const FlameChartContainerWrapper = (props: FlameChartContainerProps) => {
     const boxRef = useRef<null | HTMLDivElement>(null);
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
-    const flameChart = useRef<null | FlameChart>(null);
+    const flameChart = useRef<null | FlameChartContainer>(null);
 
     useResizeObserver({
         ref: boxRef,
@@ -45,7 +24,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     });
 
     const initialize = useCallback(() => {
-        const { data, marks, waterfall, settings, colors, plugins } = props;
+        const { settings, plugins } = props;
 
         if (canvasRef.current && boxRef.current) {
             const { width = 0, height = 0 } = boxRef.current.getBoundingClientRect();
@@ -53,13 +32,9 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
             canvasRef.current.width = width;
             canvasRef.current.height = height - 3;
 
-            flameChart.current = new FlameChart({
+            flameChart.current = new FlameChartContainer({
                 canvas: canvasRef.current,
-                data,
-                marks,
-                waterfall,
                 settings,
-                colors,
                 plugins,
             });
         }
@@ -86,34 +61,10 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     }, []);
 
     useEffect(() => {
-        if (props.data) {
-            flameChart.current?.setData(props.data);
-        }
-    }, [props.data]);
-
-    useEffect(() => {
-        if (props.marks) {
-            flameChart.current?.setMarks(props.marks);
-        }
-    }, [props.marks]);
-
-    useEffect(() => {
-        if (props.waterfall) {
-            flameChart.current?.setWaterfall(props.waterfall);
-        }
-    }, [props.waterfall]);
-
-    useEffect(() => {
         if (props.settings) {
             flameChart.current?.setSettings(props.settings);
         }
     }, [props.settings]);
-
-    useEffect(() => {
-        if (props.position) {
-            flameChart.current?.setFlameChartPosition(props.position);
-        }
-    }, [props.position]);
 
     useEffect(() => {
         if (props.zoom) {

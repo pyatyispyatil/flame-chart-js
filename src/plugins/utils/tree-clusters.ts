@@ -2,7 +2,7 @@ import {
     ClusterizedFlatTree,
     MetaClusterizedFlatTree,
     ClusterizedFlatTreeNode,
-    Data,
+    FlameChartNodes,
     FlatTree,
     FlatTreeNode,
     FlameChartNode,
@@ -13,7 +13,7 @@ const STICK_DISTANCE = 0.25;
 const MIN_CLUSTER_SIZE = MIN_BLOCK_SIZE * 2 + STICK_DISTANCE;
 
 export const walk = (
-    treeList: Data,
+    treeList: FlameChartNodes,
     cb: (child: FlameChartNode, parent: any, level: number) => FlatTreeNode,
     parent: FlatTreeNode | FlameChartNode | null = null,
     level = 0
@@ -27,7 +27,7 @@ export const walk = (
     });
 };
 
-export const flatTree = (treeList: Data): FlatTree => {
+export const flatTree = (treeList: FlameChartNodes): FlatTree => {
     const result: FlatTree = [];
     let index = 0;
 

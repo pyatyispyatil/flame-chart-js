@@ -24,7 +24,6 @@ export const StylesSettings = (props: { onChange: (styles: FlameChartContainerSt
     const [values, setValues] = useState({});
 
     const handleApply = useCallback(() => {
-        console.log(values);
         props.onChange(values);
     }, [props.onChange, values]);
 

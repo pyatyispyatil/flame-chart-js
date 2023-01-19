@@ -43,13 +43,13 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     resizeStartHeight = 0;
     resizeStartPosition = 0;
 
-    constructor(title: string, settings: TogglePluginSettings) {
+    constructor(title: string, settings?: TogglePluginSettings) {
         super('togglePlugin');
         this.setSettings(settings);
         this.title = title;
     }
 
-    override setSettings({ styles }: TogglePluginSettings) {
+    override setSettings({ styles }: TogglePluginSettings = {}) {
         this.styles = mergeObjects(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;

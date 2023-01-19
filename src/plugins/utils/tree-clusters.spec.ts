@@ -1,8 +1,8 @@
 import { describe, it, expect } from '@jest/globals';
 import { clusterizeFlatTree, flatTree, metaClusterizeFlatTree, reclusterizeClusteredFlatTree } from './tree-clusters';
-import { Data } from '../../types';
+import { FlameChartNodes } from '../../types';
 
-const data: Data = [
+const data: FlameChartNodes = [
     {
         children: [
             {

@@ -1,0 +1,27 @@
+.header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid var(--secondary-color);
+    font-weight: 600;
+}
+
+.collapseIcon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.collapseIconExpand {
+    transform: rotate(180deg);
+}
+
+.content {
+    height: fit-content;
+    transition: height 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+.collapsed {
+    height: 0;
+}

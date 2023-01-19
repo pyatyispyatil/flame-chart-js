@@ -11,7 +11,7 @@ import {
     ClusterizedFlatTree,
     ClusterizedFlatTreeNode,
     Colors,
-    Data,
+    FlameChartNodes,
     FlatTree,
     FlatTreeNode,
     HitRegion,
@@ -28,7 +28,7 @@ const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 export class FlameChartPlugin extends UIPlugin {
     height = 0;
 
-    data: Data;
+    data: FlameChartNodes;
     userColors: Colors;
     flatTree: FlatTree = [];
     positionY = 0;
@@ -47,8 +47,8 @@ export class FlameChartPlugin extends UIPlugin {
         colors = {},
         name = 'flameChartPlugin',
     }: {
-        data: Data;
-        colors: Colors | undefined;
+        data: FlameChartNodes;
+        colors?: Colors;
         name?: string;
     }) {
         super(name);
@@ -123,7 +123,7 @@ export class FlameChartPlugin extends UIPlugin {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion?.data, 'flame-chart-node');
+            this.emit('select', { node: this.selectedRegion?.data ?? null, type: 'flame-chart-node' });
         }
     }
 
@@ -169,7 +169,7 @@ export class FlameChartPlugin extends UIPlugin {
         return this.colors[type];
     }
 
-    setData(data: Data) {
+    setData(data: FlameChartNodes) {
         this.data = data;
 
         this.parseData();

@@ -10,7 +10,7 @@ import { TimeGrid } from '../engines/time-grid';
 import {
     ClusterizedFlatTree,
     CursorTypes,
-    Data,
+    FlameChartNodes,
     HitRegion,
     MetaClusterizedFlatTree,
     Mouse,
@@ -46,7 +46,7 @@ export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
 
-export const defaultTimeframeSelectorPluginStyles = {
+export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',
@@ -64,7 +64,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
     height = 0;
 
-    private data: Data;
+    private data: FlameChartNodes;
     private shouldRender: boolean;
     private leftKnobMoving = false;
     private rightKnobMoving = false;
@@ -84,7 +84,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         settings,
         name = 'timeframeSelectorPlugin',
     }: {
-        data: Data;
+        data: FlameChartNodes;
         settings: TimeframeSelectorPluginSettings;
         name?: string;
     }) {
@@ -265,7 +265,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.shouldRender = true;
     }
 
-    setData(data: Data) {
+    setData(data: FlameChartNodes) {
         this.data = data;
 
         const dots: Dot[] = [];

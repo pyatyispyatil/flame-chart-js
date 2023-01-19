@@ -39,13 +39,9 @@ export class MarksPlugin extends UIPlugin {
     }
 
     handleSelect(region: MarkHitRegion) {
-        if (region && region.type === 'timestamp') {
+        if (this.selectedRegion !== region) {
             this.selectedRegion = region;
-            this.emit('select', region.data, 'timestamp');
-            this.renderEngine.render();
-        } else if (this.selectedRegion && !region) {
-            this.selectedRegion = null;
-            this.emit('select', null, 'timestamp');
+            this.emit('select', { node: region?.data ?? null, type: 'mark' });
             this.renderEngine.render();
         }
     }

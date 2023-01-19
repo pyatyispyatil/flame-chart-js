@@ -346,6 +346,7 @@ export class BasicRenderEngine extends EventEmitter {
 
             return isHeightChanged;
         }
+
         return false;
     }
 

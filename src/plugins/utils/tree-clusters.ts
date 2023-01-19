@@ -2,10 +2,10 @@ import {
     ClusterizedFlatTree,
     MetaClusterizedFlatTree,
     ClusterizedFlatTreeNode,
-    Data,
+    FlameChartNodes,
     FlatTree,
     FlatTreeNode,
-    Node,
+    FlameChartNode,
 } from '../../types';
 
 const MIN_BLOCK_SIZE = 1;
@@ -13,9 +13,9 @@ const STICK_DISTANCE = 0.25;
 const MIN_CLUSTER_SIZE = MIN_BLOCK_SIZE * 2 + STICK_DISTANCE;
 
 export const walk = (
-    treeList: Data,
-    cb: (child: Node, parent: any, level: number) => FlatTreeNode,
-    parent: FlatTreeNode | Node | null = null,
+    treeList: FlameChartNodes,
+    cb: (child: FlameChartNode, parent: any, level: number) => FlatTreeNode,
+    parent: FlatTreeNode | FlameChartNode | null = null,
     level = 0
 ) => {
     treeList.forEach((child) => {
@@ -27,7 +27,7 @@ export const walk = (
     });
 };
 
-export const flatTree = (treeList: Data): FlatTree => {
+export const flatTree = (treeList: FlameChartNodes): FlatTree => {
     const result: FlatTree = [];
     let index = 0;
 

@@ -81,6 +81,7 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseWheel(e: WheelEvent) {
         const { deltaY, deltaX } = e;
+
         e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
@@ -259,6 +260,7 @@ export class InteractionsEngine extends EventEmitter {
 
     clearCursor() {
         const hoveredRegion = this.getHoveredRegion();
+
         this.currentCursor = null;
 
         if (hoveredRegion?.cursor) {

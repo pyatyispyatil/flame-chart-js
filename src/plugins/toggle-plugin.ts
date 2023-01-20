@@ -59,6 +59,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         super.init(renderEngine, interactionsEngine);
 
         const nextEngine = this.getNextEngine();
+
         nextEngine.setFlexible();
 
         this.interactionsEngine.on('click', (region) => {
@@ -119,11 +120,13 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
 
     getPrevEngine() {
         const prevRenderEngineId = (this.renderEngine.id ?? 0) - 1;
+
         return this.renderEngine.parent.children[prevRenderEngineId];
     }
 
     getNextEngine() {
         const nextRenderEngineId = (this.renderEngine.id ?? 0) + 1;
+
         return this.renderEngine.parent.children[nextRenderEngineId];
     }
 

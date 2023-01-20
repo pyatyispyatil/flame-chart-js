@@ -68,7 +68,9 @@ export class TimeGrid {
         if (strTimelineDelta.includes('e')) {
             return Number(strTimelineDelta.match(/\d+$/)?.[0]);
         }
+
         const zeros = strTimelineDelta.match(/(0\.0*)/);
+
         return zeros ? zeros[0].length - 1 : 0;
     }
 

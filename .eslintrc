@@ -81,6 +81,18 @@
         "no-self-compare": "error",
         "no-setter-return": "error",
         "object-curly-spacing": ["error", "always"],
+        "padding-line-between-statements": [
+            "error",
+            { "blankLine": "always", "prev": "*", "next": "return" },
+            { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*"},
+            { "blankLine": "any",    "prev": ["const", "let", "var"], "next": ["const", "let", "var"]},
+            {
+                "blankLine": "always",
+                "prev": ["block", "block-like", "class", "directive", "export", "import", "multiline-block-like"],
+                "next": "*"
+            },
+            { "blankLine": "any", "prev": ["export", "import"], "next": ["export", "import"]}
+        ],
 
         // imports rules
         "no-unused-vars": "off",

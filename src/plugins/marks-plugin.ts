@@ -73,8 +73,10 @@ export class MarksPlugin extends UIPlugin {
             if (prevEnding > position) {
                 return prevEnding;
             }
+
             return position;
         }
+
         return position;
     }
 
@@ -140,8 +142,10 @@ export class MarksPlugin extends UIPlugin {
                     this.interactionsEngine.getGlobalMouse()
                 );
             }
+
             return true;
         }
+
         return false;
     }
 }

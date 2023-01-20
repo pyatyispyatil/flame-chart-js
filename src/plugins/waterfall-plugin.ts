@@ -12,6 +12,7 @@ function getValueByChoice<T extends Omit<WaterfallInterval, 'start' | 'end'> & {
     if (array.length) {
         return array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]);
     }
+
     return 0;
 }
 
@@ -196,6 +197,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
             } else {
                 const { data: index } = this.hoveredRegion;
                 const dataItem = this.data.find(({ index: i }) => index === i);
+
                 if (dataItem) {
                     const { name, intervals, timing, meta = [] } = dataItem;
                     const timeUnits = this.renderEngine.getTimeUnits();
@@ -236,8 +238,10 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     );
                 }
             }
+
             return true;
         }
+
         return false;
     }
 

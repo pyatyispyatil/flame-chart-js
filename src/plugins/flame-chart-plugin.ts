@@ -148,6 +148,7 @@ export class FlameChartPlugin extends UIPlugin {
                 };
             }
         }
+
         return null;
     }
 
@@ -163,6 +164,7 @@ export class FlameChartPlugin extends UIPlugin {
 
             return this.colors[type];
         }
+
         this.lastRandomColor = this.lastRandomColor.rotate(27);
         this.colors[type] = this.lastRandomColor.rgb().toString();
 
@@ -253,11 +255,13 @@ export class FlameChartPlugin extends UIPlugin {
 
             return true;
         }
+
         return false;
     }
 
     override render() {
         const { width, blockHeight, height, minTextWidth } = this.renderEngine;
+
         this.lastUsedColor = null;
 
         this.reclusterizeClusteredFlatTree();

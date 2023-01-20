@@ -124,6 +124,7 @@ export class RenderEngine extends BasicRenderEngine {
             } else if (!plugin.height) {
                 return 'flexibleGrowing';
             }
+
             return 'static';
         });
 
@@ -140,6 +141,7 @@ export class RenderEngine extends BasicRenderEngine {
             } else if (type === 'static') {
                 return acc - (this.plugins[index]?.height ?? 0);
             }
+
             return acc;
         }, this.height);
 
@@ -203,6 +205,7 @@ export class RenderEngine extends BasicRenderEngine {
 
     override setPositionX(x: number) {
         const res = super.setPositionX(x);
+
         this.children.forEach((engine) => engine.setPositionX(x));
 
         return res;
@@ -252,6 +255,7 @@ export class RenderEngine extends BasicRenderEngine {
             }
         });
         let tooltipRendered = false;
+
         this.plugins.forEach((plugin) => {
             if (plugin.postRender) {
                 plugin.postRender();

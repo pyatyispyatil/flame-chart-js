@@ -336,14 +336,17 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             if (a.pos !== b.pos) {
                 return a.pos - b.pos;
             }
+
             if (a.index === b.index) {
                 return a.sort - b.sort;
             }
+
             if (a.type === 'start' && b.type === 'start') {
                 return a.level - b.level;
             } else if (a.type === 'end' && b.type === 'end') {
                 return b.level - a.level;
             }
+
             return 0;
         });
 

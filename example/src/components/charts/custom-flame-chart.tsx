@@ -24,15 +24,14 @@ export const CustomFlameChart = ({ data, stylesSettings }: CustomFlameChartProps
                 data: data[1],
             }),
         ];
-    }, []);
+    }, [data]);
 
-    return (
-        <FlameChartContainerWrapper
-            settings={{
-                styles: stylesSettings,
-            }}
-            plugins={plugins}
-            className={styles.flameChart}
-        />
+    const settings = useMemo(
+        () => ({
+            styles: stylesSettings,
+        }),
+        [stylesSettings]
     );
+
+    return <FlameChartContainerWrapper settings={settings} plugins={plugins} className={styles.flameChart} />;
 };

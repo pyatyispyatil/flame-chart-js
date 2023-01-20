@@ -24,10 +24,17 @@ export type WaterfallItems = WaterfallItem[];
 
 export type WaterfallItem = {
     name: string;
-    intervals: WaterfallInterval[] | string;
+    intervals: WaterfallInterval[] | string; // intervals or intervals name
     timing: {
         [key: string]: number;
     };
+    meta?: WaterfallItemMeta[];
+};
+
+export type WaterfallItemMeta = {
+    name: string;
+    value: string;
+    color: string;
 };
 
 export type WaterfallInterval = {

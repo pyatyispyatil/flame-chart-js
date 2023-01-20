@@ -82,10 +82,6 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         }
 
         if (data) {
-            timeframeSelectorPlugin = new TimeframeSelectorPlugin({
-                data,
-                settings: { styles: styles?.timeframeSelectorPlugin },
-            });
             flameChartPlugin = new FlameChartPlugin({ data, colors });
             flameChartPlugin.on('select', (data) => this.emit('select', data));
 
@@ -94,6 +90,15 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             }
 
             activePlugins.push(flameChartPlugin);
+        }
+
+        if (data || waterfall) {
+            timeframeSelectorPlugin = new TimeframeSelectorPlugin({
+                flameChartNodes: data,
+                waterfall: waterfall,
+                settings: { styles: styles?.timeframeSelectorPlugin },
+            });
+
             activePlugins.unshift(timeframeSelectorPlugin);
         }
 
@@ -110,7 +115,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
                 }
 
                 if (timeframeSelectorPlugin) {
-                    timeframeSelectorPlugin.setData(data);
+                    timeframeSelectorPlugin.setFlameChartNodes(data);
                 }
             };
 
@@ -139,6 +144,10 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             this.setWaterfall = (data) => {
                 if (waterfallPlugin) {
                     waterfallPlugin.setData(data);
+                }
+
+                if (timeframeSelectorPlugin) {
+                    timeframeSelectorPlugin.setWaterfall(data);
                 }
             };
         }

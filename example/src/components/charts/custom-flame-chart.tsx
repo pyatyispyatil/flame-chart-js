@@ -5,26 +5,26 @@ import { FlameChartContainerWrapper } from './flame-chart-container-wrapper';
 import { useMemo } from 'react';
 
 export type CustomFlameChartProps = {
-    data: FlameChartNodes[];
+    flameChartData: FlameChartNodes[];
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
 };
 
-export const CustomFlameChart = ({ data, stylesSettings }: CustomFlameChartProps) => {
+export const CustomFlameChart = ({ flameChartData, stylesSettings }: CustomFlameChartProps) => {
     const plugins = useMemo(() => {
         return [
             new TimeGridPlugin(),
             new TogglePlugin('FlameChart 1'),
             new FlameChartPlugin({
                 name: 'flameChart1',
-                data: data[0],
+                data: flameChartData[0],
             }),
             new TogglePlugin('FlameChart 2'),
             new FlameChartPlugin({
                 name: 'flameChart2',
-                data: data[1],
+                data: flameChartData[1],
             }),
         ];
-    }, [data]);
+    }, [flameChartData]);
 
     const settings = useMemo(
         () => ({

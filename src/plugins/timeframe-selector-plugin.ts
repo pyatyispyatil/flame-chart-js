@@ -21,19 +21,17 @@ import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
 import { parseWaterfall, PreparedWaterfallInterval } from './utils/waterfall-parser';
+import Color from 'color';
 
 type Dot = {
+    time: number;
+    type: 'start' | 'end';
+};
+
+type RenderDot = {
     pos: number;
     level: number;
 };
-
-type FlameChartDot = Dot & {
-    sort: number;
-    index: number;
-    type: string;
-};
-
-type WaterfallDot = Dot;
 
 export type TimeframeSelectorPluginStyles = {
     font: string;
@@ -41,6 +39,10 @@ export type TimeframeSelectorPluginStyles = {
     overlayColor: string;
     graphStrokeColor: string;
     graphFillColor: string;
+    flameChartGraphType: TimeframeGraphTypes;
+    waterfallStrokeOpacity: number;
+    waterfallFillOpacity: number;
+    waterfallGraphType: TimeframeGraphTypes;
     bottomLineColor: string;
     knobColor: string;
     knobStrokeColor: string;
@@ -53,12 +55,18 @@ export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
 
+export type TimeframeGraphTypes = 'square' | 'smooth';
+
 export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',
-    graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
-    graphFillColor: 'rgb(0, 0, 0, 0.25)',
+    graphStrokeColor: 'rgb(0, 0, 0, 0.10)',
+    graphFillColor: 'rgb(0, 0, 0, 0.15)',
+    flameChartGraphType: 'smooth',
+    waterfallStrokeOpacity: 0.4,
+    waterfallFillOpacity: 0.35,
+    waterfallGraphType: 'smooth',
     bottomLineColor: 'rgb(0, 0, 0, 0.25)',
     knobColor: 'rgb(131, 131, 131)',
     knobStrokeColor: 'white',
@@ -84,8 +92,8 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private actualClusters: ClusterizedFlatTree = [];
     private clusters: MetaClusterizedFlatTree = [];
     private flameChartMaxLevel = 0;
-    private flameChartDots: FlameChartDot[] = [];
-    private waterfallDots: { color: string; dots: WaterfallDot[] }[] = [];
+    private flameChartDots: RenderDot[] = [];
+    private waterfallDots: { color: string; dots: RenderDot[] }[] = [];
     private waterfallMaxLevel = 0;
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
@@ -283,11 +291,9 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
 
     makeFlameChartDots() {
         if (this.flameChartNodes) {
-            const flameChartDots: FlameChartDot[] = [];
+            const flameChartDots: Dot[] = [];
             const tree = flatTree(this.flameChartNodes);
             const { min, max } = getFlatTreeMinMax(tree);
-
-            let maxLevel = 0;
 
             this.min = min;
             this.max = max;
@@ -310,63 +316,66 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 Infinity
             ).sort((a, b) => a.start - b.start);
 
-            this.actualClusterizedFlatTree.forEach(({ start, end, level }, index) => {
-                if (maxLevel < level + 1) {
-                    maxLevel = level + 1;
-                }
-
+            this.actualClusterizedFlatTree.forEach(({ start, end }) => {
                 flameChartDots.push(
                     {
-                        pos: start,
-                        sort: 0,
-                        level: level,
-                        index,
+                        time: start,
                         type: 'start',
                     },
                     {
-                        pos: start,
-                        sort: 1,
-                        level: level + 1,
-                        index,
-                        type: 'start',
-                    },
-                    {
-                        pos: end,
-                        sort: 2,
-                        level: level + 1,
-                        index,
-                        type: 'end',
-                    },
-                    {
-                        pos: end,
-                        sort: 3,
-                        level: level,
-                        index,
+                        time: end,
                         type: 'end',
                     }
                 );
             });
 
-            this.flameChartDots = flameChartDots.sort((a, b) => {
-                if (a.pos !== b.pos) {
-                    return a.pos - b.pos;
-                }
+            flameChartDots.sort((a, b) => a.time - b.time);
 
-                if (a.index === b.index) {
-                    return a.sort - b.sort;
-                }
+            const { dots, maxLevel } = this.makeRenderDots(flameChartDots);
 
-                if (a.type === 'start' && b.type === 'start') {
-                    return a.level - b.level;
-                } else if (a.type === 'end' && b.type === 'end') {
-                    return b.level - a.level;
-                }
-
-                return 0;
-            });
-
+            this.flameChartDots = dots;
             this.flameChartMaxLevel = maxLevel;
         }
+    }
+
+    makeRenderDots(dots: Dot[]): { dots: RenderDot[]; maxLevel: number } {
+        const renderDots: RenderDot[] = [];
+        let level = 0;
+        let maxLevel = 0;
+
+        dots.forEach(({ type, time }) => {
+            if (type === 'start') {
+                renderDots.push({
+                    pos: time,
+                    level: level,
+                });
+            }
+
+            if (type === 'end') {
+                renderDots.push({
+                    pos: time,
+                    level: level,
+                });
+            }
+
+            if (type === 'start') {
+                level++;
+            } else {
+                level--;
+            }
+
+            maxLevel = Math.max(maxLevel, level);
+
+            renderDots.push({
+                pos: time,
+                level,
+            });
+        });
+
+        return {
+            dots: renderDots,
+            maxLevel,
+        };
     }
 
     makeWaterfallDots() {
@@ -403,40 +412,12 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 };
             }, {});
 
-            let maxLevel = 0;
+            let globalMaxLevel = 0;
 
             this.waterfallDots = points.map(({ color, points }) => {
-                const dots: WaterfallDot[] = [];
-                let level = 0;
+                const { dots, maxLevel } = this.makeRenderDots(points);
 
-                points.forEach(({ type, time }) => {
-                    if (type === 'start') {
-                        dots.push({
-                            pos: time,
-                            level: level,
-                        });
-                    }
-
-                    if (type === 'end') {
-                        dots.push({
-                            pos: time,
-                            level: level,
-                        });
-                    }
-
-                    if (type === 'start') {
-                        level++;
-                    } else {
-                        level--;
-                    }
-
-                    maxLevel = Math.max(maxLevel, level);
-
-                    dots.push({
-                        pos: time,
-                        level,
-                    });
-                });
+                globalMaxLevel = Math.max(globalMaxLevel, maxLevel);
 
                 return {
                     color,
@@ -444,7 +425,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 };
             });
 
-            this.waterfallMaxLevel = maxLevel;
+            this.waterfallMaxLevel = globalMaxLevel;
         }
     }
 
@@ -470,7 +451,11 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.offscreenRender();
     }
 
-    renderChart(dots: Dot[], maxLevel: number, options: { strokeColor: string; fillColor: string }) {
+    renderChart(
+        dots: RenderDot[],
+        maxLevel: number,
+        options: { strokeColor: string; fillColor: string; type?: TimeframeGraphTypes }
+    ) {
         const zoom = this.offscreenRenderEngine.getInitialZoom();
 
         this.offscreenRenderEngine.setStrokeColor(options.strokeColor);
@@ -480,19 +465,30 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         const flameChartLevelHeight = (this.height - this.renderEngine.charHeight - 4) / maxLevel;
 
         if (dots.length) {
-            this.offscreenRenderEngine.ctx.moveTo(
-                (dots[0].pos - this.offscreenRenderEngine.min) * zoom,
-                this.castLevelToHeight(dots[0].level, flameChartLevelHeight)
-            );
+            const xy = dots.map(({ pos, level }) => [
+                (pos - this.offscreenRenderEngine.min) * zoom,
+                this.castLevelToHeight(level, flameChartLevelHeight),
+            ]);
 
-            dots.forEach((dot) => {
-                const { pos, level } = dot;
+            this.offscreenRenderEngine.ctx.moveTo(xy[0][0], xy[0][1]);
 
-                this.offscreenRenderEngine.ctx.lineTo(
-                    (pos - this.offscreenRenderEngine.min) * zoom,
-                    this.castLevelToHeight(level, flameChartLevelHeight)
-                );
-            });
+            if (options.type === 'smooth' || !options.type) {
+                for (let i = 1; i < xy.length - 2; i++) {
+                    const xc = (xy[i][0] + xy[i + 1][0]) / 2;
+                    const yc = (xy[i][1] + xy[i + 1][1]) / 2;
+
+                    this.offscreenRenderEngine.ctx.quadraticCurveTo(xy[i][0], xy[i][1], xc, yc);
+                }
+
+                const preLast = xy[xy.length - 2];
+                const last = xy[xy.length - 1];
+
+                this.offscreenRenderEngine.ctx.quadraticCurveTo(preLast[0], preLast[1], last[0], last[1]);
+            } else if (options.type === 'square') {
+                for (let i = 1; i < xy.length; i++) {
+                    this.offscreenRenderEngine.ctx.lineTo(xy[i][0], xy[i][1]);
+                }
+            }
         }
 
         this.offscreenRenderEngine.ctx.closePath();
@@ -515,12 +511,16 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.renderChart(this.flameChartDots, this.flameChartMaxLevel, {
             strokeColor: this.styles.graphStrokeColor,
             fillColor: this.styles.graphFillColor,
+            type: this.styles.flameChartGraphType,
         });
 
         this.waterfallDots.forEach(({ color, dots }) => {
+            const colorObj = new Color(color);
+
             this.renderChart(dots, this.waterfallMaxLevel, {
-                strokeColor: color,
-                fillColor: color,
+                strokeColor: colorObj.alpha(this.styles.waterfallStrokeOpacity).rgb().toString(),
+                fillColor: colorObj.alpha(this.styles.waterfallFillOpacity).rgb().toString(),
+                type: this.styles.waterfallGraphType,
             });
         });
 

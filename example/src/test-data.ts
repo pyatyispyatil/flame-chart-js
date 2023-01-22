@@ -1,4 +1,4 @@
-import { FlameChartNode, WaterfallIntervals } from '../../src';
+import { FlameChartNode, WaterfallIntervals, WaterfallItems } from '../../src';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -15,6 +15,7 @@ const randomString = (length, minLength = 4) => {
 
 const rnd = (max, min = 0) => Math.round(Math.random() * (max - min)) + min;
 const rndFloat = (max, min = 0) => Math.random() * (max - min) + min;
+const rndItem = <T>(arr: T[]): T => arr[rnd(arr.length - 1)];
 
 type Level = {
     children?: Level[];
@@ -96,7 +97,17 @@ export type TreeConfig = {
     colorsCount: number;
 };
 
-export const treeConfigDefaults = {
+export type WaterfallConfig = {
+    count: number;
+    itemsOnLine: number;
+    thinning: number;
+    basesCount: number;
+    baseThinning: number;
+    start: number;
+    end: number;
+};
+
+export const treeConfigDefaults: TreeConfig = {
     count: 100000,
     start: 500,
     end: 5000,
@@ -105,6 +116,43 @@ export const treeConfigDefaults = {
     thinning: 12,
     colorsMonotony: 40,
     colorsCount: 10,
+};
+
+export const waterfallConfigDefaults: WaterfallConfig = {
+    count: 100,
+    thinning: 15,
+    itemsOnLine: 5,
+    basesCount: 4,
+    baseThinning: 40,
+    start: 0,
+    end: 4500,
+};
+
+export const generateRandomTimestamps = (
+    count: number,
+    thinning: number,
+    start: number,
+    end: number
+): { start: number; end: number; duration: number }[] => {
+    const timestamps =
+        count > 1
+            ? Array(count - 1)
+                  .fill(null)
+                  .map(() => rndFloat(start, end))
+                  .concat(start, end)
+                  .sort((a, b) => a - b)
+            : [start, end];
+
+    return Array(count)
+        .fill(null)
+        .map((_, index) => {
+            const currentWindow = timestamps[index + 1] - timestamps[index];
+            const start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
+            const duration = end - start;
+
+            return { start, end, duration };
+        });
 };
 
 export const generateRandomTree = ({
@@ -130,18 +178,9 @@ export const generateRandomTree = ({
         const innerStart = parent?.start ? parent.start : start;
         const innerEnd = typeof parent?.duration === 'number' ? innerStart + parent?.duration : end;
 
-        const timestamps =
-            itemsCount > 1
-                ? Array(itemsCount - 1)
-                      .fill(null)
-                      .map(() => rndFloat(innerStart, innerEnd))
-                      .concat(innerStart, innerEnd)
-                      .sort((a, b) => a - b)
-                : [innerStart, innerEnd];
+        const timestamps = generateRandomTimestamps(itemsCount, thinning, innerStart, innerEnd);
 
         nodes.forEach((item, index) => {
-            const currentWindow = timestamps[index + 1] - timestamps[index];
-
             if (counter > colorsMonotony) {
                 counter = 0;
                 currentType = types[typesCounter];
@@ -152,11 +191,8 @@ export const generateRandomTree = ({
                 }
             }
 
-            const start = timestamps[index] + rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-            const end = timestamps[index + 1] - rndFloat(currentWindow, 0) * (rndFloat(thinning) / 100);
-
-            item.start = start;
-            item.duration = end - start;
+            item.start = timestamps[index].start;
+            item.duration = timestamps[index].duration;
             item.name = randomString(14);
             item.type = currentType;
 
@@ -171,64 +207,43 @@ export const generateRandomTree = ({
     return mappedNestingArrays;
 };
 
-export const waterfallItems = [
-    {
-        name: 'foo',
-        intervals: 'default',
-        timing: {
-            requestStart: 2050,
-            responseStart: 2500,
-            responseEnd: 2600,
-        },
-    },
-    {
-        name: 'bar',
-        intervals: 'default',
-        timing: {
-            requestStart: 2120,
-            responseStart: 2180,
-            responseEnd: 2300,
-        },
-    },
-    {
-        name: 'bar2',
-        intervals: 'default',
-        timing: {
-            requestStart: 2120,
-            responseStart: 2180,
-            responseEnd: 2300,
-        },
-    },
-    {
-        name: 'bar3',
-        intervals: 'default',
-        timing: {
-            requestStart: 2130,
-            responseStart: 2180,
-            responseEnd: 2320,
-        },
-    },
-    {
-        name: 'bar4',
-        intervals: 'default',
-        timing: {
-            requestStart: 2300,
-            responseStart: 2350,
-            responseEnd: 2400,
-        },
-    },
-    {
-        name: 'bar5',
-        intervals: 'default',
-        timing: {
-            requestStart: 2500,
-            responseStart: 2520,
-            responseEnd: 2550,
-        },
-    },
-];
+export const generateRandomWaterfallItems = ({
+    count,
+    itemsOnLine,
+    basesCount,
+    baseThinning,
+    thinning,
+    start,
+    end,
+}: WaterfallConfig): WaterfallItems => {
+    const items: WaterfallItems = [];
+    const types = Object.keys(waterfallIntervals);
+    const bases = generateRandomTimestamps(basesCount, baseThinning, start, end);
+
+    for (let i = 0; i < count; i += itemsOnLine) {
+        const base = bases[Math.floor(rndFloat(basesCount))];
+        const timestamps = generateRandomTimestamps(itemsOnLine, thinning, base.start, base.end);
+
+        items.push(
+            ...timestamps.map(({ start, end }) => ({
+                name: randomString(14),
+                timing: {
+                    requestStart: start,
+                    responseStart: rndFloat(start, end),
+                    responseEnd: end,
+                },
+                intervals: rndItem(types),
+            }))
+        );
+    }
+
+    console.log('[generateRandomWaterfallItems]', items);
+
+    return items;
+};
+
 export const waterfallIntervals: WaterfallIntervals = {
-    default: [
+    js: [
         {
             name: 'waiting',
             color: 'rgb(207,196,152)',
@@ -239,6 +254,22 @@ export const waterfallIntervals: WaterfallIntervals = {
         {
             name: 'downloading',
             color: 'rgb(207,180,81)',
+            type: 'block',
+            start: 'responseStart',
+            end: 'responseEnd',
+        },
+    ],
+    css: [
+        {
+            name: 'waiting',
+            color: 'rgb(144,188,210)',
+            type: 'block',
+            start: 'requestStart',
+            end: 'responseStart',
+        },
+        {
+            name: 'downloading',
+            color: 'rgb(90,169,208)',
             type: 'block',
             start: 'responseStart',
             end: 'responseEnd',

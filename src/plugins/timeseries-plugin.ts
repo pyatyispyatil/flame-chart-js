@@ -115,27 +115,46 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStylesNoOptional>
         };
     }
 
-    findClosestDataPoint(timestamp: number): TimeseriesPoint {
-        return [timestamp, -1];
+    findClosestDataPoint(timeseriesPoints: TimeseriesPoint[], timestamp: number): TimeseriesPoint | null {
+        if (timeseriesPoints.length === 1) {
+            return timeseriesPoints[0];
+        }
+
+        const midIndex = Math.floor(timeseriesPoints.length / 2);
+        const midTp = timeseriesPoints[midIndex];
+
+        if (midTp[0] === timestamp) {
+            return midTp;
+        } else if (midTp[0] > timestamp) {
+            return this.findClosestDataPoint(timeseriesPoints.slice(0, midIndex), timestamp);
+        } else if (midTp[0] < timestamp) {
+            return this.findClosestDataPoint(timeseriesPoints.slice(midIndex), timestamp);
+        }
+
+        return null;
     }
 
     override renderTooltip() {
         const mouse = this.interactionsEngine.getGlobalMouse();
-        //QUESTION: how do i convert mouse.x to position
-        const timestamp = mouse.x;
-        const tp = this.findClosestDataPoint(timestamp);
-        //TODO - ...
+        const timestamp = this.renderEngine.pixelToTime(mouse.x) + this.renderEngine.min;
+        const tp = this.findClosestDataPoint(this.data, timestamp);
 
-        this.renderEngine.renderTooltipFromData(
-            [
-                { text: `Value:${tp[1]}` },
-                {
-                    text: `Timestamp: ${tp[0]}ms`,
-                },
-            ],
-            this.interactionsEngine.getGlobalMouse()
-        );
-        return true;
+        if (tp) {
+            this.renderEngine.renderTooltipFromData(
+                [
+                    { text: `Data-Point - Value:${tp[1].toFixed(2)}` },
+                    {
+                        text: `Data-Point - Timestamp: ${tp[0].toFixed(2)}`,
+                    },
+                    {
+                        text: `Timestamp: ${timestamp.toFixed(2)}`,
+                    },
+                ],
+                this.interactionsEngine.getGlobalMouse()
+            );
+            return true;
+        }
+        return false;
     }
 
     private normalizeValue(value: number, heightPerValueUnit: number) {

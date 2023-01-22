@@ -1,5 +1,136 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`TimeseriesPlugin - Render before start and after end 1`] = `
+[
+  [
+    0,
+    105,
+  ],
+  [
+    0,
+    105,
+  ],
+  [
+    0,
+    105,
+  ],
+  [
+    1,
+    95,
+  ],
+  [
+    2,
+    85,
+  ],
+  [
+    3,
+    75,
+  ],
+  [
+    4,
+    65,
+  ],
+  [
+    5,
+    55,
+  ],
+  [
+    6,
+    45,
+  ],
+  [
+    7,
+    35,
+  ],
+  [
+    8,
+    25,
+  ],
+  [
+    9,
+    15,
+  ],
+  [
+    10,
+    5,
+  ],
+  [
+    10,
+    5,
+  ],
+  [
+    10,
+    5,
+  ],
+  [
+    10,
+    105,
+  ],
+]
+`;
+
+exports[`TimeseriesPlugin - Render in middle after end 1`] = `
+[
+  [
+    5,
+    105,
+  ],
+  [
+    5,
+    65,
+  ],
+  [
+    5,
+    55,
+  ],
+  [
+    6,
+    45,
+  ],
+  [
+    7,
+    35,
+  ],
+  [
+    8,
+    25,
+  ],
+  [
+    9,
+    15,
+  ],
+  [
+    10,
+    5,
+  ],
+  [
+    10,
+    5,
+  ],
+  [
+    15,
+    5,
+  ],
+  [
+    15,
+    105,
+  ],
+]
+`;
+
+exports[`TimeseriesPlugin - Render start after end 1`] = `
+[
+  [
+    11,
+    105,
+  ],
+  [
+    23,
+    105,
+  ],
+]
+`;
+
 exports[`TimeseriesPlugin before start and after end 1`] = `
 [
   [

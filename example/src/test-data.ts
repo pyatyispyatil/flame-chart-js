@@ -259,12 +259,12 @@ export const marks = [
 export function generateTimeseriesData(inputs: TreeConfig) {
     const timeseriesData: TimeseriesPoint[] = [];
     const period = inputs.end - inputs.start;
-    const kk = period / 100.0;
+    const numberOfPoints = 100;
+    const kk = period / numberOfPoints;
 
-    for (let idx = inputs.start; idx < inputs.end; idx += kk) {
-        const i = Math.random() * 1000;
-        timeseriesData.push([idx, i]);
-        timeseriesData.push([idx + kk / 2, i]);
+    for (let timestamp = inputs.start; timestamp < inputs.end; timestamp += kk) {
+        const value = Math.random() * 100;
+        timeseriesData.push([timestamp, value]);
     }
     return timeseriesData;
 }

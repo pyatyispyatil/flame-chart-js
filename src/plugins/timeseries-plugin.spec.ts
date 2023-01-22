@@ -49,24 +49,37 @@ function createTimeseriesPlugin(start: number, end: number) {
     expect(positions[0][1]).toBe(tsp.height);
     expect(positions[positions.length - 1][1]).toBe(tsp.height);
 
-    return positions;
+    return { tsp, positions };
 }
 
-describe('TimeseriesPlugin', () => {
+describe('TimeseriesPlugin - Render', () => {
     it('before start and after end', () => {
-        const positions = createTimeseriesPlugin(0, 10);
+        const { positions } = createTimeseriesPlugin(0, 10);
         expect(positions).toMatchSnapshot();
     });
 
     it('in middle after end', () => {
-        const positions = createTimeseriesPlugin(5, 10);
+        const { positions } = createTimeseriesPlugin(5, 10);
 
         expect(positions).toMatchSnapshot();
     });
 
     it('start after end', () => {
-        const positions = createTimeseriesPlugin(11, 12);
+        const { positions } = createTimeseriesPlugin(11, 12);
 
         expect(positions).toMatchSnapshot();
+    });
+});
+
+describe('TimeseriesPlugin - Tooltip', () => {
+    it('before start and after end', () => {
+        const { tsp } = createTimeseriesPlugin(0, 10);
+        expect(tsp.findClosestDataPoint(tsp.data, -1)).toEqual([0, 0]);
+        expect(tsp.findClosestDataPoint(tsp.data, 0)).toEqual([0, 0]);
+        expect(tsp.findClosestDataPoint(tsp.data, 1)).toEqual([1, 10]);
+
+        expect(tsp.findClosestDataPoint(tsp.data, 5)).toEqual([5, 50]);
+
+        expect(tsp.findClosestDataPoint(tsp.data, 11)).toEqual([10, 100]);
     });
 });

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Node, TimeseriesPoint, WaterfallIntervals } from '../../src';
-=======
 import { FlameChartNode, WaterfallIntervals } from '../../src';
->>>>>>> master
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -129,11 +125,7 @@ export const generateRandomTree = ({
     let typesCounter = 0;
     let currentType = types[typesCounter];
 
-<<<<<<< HEAD
-    const mappedNestingArrays = map(rootNodes, (nodes: Node[], parent?: Node) => {
-=======
     const mappedNestingArrays = map(rootNodes, (nodes: FlameChartNode[], parent?: FlameChartNode) => {
->>>>>>> master
         const itemsCount = nodes.length;
         const innerStart = parent?.start ? parent.start : start;
         const innerEnd = typeof parent?.duration === 'number' ? innerStart + parent?.duration : end;

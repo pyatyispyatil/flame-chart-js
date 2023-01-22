@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Data, FlameChart } from '../../src';
-=======
 import { FlameChart, FlameChartPlugin, Node, MarksPlugin } from '../../src/index';
->>>>>>> master
 import { defaultTimeGridStyles } from '../../src/engines/time-grid';
 import { defaultRenderStyles } from '../../src/engines/basic-render-engine';
 import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
@@ -47,14 +43,7 @@ const colors = {
 };
 
 const inputs = getInputValues(treeConfig);
-<<<<<<< HEAD
-
-const generateData = () => {
-    return generateRandomTree(inputs);
-};
-=======
 const generateData = () => generateRandomTree(inputs);
->>>>>>> master
 
 let currentData: Data = query ? [] : generateData();
 
@@ -76,26 +65,6 @@ const flameChart = new FlameChart({
     timeseries: [generateTimeseriesData(inputs), generateTimeseriesData(inputs)],
 });
 
-<<<<<<< HEAD
-flameChart.on('select', (node, type) => {
-    console.log('select', node, type);
-    setNodeView(
-        node
-            ? `${type}\r\n${JSON.stringify(
-                  {
-                      ...node,
-                      source: {
-                          ...node.source,
-                          children: '...',
-                      },
-                      parent: undefined,
-                  },
-                  null,
-                  '  '
-              )}`
-            : ''
-    );
-=======
 let flameChart: FlameChart | null = null;
 
 const searchParams = queryString.parse(window.location.search);
@@ -153,7 +122,6 @@ switch (constructionMethod) {
 
 flameChart.on('select', (node: Node, type: string) => {
     setNodeView(node ? `${type}\r\n${JSON.stringify(node, null, 2)}` : '');
->>>>>>> master
 });
 
 window.addEventListener('resize', () => {

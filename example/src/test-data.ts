@@ -276,7 +276,9 @@ export function generateTimeseriesData(inputs: TreeConfig) {
 
     for (let timestamp = inputs.start; timestamp < inputs.end; timestamp += kk) {
         const value = Math.random() * 100;
+        
         timeseriesData.push([timestamp, value]);
     }
+
     return timeseriesData;
 }

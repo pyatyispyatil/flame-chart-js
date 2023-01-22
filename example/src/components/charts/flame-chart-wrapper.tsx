@@ -11,6 +11,7 @@ import {
     FlatTreeNode,
 } from '../../../../src';
 import useResizeObserver from 'use-resize-observer';
+import { TimeseriesPoint } from '../../../../src/plugins/timeseries-plugin';
 
 export type NodeTypes =
     | { node: FlatTreeNode | null; type: 'flame-chart-node' }
@@ -31,6 +32,7 @@ export type FlameChartProps = {
     };
     plugins?: UIPlugin[];
     className?: string;
+    timeseries?: TimeseriesPoint[][]
 
     onSelect?: (data: NodeTypes) => void;
 };
@@ -46,7 +48,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     });
 
     const initialize = useCallback(() => {
-        const { data, marks, waterfall, settings, colors, plugins } = props;
+        const { data, marks, waterfall, settings, colors, plugins, timeseries } = props;
 
         if (canvasRef.current && boxRef.current) {
             const { width = 0, height = 0 } = boxRef.current.getBoundingClientRect();
@@ -62,6 +64,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
                 settings,
                 colors,
                 plugins,
+                timeseries
             });
         }
     }, []);

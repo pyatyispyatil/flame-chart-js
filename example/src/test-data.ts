@@ -1,4 +1,5 @@
 import { FlameChartNode, WaterfallIntervals } from '../../src';
+import { TimeseriesPoint } from '../../src/plugins/timeseries-plugin';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 

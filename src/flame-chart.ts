@@ -7,7 +7,6 @@ import { FlameChartPlugin } from './plugins/flame-chart-plugin';
 import { MarksPlugin } from './plugins/marks-plugin';
 import { Colors, FlameChartNodes, Marks, Waterfall } from './types';
 import { UIPlugin } from './plugins/ui-plugin';
-import { TimeseriesPlugin, TimeseriesPoint } from './plugins/timeseries-plugin';
 
 export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>;
@@ -29,7 +28,6 @@ export type FlameChartOptions = {
     marks?: Marks;
     waterfall?: Waterfall;
     colors?: Colors;
-    timeseries?: TimeseriesPoint[][];
     settings?: FlameChartSettings;
     plugins?: UIPlugin[];
 };
@@ -50,7 +48,6 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         colors,
         settings = defaultSettings,
         plugins = [],
-        timeseries=[]
     }: FlameChartOptions) {
         const activePlugins: UIPlugin[] = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
@@ -98,12 +95,6 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
             activePlugins.push(flameChartPlugin);
             activePlugins.unshift(timeframeSelectorPlugin);
-        }
-
-        if (timeseries) {
-            timeseries.forEach((ts, idx) => {
-                plugins.push(new TimeseriesPlugin({name:`Timeseries${idx}`, data:ts, styles: {}}));
-            });
         }
 
         super({

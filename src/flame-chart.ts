@@ -7,7 +7,6 @@ import { FlameChartPlugin } from './plugins/flame-chart-plugin';
 import { MarksPlugin } from './plugins/marks-plugin';
 import { Colors, FlameChartNodes, Marks, Waterfall } from './types';
 import { UIPlugin } from './plugins/ui-plugin';
-import { TimeseriesPlugin, TimeseriesPoint } from './plugins/timeseries-plugin';
 
 export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>;
@@ -29,7 +28,6 @@ export type FlameChartOptions = {
     marks?: Marks;
     waterfall?: Waterfall;
     colors?: Colors;
-    timeseries?: TimeseriesPoint[][];
     settings?: FlameChartSettings;
     plugins?: UIPlugin[];
 };
@@ -42,18 +40,15 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setWaterfall: (data: Waterfall) => void;
     setFlameChartPosition: ({ x, y }: { x?: number; y?: number }) => void;
 
-    constructor(options: FlameChartOptions) {
-        const {
-            canvas,
-            data,
-            marks,
-            waterfall,
-            colors,
-            settings = defaultSettings,
-            plugins = [],
-            timeseries = [],
-        } = options;
-
+    constructor({
+        canvas,
+        data,
+        marks,
+        waterfall,
+        colors,
+        settings = defaultSettings,
+        plugins = [],
+    }: FlameChartOptions) {
         const activePlugins: UIPlugin[] = [];
         const { headers: { waterfall: waterfallName = 'waterfall', flameChart: flameChartName = 'flame chart' } = {} } =
             settings;
@@ -80,9 +75,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             waterfallPlugin.on('select', (data) => this.emit('select', data));
 
             if (data) {
-                activePlugins.push(
-                    new TogglePlugin({ title: waterfallName, settings: { styles: styles?.togglePlugin } })
-                );
+                activePlugins.push(new TogglePlugin(waterfallName, { styles: styles?.togglePlugin }));
             }
 
             activePlugins.push(waterfallPlugin);
@@ -97,19 +90,11 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             flameChartPlugin.on('select', (data) => this.emit('select', data));
 
             if (waterfall) {
-                activePlugins.push(
-                    new TogglePlugin({ title: flameChartName, settings: { styles: styles?.togglePlugin } })
-                );
+                activePlugins.push(new TogglePlugin(flameChartName, { styles: styles?.togglePlugin }));
             }
 
             activePlugins.push(flameChartPlugin);
             activePlugins.unshift(timeframeSelectorPlugin);
-        }
-
-        if (timeseries) {
-            timeseries.forEach((ts, idx) => {
-                plugins.push(new TimeseriesPlugin({ name: `Timeseries${idx}`, data: ts }));
-            });
         }
 
         super({

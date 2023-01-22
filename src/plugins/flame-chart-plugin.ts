@@ -11,7 +11,7 @@ import {
     ClusterizedFlatTree,
     ClusterizedFlatTreeNode,
     Colors,
-    Data,
+    FlameChartNodes,
     FlatTree,
     FlatTreeNode,
     HitRegion,
@@ -26,11 +26,9 @@ type ClusterNode = { data: FlatTreeNode; type: string };
 const DEFAULT_COLOR = Color.hsl(180, 30, 70);
 
 export class FlameChartPlugin extends UIPlugin {
-    name: string;
-
     height = 0;
 
-    data: Data;
+    data: FlameChartNodes;
     userColors: Colors;
     flatTree: FlatTree = [];
     positionY = 0;
@@ -44,10 +42,17 @@ export class FlameChartPlugin extends UIPlugin {
     lastUsedColor: string | null = null;
     renderChartTimeout = -1;
 
-    constructor({ data, colors = {} }: { data: Data; colors: Colors | undefined }, name = 'flameChartPlugin') {
-        super();
+    constructor({
+        data,
+        colors = {},
+        name = 'flameChartPlugin',
+    }: {
+        data: FlameChartNodes;
+        colors?: Colors;
+        name?: string;
+    }) {
+        super(name);
 
-        this.name = name;
         this.data = data;
         this.userColors = colors;
 
@@ -118,7 +123,7 @@ export class FlameChartPlugin extends UIPlugin {
 
             this.renderEngine.render();
 
-            this.emit('select', this.selectedRegion?.data, 'flame-chart-node');
+            this.emit('select', { node: this.selectedRegion?.data ?? null, type: 'flame-chart-node' });
         }
     }
 
@@ -143,6 +148,7 @@ export class FlameChartPlugin extends UIPlugin {
                 };
             }
         }
+
         return null;
     }
 
@@ -158,13 +164,14 @@ export class FlameChartPlugin extends UIPlugin {
 
             return this.colors[type];
         }
+
         this.lastRandomColor = this.lastRandomColor.rotate(27);
         this.colors[type] = this.lastRandomColor.rgb().toString();
 
         return this.colors[type];
     }
 
-    setData(data: Data) {
+    setData(data: FlameChartNodes) {
         this.data = data;
 
         this.parseData();
@@ -248,11 +255,13 @@ export class FlameChartPlugin extends UIPlugin {
 
             return true;
         }
+
         return false;
     }
 
     override render() {
         const { width, blockHeight, height, minTextWidth } = this.renderEngine;
+
         this.lastUsedColor = null;
 
         this.reclusterizeClusteredFlatTree();
@@ -303,10 +312,9 @@ export class FlameChartPlugin extends UIPlugin {
 
         clearTimeout(this.renderChartTimeout);
 
-        this.renderChartTimeout = setTimeout(() => {
+        this.renderChartTimeout = window.setTimeout(() => {
             this.interactionsEngine.clearHitRegions();
             this.actualClusterizedFlatTree.forEach(processCluster(addHitRegion));
         }, 16) as unknown as number;
     }
 }
-export default FlameChartPlugin;

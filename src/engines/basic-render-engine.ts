@@ -9,6 +9,7 @@ const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890
 
 const checkSafari = () => {
     const ua = navigator.userAgent.toLowerCase();
+
     return ua.includes('safari') ? !ua.includes('chrome') : false;
 };
 
@@ -320,6 +321,7 @@ export class BasicRenderEngine extends EventEmitter {
         if (this.max - this.min > 0) {
             return this.width / (this.max - this.min);
         }
+
         return 1;
     }
 
@@ -346,6 +348,7 @@ export class BasicRenderEngine extends EventEmitter {
 
             return isHeightChanged;
         }
+
         return false;
     }
 

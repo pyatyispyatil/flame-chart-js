@@ -1,14 +1,27 @@
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import html from '@rollup/plugin-html';
 import cleaner from 'rollup-plugin-cleaner';
-import { template } from './example/src/template.js';
 import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
+import autoprefixer from 'autoprefixer';
+import postcss from 'rollup-plugin-postcss';
+import replace from '@rollup/plugin-replace';
+import html from '@rollup/plugin-html';
 
-export function generate(compilerOptions) {
+import { template } from './example/src/template.js';
+
+const defaultOptions = { env: 'production' };
+
+export function generate(compilerOptions = {}) {
+    const options = {
+        ...defaultOptions,
+        ...compilerOptions,
+    };
+
+    console.log('Environment:', options.env);
+
     return {
-        input: './example/src/index.ts',
+        input: './example/src/index.tsx',
         output: {
             dir: './example/dist',
             entryFileNames: 'main-[hash].js',
@@ -17,19 +30,32 @@ export function generate(compilerOptions) {
             sourcemap: 'inline',
         },
         plugins: [
-            typescript({ compilerOptions: { outDir: './example/dist', ...(compilerOptions || {}) } }),
+            typescript({
+                compilerOptions: { outDir: './example/dist' },
+                include: ['./example/src/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
+            }),
             resolve({
                 browser: true,
                 preferBuiltins: true,
             }),
-
-            commonjs(),
-            builtins(),
+            postcss({
+                plugins: [autoprefixer()],
+                modules: true,
+                sourceMap: true,
+                extract: true,
+                minimize: true,
+            }),
             html({
                 template,
             }),
+            commonjs(),
+            builtins(),
             cleaner({
                 targets: ['./example/dist'],
+            }),
+            replace({
+                preventAssignment: true,
+                'process.env.NODE_ENV': JSON.stringify(options.env),
             }),
         ],
     };

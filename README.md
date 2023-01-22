@@ -83,25 +83,55 @@ flameChart.on('select', (node, type) => {
 
 ```ts
 // set zoom, which start argument is a left bound and end argument is a right bound
-setZoom = (start: number, end: number) => void;
+type setZoom = (start: number, end: number) => void;
 
 // set only position of the flame-chart
-setFlameChartPosition = ({ x: number, y: number }) => void;
+type setFlameChartPosition = ({ x: number, y: number }) => void;
 
 // render all when animationFrame fired
-render = () => void;
+type render = () => void;
 
 // set new data for the flame-chart
-setData = (data: Data) => void;
+type setData = (data: Data) => void;
 
 // set marks for marks plugin
-setMarks = (data: Marks) => void;
+type setMarks = (data: Marks) => void;
 
 // resize canvas
-resize = (width: number, height: number) => void;
+type resize = (width: number, height: number) => void;
 
 // apply new settings, which includes styles or something else
-setSettings = (settings: Object) => void;
+type setSettings = (settings: Object) => void;
+```
+
+#### Usage with plugins
+
+```ts
+import { FlameChartContainer, TimeGridPlugin, MarksPlugin, FlameChartPlugin } from 'flame-chart-js';
+
+const canvas = document.getElementById('canvas');
+
+canvas.width = 800;
+canvas.height = 400;
+
+const flameChart = new FlameChartContainer({
+    canvas, // mandatory
+    plugins: [
+        new TimeGridPlugin({ styles: timeGridPluginStyles }),
+        new MarksPlugin({ data: marks }),
+        new FlameChartPlugin({ data: flameChartData1, colors: flameChartColors, name: 'flameChart1' }),
+        new FlameChartPlugin({ data: flameChartData2, colors: flameChartColors, name: 'flameChart2' }),
+    ],
+    settings: {
+        options: {
+            tooltip: () => {
+                /*...*/
+            }, // see section "Custom Tooltip" below
+            timeUnits: 'ms',
+        },
+        styles: customStyles, // see section "Styles" below
+    },
+});
 ```
 
 #### Settings
@@ -265,9 +295,30 @@ window.addEventListener('resize', () => {
 });
 ```
 
+#### Plugins
+
+##### You can create your own plugin
+
+```ts
+import { UIPlugin } from 'flame-chart-js';
+
+class MyPlugin extends UIPlugin {
+    constructor({ name = 'myOwnPlugin' }) {
+        super(name);
+    }
+
+    height = 100; // height of the plugin in pixels
+
+    // this method will be called on each render
+    override render() {
+        // do something
+        this.renderEngine.addRectToRenderQueue('red', 10, 10, 20);
+    }
+}
+```
+
 ## Local Development
 
-1. Checkout this repository
-2. npm i
-3. npm start
-4. Open browser "[http://localhost:10001/](http://localhost:10001/)"
+```bash
+npm i && npm start
+```

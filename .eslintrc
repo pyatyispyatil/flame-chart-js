@@ -1,19 +1,68 @@
 {
     "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "./tsconfig.eslint.json"
-    },
-    "plugins": ["prettier", "@typescript-eslint"],
-    "extends": ["prettier"],
+    "plugins": [
+        "prettier",
+        "@typescript-eslint",
+        "react",
+        "markdown",
+        "unused-imports"
+    ],
+    "extends": [
+        "prettier",
+        "plugin:react/recommended",
+        "plugin:markdown/recommended"
+    ],
     "overrides": [
         {
-            "files": ["src/**/*.ts", "example/src/**/*.js", "example/src/**/*.ts"],
+            "files": [
+                "**/*.md"
+            ],
+            "processor": "markdown/markdown"
+        },
+        {
+            "files": [
+                "**.md/*.{ts,tsx,js,jsx}"
+            ],
             "rules": {
-                "quotes": ["error", "single"]
+                "@typescript-eslint/no-unused-expressions": "off",
+                "@typescript-eslint/no-unnecessary-type-arguments": "off",
+                "@typescript-eslint/no-unnecessary-type-assertion": "off",
+                "@typescript-eslint/no-unnecessary-type-constraint": "off",
+                "@typescript-eslint/no-useless-constructor": "off",
+                "@typescript-eslint/no-useless-empty-export": "off",
+                "@typescript-eslint/no-unnecessary-qualifier": "off",
+                "@typescript-eslint/prefer-includes": "off",
+                "@typescript-eslint/prefer-nullish-coalescing": "off",
+                "@typescript-eslint/prefer-string-starts-ends-with": "off",
+                "unused-imports/no-unused-imports": "off",
+                "unused-imports/no-unused-vars": "off"
             }
+        },
+        {
+            "files": [
+                "*.{ts,tsx,js,jsx}"
+            ],
+            "parserOptions": {
+                "project": "./tsconfig.eslint.json",
+                "ecmaFeatures": {
+                    "jsx": true
+                }
+            },
+            "excludedFiles": [
+                "**/*.md/*.{ts,tsx,js,jsx}"
+            ]
         }
     ],
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
     "rules": {
+        "quotes": [
+            "error",
+            "single"
+        ],
         "prettier/prettier": "error",
         "no-useless-return": "error",
         "no-unreachable": "error",
@@ -52,17 +101,70 @@
         "no-self-assign": "error",
         "no-self-compare": "error",
         "no-setter-return": "error",
-        "object-curly-spacing": ["error", "always"],
-        // TS rules
-        "@typescript-eslint/prefer-optional-chain": "error",
-        "@typescript-eslint/no-unused-vars": [
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "padding-line-between-statements": [
             "error",
             {
-                "argsIgnorePattern": "^_",
-                "varsIgnorePattern": "^_",
-                "caughtErrorsIgnorePattern": "^_"
+                "blankLine": "always",
+                "prev": "*",
+                "next": "return"
+            },
+            {
+                "blankLine": "always",
+                "prev": [
+                    "const",
+                    "let",
+                    "var"
+                ],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": [
+                    "const",
+                    "let",
+                    "var"
+                ],
+                "next": [
+                    "const",
+                    "let",
+                    "var"
+                ]
+            },
+            {
+                "blankLine": "always",
+                "prev": [
+                    "block",
+                    "block-like",
+                    "class",
+                    "directive",
+                    "export",
+                    "import",
+                    "multiline-block-like"
+                ],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": [
+                    "export",
+                    "import"
+                ],
+                "next": [
+                    "export",
+                    "import"
+                ]
             }
         ],
+        // imports rules
+        "no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": "warn",
+        // TS rules
+        "@typescript-eslint/prefer-optional-chain": "error",
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unnecessary-type-arguments": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -74,6 +176,13 @@
         "@typescript-eslint/prefer-for-of": "error",
         "@typescript-eslint/prefer-includes": "error",
         "@typescript-eslint/prefer-nullish-coalescing": "error",
-        "@typescript-eslint/prefer-string-starts-ends-with": "error"
+        "@typescript-eslint/prefer-string-starts-ends-with": "error",
+        // React rules
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off",
+        "jsx-quotes": [
+            "error",
+            "prefer-single"
+        ]
     }
 }

@@ -10,7 +10,7 @@ import { TimeGrid } from '../engines/time-grid';
 import {
     ClusterizedFlatTree,
     CursorTypes,
-    Data,
+    FlameChartNodes,
     HitRegion,
     MetaClusterizedFlatTree,
     Mouse,
@@ -46,7 +46,7 @@ export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
 
-export const defaultTimeframeSelectorPluginStyles = {
+export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',
@@ -61,12 +61,10 @@ export const defaultTimeframeSelectorPluginStyles = {
 };
 
 export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginStyles> {
-    name = 'timeframeSelectorPlugin';
-
     override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
     height = 0;
 
-    private data: Data;
+    private data: FlameChartNodes;
     private shouldRender: boolean;
     private leftKnobMoving = false;
     private rightKnobMoving = false;
@@ -81,8 +79,16 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private dots: Dot[] = [];
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
-    constructor(data: Data, settings: TimeframeSelectorPluginSettings) {
-        super();
+    constructor({
+        data,
+        settings,
+        name = 'timeframeSelectorPlugin',
+    }: {
+        data: FlameChartNodes;
+        settings: TimeframeSelectorPluginSettings;
+        name?: string;
+    }) {
+        super(name);
         this.data = data;
         this.shouldRender = true;
         this.setSettings(settings);
@@ -123,7 +129,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         }
 
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => (this.timeout = void 0), 300) as unknown as number;
+        this.timeout = window.setTimeout(() => (this.timeout = void 0), 300);
         this.leftKnobMoving = false;
         this.rightKnobMoving = false;
         this.interactionsEngine.clearCursor();
@@ -259,7 +265,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.shouldRender = true;
     }
 
-    setData(data: Data) {
+    setData(data: FlameChartNodes) {
         this.data = data;
 
         const dots: Dot[] = [];
@@ -330,14 +336,17 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             if (a.pos !== b.pos) {
                 return a.pos - b.pos;
             }
+
             if (a.index === b.index) {
                 return a.sort - b.sort;
             }
+
             if (a.type === 'start' && b.type === 'start') {
                 return a.level - b.level;
             } else if (a.type === 'end' && b.type === 'end') {
                 return b.level - a.level;
             }
+
             return 0;
         });
 
@@ -475,5 +484,3 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         return true;
     }
 }
-
-export default TimeframeSelectorPlugin;

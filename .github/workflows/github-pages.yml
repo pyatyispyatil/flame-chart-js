@@ -1,23 +1,15 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Github Pages
 
-# Controls when the workflow will run
 on:
     push:
-        branches:
-            - '!*'
         tags:
             - 'v*'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-    # This workflow contains a single job called "build"
-    build:
-        # The type of runner that the job will run on
+    github-pages:
+        name: 'Github Pages'
         runs-on: ubuntu-latest
 
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
             - name: Setup NodeJS
               uses: actions/setup-node@v2.4.1
@@ -28,10 +20,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2.4.0
 
-            - name: Build Example
-              run: npm ci && npm run build
+            - run: npm ci
+            - run: npm run build:example
 
-            - name: GitHub Pages Deploy
+            - name: Deploy
               uses: peaceiris/actions-gh-pages@v3.7.3
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}

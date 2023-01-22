@@ -1,0 +1,17 @@
+{
+    "plugins": ["stylelint-prettier"],
+    "extends": [
+        "stylelint-config-standard",
+        "stylelint-config-prettier",
+        "stylelint-config-css-modules"
+    ],
+    "ignoreFiles": [
+        "example/dist/**/*.css"
+    ],
+    "rules": {
+        "prettier/prettier": true,
+        "selector-class-pattern": ["^[a-z][a-zA-Z0-9]+$", {
+            "message": "Selector should be written in lowerCamelCase (selector-class-pattern)"
+        }]
+    }
+}

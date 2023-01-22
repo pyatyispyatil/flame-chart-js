@@ -81,6 +81,7 @@ export class InteractionsEngine extends EventEmitter {
 
     handleMouseWheel(e: WheelEvent) {
         const { deltaY, deltaX } = e;
+
         e.preventDefault();
 
         const realView = this.renderEngine.getRealView();
@@ -180,6 +181,10 @@ export class InteractionsEngine extends EventEmitter {
     checkRegionHover() {
         const hoveredRegion = this.getHoveredRegion();
 
+        if (hoveredRegion && this.hoveredRegion && hoveredRegion.id !== this.hoveredRegion.id) {
+            this.emit('hover', null, this.mouse);
+        }
+
         if (hoveredRegion) {
             if (!this.currentCursor && hoveredRegion.cursor) {
                 this.renderEngine.canvas.style.cursor = hoveredRegion.cursor;
@@ -209,6 +214,7 @@ export class InteractionsEngine extends EventEmitter {
         if (hoveredRegion) {
             return hoveredRegion;
         }
+
         const hoveredInstance = this.instances.find(
             ({ renderEngine }) =>
                 renderEngine.position <= this.mouse.y && renderEngine.height + renderEngine.position >= this.mouse.y
@@ -227,6 +233,7 @@ export class InteractionsEngine extends EventEmitter {
                     this.mouse.y <= y + h + offsetTop
             );
         }
+
         return null;
     }
 
@@ -253,6 +260,7 @@ export class InteractionsEngine extends EventEmitter {
 
     clearCursor() {
         const hoveredRegion = this.getHoveredRegion();
+
         this.currentCursor = null;
 
         if (hoveredRegion?.cursor) {

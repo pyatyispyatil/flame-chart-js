@@ -1,0 +1,37 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    height: fit-content;
+    padding: 8px;
+}
+
+.inputsWrapper {
+    display: inline-block;
+    flex-direction: column;
+}
+
+.section {
+    margin-bottom: 8px;
+}
+
+.input {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sectionsWrapper {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.sectionHeader {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.applyButton {
+    width: 100%;
+    margin-top: 8px;
+}

@@ -9,31 +9,33 @@ export interface Mark {
 
 export type Marks = Array<Mark>;
 
-export interface Node {
+export interface FlameChartNode {
     name: string; // node name
     start: number; // node start time
     duration: number; // node duration
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
-    children?: Array<Node>; // node children (same structure as for node)
+    children?: FlameChartNode[]; // node children (same structure as for node)
 }
 
-export type Data = Array<Node>;
+export type FlameChartNodes = FlameChartNode[];
 
-export type WaterfallItems = Array<{
+export type WaterfallItems = WaterfallItem[];
+
+export type WaterfallItem = {
     name: string;
     intervals: WaterfallInterval[] | string;
     timing: {
         [key: string]: number;
     };
-}>;
+};
 
 export type WaterfallInterval = {
     name: string;
     color: string;
     type: 'block' | 'line';
-    start: string; // timing name
-    end: string; // timing name
+    start: string | number; // timing name or timestamp
+    end: string | number; // timing name or timestamp
 };
 
 export interface WaterfallIntervals {
@@ -83,7 +85,7 @@ export interface Stroke {
 }
 
 export type FlatTreeNode = {
-    source: Node;
+    source: FlameChartNode;
     end: number;
     parent: FlatTreeNode | null;
     level: number;

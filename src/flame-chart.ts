@@ -5,7 +5,7 @@ import { WaterfallPlugin, WaterfallPluginStyles } from './plugins/waterfall-plug
 import { TogglePlugin, TogglePluginStyles } from './plugins/toggle-plugin';
 import { FlameChartPlugin } from './plugins/flame-chart-plugin';
 import { MarksPlugin } from './plugins/marks-plugin';
-import { Colors, Data, Marks, Waterfall } from './types';
+import { Colors, FlameChartNodes, Marks, Waterfall } from './types';
 import { UIPlugin } from './plugins/ui-plugin';
 import { TimeseriesPlugin, TimeseriesPoint } from './plugins/timeseries-plugin';
 
@@ -25,7 +25,7 @@ export type FlameChartSettings = {
 
 export type FlameChartOptions = {
     canvas: HTMLCanvasElement;
-    data?: Data;
+    data?: FlameChartNodes;
     marks?: Marks;
     waterfall?: Waterfall;
     colors?: Colors;
@@ -37,7 +37,7 @@ export type FlameChartOptions = {
 const defaultSettings: FlameChartSettings = {};
 
 export class FlameChart extends FlameChartContainer<FlameChartStyles> {
-    setData: (data: Data) => void;
+    setData: (data: FlameChartNodes) => void;
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
     setFlameChartPosition: ({ x, y }: { x?: number; y?: number }) => void;
@@ -70,14 +70,14 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
         if (marks) {
             marksPlugin = new MarksPlugin({ data: marks });
-            marksPlugin.on('select', (node, type) => this.emit('select', node, type));
+            marksPlugin.on('select', (data) => this.emit('select', data));
 
             activePlugins.push(marksPlugin);
         }
 
         if (waterfall) {
             waterfallPlugin = new WaterfallPlugin({ data: waterfall, settings: { styles: styles?.waterfallPlugin } });
-            waterfallPlugin.on('select', (node, type) => this.emit('select', node, type));
+            waterfallPlugin.on('select', (data) => this.emit('select', data));
 
             if (data) {
                 activePlugins.push(
@@ -94,7 +94,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
                 settings: { styles: styles?.timeframeSelectorPlugin },
             });
             flameChartPlugin = new FlameChartPlugin({ data, colors });
-            flameChartPlugin.on('select', (node, type) => this.emit('select', node, type));
+            flameChartPlugin.on('select', (data) => this.emit('select', data));
 
             if (waterfall) {
                 activePlugins.push(

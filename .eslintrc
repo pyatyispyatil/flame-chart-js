@@ -1,6 +1,6 @@
 {
     "parser": "@typescript-eslint/parser",
-    "plugins": ["prettier", "@typescript-eslint", "react", "markdown"],
+    "plugins": ["prettier", "@typescript-eslint", "react", "markdown", "unused-imports"],
     "extends": ["prettier", "plugin:react/recommended", "plugin:markdown/recommended"],
     "overrides": [
         {
@@ -10,7 +10,6 @@
         {
             "files": ["**.md/*.{ts,tsx,js,jsx}"],
             "rules": {
-                "@typescript-eslint/no-unused-vars": "off",
                 "@typescript-eslint/no-unused-expressions": "off",
                 "@typescript-eslint/no-unnecessary-type-arguments": "off",
                 "@typescript-eslint/no-unnecessary-type-assertion": "off",
@@ -20,7 +19,9 @@
                 "@typescript-eslint/no-unnecessary-qualifier": "off",
                 "@typescript-eslint/prefer-includes": "off",
                 "@typescript-eslint/prefer-nullish-coalescing": "off",
-                "@typescript-eslint/prefer-string-starts-ends-with": "off"
+                "@typescript-eslint/prefer-string-starts-ends-with": "off",
+                "unused-imports/no-unused-imports": "off",
+                "unused-imports/no-unused-vars": "off"
             }
         },
         {
@@ -80,10 +81,47 @@
         "no-self-compare": "error",
         "no-setter-return": "error",
         "object-curly-spacing": ["error", "always"],
+<<<<<<< HEAD
 
         // TS rules
         "@typescript-eslint/prefer-optional-chain": "error",
         "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^React" }],
+=======
+        "padding-line-between-statements": [
+            "error",
+            {
+                "blankLine": "always",
+                "prev": "*",
+                "next": "return"
+            },
+            {
+                "blankLine": "always",
+                "prev": ["const", "let", "var"],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": ["const", "let", "var"],
+                "next": ["const", "let", "var"]
+            },
+            {
+                "blankLine": "always",
+                "prev": ["block", "block-like", "class", "directive", "export", "import", "multiline-block-like"],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": ["export", "import"],
+                "next": ["export", "import"]
+            }
+        ],
+        // imports rules
+        "no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": "warn",
+        // TS rules
+        "@typescript-eslint/prefer-optional-chain": "error",
+>>>>>>> master
         "@typescript-eslint/no-unused-expressions": "error",
         "@typescript-eslint/no-unnecessary-type-arguments": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -95,6 +133,10 @@
         "@typescript-eslint/prefer-for-of": "error",
         "@typescript-eslint/prefer-includes": "error",
         "@typescript-eslint/prefer-nullish-coalescing": "error",
-        "@typescript-eslint/prefer-string-starts-ends-with": "error"
+        "@typescript-eslint/prefer-string-starts-ends-with": "error",
+        // React rules
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off",
+        "jsx-quotes": ["error", "prefer-single"]
     }
 }

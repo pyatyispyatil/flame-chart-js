@@ -1,5 +1,10 @@
 {
     "compilerOptions": {
+        "plugins": [
+            {
+                "name": "typescript-plugin-css-modules"
+            }
+        ],
         /* Visit https://aka.ms/tsconfig.json to read more about this file */
         /* Projects */
         // "incremental": true,                              /* Enable incremental compilation */
@@ -96,5 +101,10 @@
         "skipLibCheck": true /* Skip type checking all .d.ts files. */
     },
     "include": ["./src/**/*", "./example/src/**/*"],
+<<<<<<< HEAD
     "exclude": ["./src/**/*.spec.ts", "dist/**/*.ts"]
+=======
+    "exclude": ["./src/**/*.spec.ts", "dist/**/*.ts"],
+    "typeRoots": ["example/src/styles.d.ts"]
+>>>>>>> master
 }

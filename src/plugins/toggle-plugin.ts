@@ -43,13 +43,17 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
     resizeStartHeight = 0;
     resizeStartPosition = 0;
 
+<<<<<<< HEAD
     constructor({ title, settings }: { title: string; settings: TogglePluginSettings }) {
+=======
+    constructor(title: string, settings?: TogglePluginSettings) {
+>>>>>>> master
         super('togglePlugin');
         this.setSettings(settings);
         this.title = title;
     }
 
-    override setSettings({ styles }: TogglePluginSettings) {
+    override setSettings({ styles }: TogglePluginSettings = {}) {
         this.styles = mergeObjects(defaultTogglePluginStyles, styles);
 
         this.height = this.styles.height + 1;
@@ -59,6 +63,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         super.init(renderEngine, interactionsEngine);
 
         const nextEngine = this.getNextEngine();
+
         nextEngine.setFlexible();
 
         this.interactionsEngine.on('click', (region) => {
@@ -119,11 +124,13 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
 
     getPrevEngine() {
         const prevRenderEngineId = (this.renderEngine.id ?? 0) - 1;
+
         return this.renderEngine.parent.children[prevRenderEngineId];
     }
 
     getNextEngine() {
         const nextRenderEngineId = (this.renderEngine.id ?? 0) + 1;
+
         return this.renderEngine.parent.children[nextRenderEngineId];
     }
 

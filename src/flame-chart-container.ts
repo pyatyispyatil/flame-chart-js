@@ -5,23 +5,23 @@ import { TimeGrid, TimeGridStyles } from './engines/time-grid';
 import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
-export type FlameChartContainerStyles<Styles> = {
+export type FlameChartContainerStyles<Styles = {}> = {
     timeGrid?: Partial<TimeGridStyles>;
     main?: Partial<RenderStyles>;
 } & Styles;
 
-export interface FlameChartContainerSettings<Styles> {
+export interface FlameChartContainerSettings<Styles = {}> {
     options?: Partial<RenderOptions>;
     styles?: FlameChartContainerStyles<Styles>;
 }
 
-export interface FlameChartContainerOptions<Styles> {
+export interface FlameChartContainerOptions<Styles = {}> {
     canvas: HTMLCanvasElement;
-    plugins: any[];
-    settings: FlameChartContainerSettings<Styles>;
+    plugins: UIPlugin[];
+    settings?: FlameChartContainerSettings<Styles>;
 }
 
-export class FlameChartContainer<Styles> extends EventEmitter {
+export class FlameChartContainer<Styles = {}> extends EventEmitter {
     renderEngine: RenderEngine;
     interactionsEngine: InteractionsEngine;
     plugins: UIPlugin[];
@@ -30,14 +30,14 @@ export class FlameChartContainer<Styles> extends EventEmitter {
     constructor({ canvas, plugins, settings }: FlameChartContainerOptions<Styles>) {
         super();
 
-        const styles = settings?.styles ?? ({} as typeof settings.styles);
+        const styles = settings?.styles ?? ({} as FlameChartContainerStyles<Styles>);
 
         this.timeGrid = new TimeGrid({ styles: styles?.timeGrid });
         this.renderEngine = new RenderEngine({
             canvas,
             settings: {
                 styles: styles?.main,
-                options: settings.options,
+                options: settings?.options,
             },
             plugins,
             timeGrid: this.timeGrid,
@@ -73,8 +73,7 @@ export class FlameChartContainer<Styles> extends EventEmitter {
     }
 
     resize(width: number, height: number) {
-        this.renderEngine.resize(width, height);
-        this.renderEngine.render();
+        this.renderEngine.render(() => this.renderEngine.resize(width, height));
     }
 
     execOnPlugins(fnName: string, ...args) {

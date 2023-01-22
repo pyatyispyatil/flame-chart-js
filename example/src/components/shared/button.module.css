@@ -1,0 +1,18 @@
+.root {
+    border: 1px solid var(--secondary-color);
+    background: var(--primary-color);
+    cursor: pointer;
+    height: 24px;
+}
+
+.root:disabled {
+    cursor: not-allowed;
+}
+
+.root:not(:last-child) {
+    margin-right: 4px;
+}
+
+.root:not(:first-child) {
+    margin-left: 4px;
+}

@@ -11,6 +11,7 @@ const moduleName = pkg.name;
 const name = 'flameChartJs';
 const author = pkg.author;
 const inputFileName = './src/index.ts';
+const external = [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})];
 const config = {
     plugins: [
         resolve({
@@ -62,7 +63,7 @@ export default [
                 exports: 'named',
             },
         ],
-        external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})],
+        external,
     },
 
     // CommonJS
@@ -78,6 +79,6 @@ export default [
                 exports: 'named',
             },
         ],
-        external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})],
+        external,
     },
 ];

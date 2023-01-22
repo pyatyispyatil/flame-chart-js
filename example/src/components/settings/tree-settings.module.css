@@ -1,0 +1,35 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    height: fit-content;
+    padding: 8px;
+}
+
+.inputsWrapper {
+    display: inline-block;
+    flex-direction: column;
+}
+
+.input {
+    display: flex;
+    justify-content: space-between;
+}
+
+.fileInput {
+    display: none;
+}
+
+.fileButtons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.fileButton {
+    flex: 1;
+}
+
+.generateButton {
+    width: 100%;
+    margin-bottom: 8px;
+}

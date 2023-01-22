@@ -39,13 +39,9 @@ export class MarksPlugin extends UIPlugin {
     }
 
     handleSelect(region: MarkHitRegion) {
-        if (region && region.type === 'timestamp') {
+        if (this.selectedRegion !== region) {
             this.selectedRegion = region;
-            this.emit('select', region.data, 'timestamp');
-            this.renderEngine.render();
-        } else if (this.selectedRegion && !region) {
-            this.selectedRegion = null;
-            this.emit('select', null, 'timestamp');
+            this.emit('select', { node: region?.data ?? null, type: 'mark' });
             this.renderEngine.render();
         }
     }
@@ -77,8 +73,10 @@ export class MarksPlugin extends UIPlugin {
             if (prevEnding > position) {
                 return prevEnding;
             }
+
             return position;
         }
+
         return position;
     }
 
@@ -144,8 +142,10 @@ export class MarksPlugin extends UIPlugin {
                     this.interactionsEngine.getGlobalMouse()
                 );
             }
+
             return true;
         }
+
         return false;
     }
 }

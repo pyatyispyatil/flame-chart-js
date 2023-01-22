@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Data, FlameChart } from '../../src';
+=======
+import { FlameChart, FlameChartPlugin, Node, MarksPlugin } from '../../src/index';
+>>>>>>> master
 import { defaultTimeGridStyles } from '../../src/engines/time-grid';
 import { defaultRenderStyles } from '../../src/engines/basic-render-engine';
 import { defaultTimeGridPluginStyles } from '../../src/plugins/time-grid-plugin';
@@ -43,10 +47,14 @@ const colors = {
 };
 
 const inputs = getInputValues(treeConfig);
+<<<<<<< HEAD
 
 const generateData = () => {
     return generateRandomTree(inputs);
 };
+=======
+const generateData = () => generateRandomTree(inputs);
+>>>>>>> master
 
 let currentData: Data = query ? [] : generateData();
 
@@ -68,6 +76,7 @@ const flameChart = new FlameChart({
     timeseries: [generateTimeseriesData(inputs), generateTimeseriesData(inputs)],
 });
 
+<<<<<<< HEAD
 flameChart.on('select', (node, type) => {
     console.log('select', node, type);
     setNodeView(
@@ -86,6 +95,65 @@ flameChart.on('select', (node, type) => {
               )}`
             : ''
     );
+=======
+let flameChart: FlameChart | null = null;
+
+const searchParams = queryString.parse(window.location.search);
+const constructionMethod = searchParams.method ?? 'classic';
+
+switch (constructionMethod) {
+    case 'baseline': {
+        const timeseries1 = 'time-series-1';
+        const flame1 = 'flame';
+        const flame2 = 'flame-baseline';
+
+        flameChart = new FlameChart({
+            canvas,
+            colors,
+            plugins: [
+                new TimeframeSelectorPlugin(currentData, { styles: {} }),
+                new TogglePlugin(timeseries1, { styles: {} }),
+                new TimeseriesPlugin(timeseries1, timeseriesData, { color: 'pink' }),
+                new TogglePlugin('waterfall plugin', { styles: {} }),
+                new WaterfallPlugin(
+                    {
+                        items: waterfallItems,
+                        intervals: waterfallIntervals,
+                    },
+                    { styles: {} },
+                    'waterfall plugin'
+                ),
+                new TogglePlugin(MarksPlugin.name, { styles: {} }),
+                new MarksPlugin(marks),
+                new TogglePlugin(flame1, { styles: {} }),
+                new FlameChartPlugin({ data: currentData, colors }, flame1),
+                new TogglePlugin(flame2, { styles: {} }),
+                new FlameChartPlugin({ data: baselineCurrentData, colors }, flame2),
+            ],
+        });
+        break;
+    }
+
+    case 'classic':
+        flameChart = new FlameChart({
+            canvas,
+            data: currentData,
+            marks,
+            waterfall: {
+                items: waterfallItems,
+                intervals: waterfallIntervals,
+            },
+            timeseries: [timeseriesData],
+            colors,
+        });
+        break;
+    default:
+        throw Error('unknown');
+}
+
+flameChart.on('select', (node: Node, type: string) => {
+    setNodeView(node ? `${type}\r\n${JSON.stringify(node, null, 2)}` : '');
+>>>>>>> master
 });
 
 window.addEventListener('resize', () => {

@@ -12,6 +12,7 @@ function getValueByChoice<T extends Omit<WaterfallInterval, 'start' | 'end'> & {
     if (array.length) {
         return array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]);
     }
+
     return 0;
 }
 
@@ -99,13 +100,12 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     }
 
     handleSelect(region: HitRegion<number> | null) {
-        if (region) {
+        if (this.selectedRegion !== region) {
             this.selectedRegion = region;
-            this.emit('select', this.initialData[region.data], 'waterfall-node');
-            this.renderEngine.render();
-        } else if (this.selectedRegion && !region) {
-            this.selectedRegion = null;
-            this.emit('select', null, 'waterfall-node');
+            this.emit('select', {
+                node: region?.data ? this.initialData[region.data] : null,
+                type: 'waterfall-node',
+            });
             this.renderEngine.render();
         }
     }
@@ -197,6 +197,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
             } else {
                 const { data: index } = this.hoveredRegion;
                 const dataItem = this.data.find(({ index: i }) => index === i);
+
                 if (dataItem) {
                     const { name, intervals, timing, meta = [] } = dataItem;
                     const timeUnits = this.renderEngine.getTimeUnits();
@@ -237,8 +238,10 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     );
                 }
             }
+
             return true;
         }
+
         return false;
     }
 

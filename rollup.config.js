@@ -21,7 +21,7 @@ export function generate(compilerOptions = {}) {
     console.log('Environment:', options.env);
 
     return {
-        input: './example/src/index.ts',
+        input: './example/src/index.tsx',
         output: {
             dir: './example/dist',
             entryFileNames: 'main-[hash].js',
@@ -32,20 +32,21 @@ export function generate(compilerOptions = {}) {
         plugins: [
             typescript({
                 compilerOptions: { outDir: './example/dist' },
-                include: ['./example/src/**/*', './src/**/*'],
+                include: ['./example/src/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
             }),
             resolve({
                 browser: true,
                 preferBuiltins: true,
             }),
-            html({
-                template,
-            }),
             postcss({
                 plugins: [autoprefixer()],
+                modules: true,
                 sourceMap: true,
                 extract: true,
                 minimize: true,
+            }),
+            html({
+                template,
             }),
             commonjs(),
             builtins(),
@@ -53,7 +54,8 @@ export function generate(compilerOptions = {}) {
                 targets: ['./example/dist'],
             }),
             replace({
-                ENVIRONMENT: JSON.stringify(options.env),
+                preventAssignment: true,
+                'process.env.NODE_ENV': JSON.stringify(options.env),
             }),
         ],
     };

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Node, TimeseriesPoint, WaterfallIntervals } from '../../src';
+=======
+import { FlameChartNode, WaterfallIntervals } from '../../src';
+>>>>>>> master
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -85,7 +89,7 @@ const map = <T extends { children?: T[] }>(nodes: T[], cb: (nodes: T[], parent?:
     });
 };
 
-type TreeConfig = {
+export type TreeConfig = {
     count: number;
     start: number;
     end: number;
@@ -94,6 +98,17 @@ type TreeConfig = {
     maxChild: number;
     colorsMonotony: number;
     colorsCount: number;
+};
+
+export const treeConfigDefaults = {
+    count: 100000,
+    start: 500,
+    end: 5000,
+    minChild: 1,
+    maxChild: 3,
+    thinning: 12,
+    colorsMonotony: 40,
+    colorsCount: 10,
 };
 
 export const generateRandomTree = ({
@@ -105,8 +120,8 @@ export const generateRandomTree = ({
     thinning,
     colorsMonotony,
     colorsCount,
-}: TreeConfig): Node[] => {
-    const rootNodes = generateRandomNesting(count, minChild, maxChild) as Node[];
+}: TreeConfig): FlameChartNode[] => {
+    const rootNodes = generateRandomNesting(count, minChild, maxChild) as FlameChartNode[];
     const types = Array(colorsCount)
         .fill(null)
         .map(() => randomString(10));
@@ -114,7 +129,11 @@ export const generateRandomTree = ({
     let typesCounter = 0;
     let currentType = types[typesCounter];
 
+<<<<<<< HEAD
     const mappedNestingArrays = map(rootNodes, (nodes: Node[], parent?: Node) => {
+=======
+    const mappedNestingArrays = map(rootNodes, (nodes: FlameChartNode[], parent?: FlameChartNode) => {
+>>>>>>> master
         const itemsCount = nodes.length;
         const innerStart = parent?.start ? parent.start : start;
         const innerEnd = typeof parent?.duration === 'number' ? innerStart + parent?.duration : end;

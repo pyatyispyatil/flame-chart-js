@@ -1,28 +1,14 @@
 {
     "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "prettier",
-        "@typescript-eslint",
-        "react",
-        "markdown",
-        "unused-imports"
-    ],
-    "extends": [
-        "prettier",
-        "plugin:react/recommended",
-        "plugin:markdown/recommended"
-    ],
+    "plugins": ["prettier", "@typescript-eslint", "react", "markdown", "unused-imports"],
+    "extends": ["prettier", "plugin:react/recommended", "plugin:markdown/recommended"],
     "overrides": [
         {
-            "files": [
-                "**/*.md"
-            ],
+            "files": ["**/*.md"],
             "processor": "markdown/markdown"
         },
         {
-            "files": [
-                "**.md/*.{ts,tsx,js,jsx}"
-            ],
+            "files": ["**.md/*.{ts,tsx,js,jsx}"],
             "rules": {
                 "@typescript-eslint/no-unused-expressions": "off",
                 "@typescript-eslint/no-unnecessary-type-arguments": "off",
@@ -39,18 +25,14 @@
             }
         },
         {
-            "files": [
-                "*.{ts,tsx,js,jsx}"
-            ],
+            "files": ["*.{ts,tsx,js,jsx}"],
             "parserOptions": {
                 "project": "./tsconfig.eslint.json",
                 "ecmaFeatures": {
                     "jsx": true
                 }
             },
-            "excludedFiles": [
-                "**/*.md/*.{ts,tsx,js,jsx}"
-            ]
+            "excludedFiles": ["**/*.md/*.{ts,tsx,js,jsx}"]
         }
     ],
     "settings": {
@@ -59,10 +41,7 @@
         }
     },
     "rules": {
-        "quotes": [
-            "error",
-            "single"
-        ],
+        "quotes": ["error", "single"],
         "prettier/prettier": "error",
         "no-useless-return": "error",
         "no-unreachable": "error",
@@ -101,10 +80,7 @@
         "no-self-assign": "error",
         "no-self-compare": "error",
         "no-setter-return": "error",
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
+        "object-curly-spacing": ["error", "always"],
         "padding-line-between-statements": [
             "error",
             {
@@ -114,49 +90,23 @@
             },
             {
                 "blankLine": "always",
-                "prev": [
-                    "const",
-                    "let",
-                    "var"
-                ],
+                "prev": ["const", "let", "var"],
                 "next": "*"
             },
             {
                 "blankLine": "any",
-                "prev": [
-                    "const",
-                    "let",
-                    "var"
-                ],
-                "next": [
-                    "const",
-                    "let",
-                    "var"
-                ]
+                "prev": ["const", "let", "var"],
+                "next": ["const", "let", "var"]
             },
             {
                 "blankLine": "always",
-                "prev": [
-                    "block",
-                    "block-like",
-                    "class",
-                    "directive",
-                    "export",
-                    "import",
-                    "multiline-block-like"
-                ],
+                "prev": ["block", "block-like", "class", "directive", "export", "import", "multiline-block-like"],
                 "next": "*"
             },
             {
                 "blankLine": "any",
-                "prev": [
-                    "export",
-                    "import"
-                ],
-                "next": [
-                    "export",
-                    "import"
-                ]
+                "prev": ["export", "import"],
+                "next": ["export", "import"]
             }
         ],
         // imports rules
@@ -180,9 +130,6 @@
         // React rules
         "react/prop-types": "off",
         "react/react-in-jsx-scope": "off",
-        "jsx-quotes": [
-            "error",
-            "prefer-single"
-        ]
+        "jsx-quotes": ["error", "prefer-single"]
     }
 }

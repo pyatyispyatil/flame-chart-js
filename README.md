@@ -2,7 +2,7 @@
 
 [![npm flame-chart-js package](https://img.shields.io/npm/v/flame-chart-js)](https://www.npmjs.com/package/flame-chart-js)
 
-![image](https://user-images.githubusercontent.com/4976306/214052670-fba71339-a294-4b34-9802-ac95ec216f3c.png)
+![image](https://user-images.githubusercontent.com/4976306/214061192-7b514d3e-3b40-4f25-8acf-c705e05552c1.png)
 
 ### Installation
 
@@ -133,6 +133,10 @@ const flameChart = new FlameChartContainer({
     },
 });
 ```
+
+#### Usage with React
+
+You can use the [classic flame chart with react like this](https://github.com/pyatyispyatil/flame-chart-js/blob/master/example/src/components/charts/flame-chart-wrapper.tsx) or [like this with pluggins](https://github.com/pyatyispyatil/flame-chart-js/blob/master/example/src/components/charts/flame-chart-container-wrapper.tsx).
 
 #### Settings
 

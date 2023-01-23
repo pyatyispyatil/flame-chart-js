@@ -1,4 +1,4 @@
-import { FlameChartNode, WaterfallIntervals, WaterfallItems } from '../../src';
+import { FlameChartNode, Mark, WaterfallIntervals, WaterfallItems } from '../../src';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -107,6 +107,12 @@ export type WaterfallConfig = {
     end: number;
 };
 
+export type MarksConfig = {
+    count: number;
+    start: number;
+    end: number;
+};
+
 export const treeConfigDefaults: TreeConfig = {
     count: 100000,
     start: 500,
@@ -124,6 +130,12 @@ export const waterfallConfigDefaults: WaterfallConfig = {
     itemsOnLine: 5,
     basesCount: 4,
     baseThinning: 40,
+    start: 0,
+    end: 4500,
+};
+
+export const marksConfigDefaults: MarksConfig = {
+    count: 5,
     start: 0,
     end: 4500,
 };
@@ -297,3 +309,26 @@ export const marks = [
         color: '#4b7ad7',
     },
 ];
+
+const marksColors = ['#4fd24a', '#4b7ad7', '#d74c4c', '#d74c9e', '#9e4cd7', '#4c9ed7', '#4cd7a1', '#d7c44c'];
+
+export const generateRandomMarks = ({ count, start, end }: MarksConfig): Mark[] => {
+    const timestamps = Array(count)
+        .fill(null)
+        .map(() => rndFloat(start, end));
+
+    return timestamps.map((timestamp) => {
+        const shortName = randomString(4, 2).toUpperCase();
+        const fullName = shortName
+            .split('')
+            .map((char) => char + randomString(6).toLowerCase())
+            .join(' ');
+
+        return {
+            shortName,
+            fullName,
+            timestamp,
+            color: rndItem(marksColors),
+        };
+    });
+};

@@ -5,13 +5,21 @@ import { Collapse } from './shared/collapse';
 import { RadioGroup } from './shared/radio-group';
 import { TreeSettings } from './settings/tree-settings';
 import { StylesSettings } from './settings/styles-settings';
-import { generateRandomTree, generateRandomWaterfallItems, TreeConfig, WaterfallConfig } from '../test-data';
+import {
+    generateRandomMarks,
+    generateRandomTree,
+    generateRandomWaterfallItems,
+    MarksConfig,
+    TreeConfig,
+    WaterfallConfig,
+} from '../test-data';
 import { DefaultFlameChart } from './charts/default-flame-chart';
-import { FlameChartNode, FlameChartNodes, WaterfallItems } from '../../../src';
+import { FlameChartNode, FlameChartNodes, Marks, WaterfallItems } from '../../../src';
 import { CustomFlameChart } from './charts/custom-flame-chart';
 import { NodeTypes } from './charts/flame-chart-wrapper';
 import { SelectedData } from './charts/selected-data';
 import { WaterfallSettings } from './settings/waterfall-settings';
+import { MarksSettings } from './settings/marks-settings';
 
 enum ChartType {
     Default = 'default',
@@ -37,6 +45,7 @@ export const App = () => {
     const [flameChartData, setFlameChartData] = useState<FlameChartNode[] | null>(null);
     const [customFlameChartData, setCustomFlameChartData] = useState<FlameChartNodes[] | null>(null);
     const [waterfallData, setWaterfallData] = useState<WaterfallItems | null>(null);
+    const [marksData, setMarksData] = useState<Marks | null>(null);
     const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
     const generateTree = useCallback((chart: ChartType, config?: TreeConfig) => {
@@ -75,6 +84,14 @@ export const App = () => {
         });
     }, []);
 
+    const generateMarks = useCallback((config?: MarksConfig) => {
+        if (config) {
+            const data = generateRandomMarks(config);
+
+            setMarksData(data);
+        }
+    }, []);
+
     const handleChartChange = useCallback(
         (value: string) => {
             setCurrentChart(value as ChartType);
@@ -99,6 +116,9 @@ export const App = () => {
                 <Collapse title='Waterfall data settings' isCollapsed={false}>
                     <WaterfallSettings onChange={(config) => generateWaterfall(config)} isGenerating={isGenerating} />
                 </Collapse>
+                <Collapse title='Marks data settings' isCollapsed={false}>
+                    <MarksSettings onChange={(config) => generateMarks(config)} isGenerating={isGenerating} />
+                </Collapse>
                 <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
@@ -108,10 +128,11 @@ export const App = () => {
                     </Collapse>
                 )}
             </div>
-            {currentChart === 'default' && flameChartData && waterfallData && (
+            {currentChart === 'default' && flameChartData && waterfallData && marksData && (
                 <DefaultFlameChart
                     flameChartData={flameChartData}
                     waterfallData={waterfallData}
+                    marksData={marksData}
                     stylesSettings={stylesSettings}
                     onSelect={setSelectedData}
                 />

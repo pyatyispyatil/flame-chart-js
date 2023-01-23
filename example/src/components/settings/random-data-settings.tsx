@@ -6,7 +6,7 @@ import styles from './tree-settings.module.css';
 export type RandomDataSettingsProps<Config> = {
     onChange: (config: Config) => void;
     config: Config;
-    units: Partial<Record<keyof Config, string>>;
+    units?: Partial<Record<keyof Config, string>>;
     isGenerating: boolean;
 };
 
@@ -33,7 +33,7 @@ export const RandomDataSettings = <Config extends Record<string, string | number
                         className={styles.input}
                         key={name}
                         value={value}
-                        label={props.units[name] ? `${name} (${props.units[name]})` : name}
+                        label={props.units?.[name] ? `${name} (${props.units[name]})` : name}
                         onChange={(newValue: string) => {
                             const newValues = { ...values, [name]: parseFloat(newValue) };
 

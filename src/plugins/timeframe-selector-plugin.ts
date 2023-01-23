@@ -23,6 +23,8 @@ import UIPlugin from './ui-plugin';
 import { parseWaterfall, PreparedWaterfallInterval } from './utils/waterfall-parser';
 import Color from 'color';
 
+const TIMEFRAME_STICK_DISTANCE = 2;
+
 type Dot = {
     time: number;
     type: 'start' | 'end';
@@ -61,13 +63,13 @@ export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',
-    graphStrokeColor: 'rgb(0, 0, 0, 0.10)',
-    graphFillColor: 'rgb(0, 0, 0, 0.15)',
+    graphStrokeColor: 'rgba(0, 0, 0, 0.10)',
+    graphFillColor: 'rgba(0, 0, 0, 0.15)',
     flameChartGraphType: 'smooth',
     waterfallStrokeOpacity: 0.4,
     waterfallFillOpacity: 0.35,
     waterfallGraphType: 'smooth',
-    bottomLineColor: 'rgb(0, 0, 0, 0.25)',
+    bottomLineColor: 'rgba(0, 0, 0, 0.25)',
     knobColor: 'rgb(131, 131, 131)',
     knobStrokeColor: 'white',
     knobSize: 6,
@@ -304,7 +306,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 this.renderEngine.zoom,
                 this.min,
                 this.max,
-                2,
+                TIMEFRAME_STICK_DISTANCE,
                 Infinity
             );
             this.actualClusterizedFlatTree = reclusterizeClusteredFlatTree(
@@ -312,7 +314,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 this.renderEngine.zoom,
                 this.min,
                 this.max,
-                2,
+                TIMEFRAME_STICK_DISTANCE,
                 Infinity
             ).sort((a, b) => a.start - b.start);
 
@@ -410,7 +412,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                     color,
                     points: newPoints,
                 };
-            }, {});
+            });
 
             let globalMaxLevel = 0;
 

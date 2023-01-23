@@ -5,12 +5,13 @@ import { Collapse } from './shared/collapse';
 import { RadioGroup } from './shared/radio-group';
 import { TreeSettings } from './settings/tree-settings';
 import { StylesSettings } from './settings/styles-settings';
-import { generateRandomTree, TreeConfig } from '../test-data';
+import { generateRandomTree, generateRandomWaterfallItems, TreeConfig, WaterfallConfig } from '../test-data';
 import { DefaultFlameChart } from './charts/default-flame-chart';
-import { FlameChartNode, FlameChartNodes } from '../../../src';
+import { FlameChartNode, FlameChartNodes, WaterfallItems } from '../../../src';
 import { CustomFlameChart } from './charts/custom-flame-chart';
 import { NodeTypes } from './charts/flame-chart-wrapper';
 import { SelectedData } from './charts/selected-data';
+import { WaterfallSettings } from './settings/waterfall-settings';
 
 enum ChartType {
     Default = 'default',
@@ -33,11 +34,12 @@ export const App = () => {
     const [stylesSettings, setStylesSettings] = useState({});
     const [currentChart, setCurrentChart] = useState(ChartType.Default);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [data, setData] = useState<FlameChartNode[] | null>(null);
-    const [customData, setCustomData] = useState<FlameChartNodes[] | null>(null);
+    const [flameChartData, setFlameChartData] = useState<FlameChartNode[] | null>(null);
+    const [customFlameChartData, setCustomFlameChartData] = useState<FlameChartNodes[] | null>(null);
+    const [waterfallData, setWaterfallData] = useState<WaterfallItems | null>(null);
     const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
-    const generate = useCallback((chart: ChartType, config?: TreeConfig) => {
+    const generateTree = useCallback((chart: ChartType, config?: TreeConfig) => {
         setIsGenerating(true);
         setTreeConfig(config);
 
@@ -46,13 +48,27 @@ export const App = () => {
                 if (chart === ChartType.Default) {
                     const data = generateRandomTree(config);
 
-                    setData(data);
+                    setFlameChartData(data);
                 } else if (chart === ChartType.Custom) {
                     const data1 = generateRandomTree(config);
                     const data2 = generateRandomTree(config);
 
-                    setCustomData([data1, data2]);
+                    setCustomFlameChartData([data1, data2]);
                 }
+            }
+
+            setIsGenerating(false);
+        });
+    }, []);
+
+    const generateWaterfall = useCallback((config?: WaterfallConfig) => {
+        setIsGenerating(true);
+
+        setTimeout(() => {
+            if (config) {
+                const data = generateRandomWaterfallItems(config);
+
+                setWaterfallData(data);
             }
 
             setIsGenerating(false);
@@ -63,9 +79,9 @@ export const App = () => {
         (value: string) => {
             setCurrentChart(value as ChartType);
 
-            generate(value as ChartType, treeConfig);
+            generateTree(value as ChartType, treeConfig);
         },
-        [treeConfig, generate]
+        [treeConfig, generateTree]
     );
 
     return (
@@ -74,10 +90,16 @@ export const App = () => {
                 <Collapse title='Variants'>
                     <RadioGroup value={currentChart} options={flameChartVariants} onChange={handleChartChange} />
                 </Collapse>
-                <Collapse title='Tree settings' isCollapsed={false}>
-                    <TreeSettings onChange={(config) => generate(currentChart, config)} isGenerating={isGenerating} />
+                <Collapse title='Flame chart data settings' isCollapsed={false}>
+                    <TreeSettings
+                        onChange={(config) => generateTree(currentChart, config)}
+                        isGenerating={isGenerating}
+                    />
                 </Collapse>
-                <Collapse title='Styles settings' isCollapsed={true}>
+                <Collapse title='Waterfall data settings' isCollapsed={false}>
+                    <WaterfallSettings onChange={(config) => generateWaterfall(config)} isGenerating={isGenerating} />
+                </Collapse>
+                <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
                 {selectedData?.node && (
@@ -86,11 +108,16 @@ export const App = () => {
                     </Collapse>
                 )}
             </div>
-            {currentChart === 'default' && data && (
-                <DefaultFlameChart data={data} stylesSettings={stylesSettings} onSelect={setSelectedData} />
+            {currentChart === 'default' && flameChartData && waterfallData && (
+                <DefaultFlameChart
+                    flameChartData={flameChartData}
+                    waterfallData={waterfallData}
+                    stylesSettings={stylesSettings}
+                    onSelect={setSelectedData}
+                />
             )}
-            {currentChart === 'custom' && customData && (
-                <CustomFlameChart data={customData} stylesSettings={stylesSettings} />
+            {currentChart === 'custom' && customFlameChartData && (
+                <CustomFlameChart flameChartData={customFlameChartData} stylesSettings={stylesSettings} />
             )}
         </div>
     );

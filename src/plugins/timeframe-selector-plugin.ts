@@ -15,18 +15,25 @@ import {
     MetaClusterizedFlatTree,
     Mouse,
     RegionTypes,
+    Waterfall,
 } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
 import UIPlugin from './ui-plugin';
+import { parseWaterfall, PreparedWaterfallInterval } from './utils/waterfall-parser';
+import Color from 'color';
 
-interface Dot {
+const TIMEFRAME_STICK_DISTANCE = 2;
+
+type Dot = {
+    time: number;
+    type: 'start' | 'end';
+};
+
+type RenderDot = {
     pos: number;
-    sort: number;
     level: number;
-    index: number;
-    type: string;
-}
+};
 
 export type TimeframeSelectorPluginStyles = {
     font: string;
@@ -34,6 +41,10 @@ export type TimeframeSelectorPluginStyles = {
     overlayColor: string;
     graphStrokeColor: string;
     graphFillColor: string;
+    flameChartGraphType: TimeframeGraphTypes;
+    waterfallStrokeOpacity: number;
+    waterfallFillOpacity: number;
+    waterfallGraphType: TimeframeGraphTypes;
     bottomLineColor: string;
     knobColor: string;
     knobStrokeColor: string;
@@ -46,13 +57,19 @@ export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
 
+export type TimeframeGraphTypes = 'square' | 'smooth';
+
 export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
     fontColor: 'black',
     overlayColor: 'rgba(112, 112, 112, 0.5)',
-    graphStrokeColor: 'rgb(0, 0, 0, 0.2)',
-    graphFillColor: 'rgb(0, 0, 0, 0.25)',
-    bottomLineColor: 'rgb(0, 0, 0, 0.25)',
+    graphStrokeColor: 'rgba(0, 0, 0, 0.10)',
+    graphFillColor: 'rgba(0, 0, 0, 0.15)',
+    flameChartGraphType: 'smooth',
+    waterfallStrokeOpacity: 0.4,
+    waterfallFillOpacity: 0.35,
+    waterfallGraphType: 'smooth',
+    bottomLineColor: 'rgba(0, 0, 0, 0.25)',
     knobColor: 'rgb(131, 131, 131)',
     knobStrokeColor: 'white',
     knobSize: 6,
@@ -64,7 +81,8 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     override styles: TimeframeSelectorPluginStyles = defaultTimeframeSelectorPluginStyles;
     height = 0;
 
-    private data: FlameChartNodes;
+    private flameChartNodes?: FlameChartNodes;
+    private waterfall?: Waterfall;
     private shouldRender: boolean;
     private leftKnobMoving = false;
     private rightKnobMoving = false;
@@ -75,21 +93,26 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private timeGrid: TimeGrid;
     private actualClusters: ClusterizedFlatTree = [];
     private clusters: MetaClusterizedFlatTree = [];
-    private maxLevel = 0;
-    private dots: Dot[] = [];
+    private flameChartMaxLevel = 0;
+    private flameChartDots: RenderDot[] = [];
+    private waterfallDots: { color: string; dots: RenderDot[] }[] = [];
+    private waterfallMaxLevel = 0;
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
     constructor({
-        data,
+        waterfall,
+        flameChartNodes,
         settings,
         name = 'timeframeSelectorPlugin',
     }: {
-        data: FlameChartNodes;
+        flameChartNodes?: FlameChartNodes;
+        waterfall?: Waterfall;
         settings: TimeframeSelectorPluginSettings;
         name?: string;
     }) {
         super(name);
-        this.data = data;
+        this.flameChartNodes = flameChartNodes;
+        this.waterfall = waterfall;
         this.shouldRender = true;
         this.setSettings(settings);
     }
@@ -204,7 +227,10 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
 
         this.offscreenRenderEngine.on('min-max-change', () => (this.shouldRender = true));
 
-        this.setData(this.data);
+        this.setData({
+            flameChartNodes: this.flameChartNodes,
+            waterfall: this.waterfall,
+        });
     }
 
     setLeftKnobPosition(mouseX: number) {
@@ -265,94 +291,212 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.shouldRender = true;
     }
 
-    setData(data: FlameChartNodes) {
-        this.data = data;
+    makeFlameChartDots() {
+        if (this.flameChartNodes) {
+            const flameChartDots: Dot[] = [];
+            const tree = flatTree(this.flameChartNodes);
+            const { min, max } = getFlatTreeMinMax(tree);
 
-        const dots: Dot[] = [];
-        const tree = flatTree(this.data);
-        const { min, max } = getFlatTreeMinMax(tree);
+            this.min = min;
+            this.max = max;
 
+            this.clusters = metaClusterizeFlatTree(tree, () => true);
+            this.actualClusters = clusterizeFlatTree(
+                this.clusters,
+                this.renderEngine.zoom,
+                this.min,
+                this.max,
+                TIMEFRAME_STICK_DISTANCE,
+                Infinity
+            );
+            this.actualClusterizedFlatTree = reclusterizeClusteredFlatTree(
+                this.actualClusters,
+                this.renderEngine.zoom,
+                this.min,
+                this.max,
+                TIMEFRAME_STICK_DISTANCE,
+                Infinity
+            ).sort((a, b) => a.start - b.start);
+
+            this.actualClusterizedFlatTree.forEach(({ start, end }) => {
+                flameChartDots.push(
+                    {
+                        time: start,
+                        type: 'start',
+                    },
+                    {
+                        time: end,
+                        type: 'end',
+                    }
+                );
+            });
+
+            flameChartDots.sort((a, b) => a.time - b.time);
+
+            const { dots, maxLevel } = this.makeRenderDots(flameChartDots);
+
+            this.flameChartDots = dots;
+            this.flameChartMaxLevel = maxLevel;
+        }
+    }
+
+    makeRenderDots(dots: Dot[]): { dots: RenderDot[]; maxLevel: number } {
+        const renderDots: RenderDot[] = [];
+        let level = 0;
         let maxLevel = 0;
 
-        this.min = min;
-        this.max = max;
-
-        this.clusters = metaClusterizeFlatTree(tree, () => true);
-        this.actualClusters = clusterizeFlatTree(
-            this.clusters,
-            this.renderEngine.zoom,
-            this.min,
-            this.max,
-            2,
-            Infinity
-        );
-        this.actualClusterizedFlatTree = reclusterizeClusteredFlatTree(
-            this.actualClusters,
-            this.renderEngine.zoom,
-            this.min,
-            this.max,
-            2,
-            Infinity
-        ).sort((a, b) => a.start - b.start);
-
-        this.actualClusterizedFlatTree.forEach(({ start, end, level }, index) => {
-            if (maxLevel < level + 1) {
-                maxLevel = level + 1;
+        dots.forEach(({ type, time }) => {
+            if (type === 'start') {
+                renderDots.push({
+                    pos: time,
+                    level: level,
+                });
             }
 
-            dots.push(
-                {
-                    pos: start,
-                    sort: 0,
+            if (type === 'end') {
+                renderDots.push({
+                    pos: time,
                     level: level,
-                    index,
-                    type: 'start',
-                },
-                {
-                    pos: start,
-                    sort: 1,
-                    level: level + 1,
-                    index,
-                    type: 'start',
-                },
-                {
-                    pos: end,
-                    sort: 2,
-                    level: level + 1,
-                    index,
-                    type: 'end',
-                },
-                {
-                    pos: end,
-                    sort: 3,
-                    level: level,
-                    index,
-                    type: 'end',
-                }
+                });
+            }
+
+            if (type === 'start') {
+                level++;
+            } else {
+                level--;
+            }
+
+            maxLevel = Math.max(maxLevel, level);
+
+            renderDots.push({
+                pos: time,
+                level,
+            });
+        });
+
+        return {
+            dots: renderDots,
+            maxLevel,
+        };
+    }
+
+    makeWaterfallDots() {
+        if (this.waterfall) {
+            const data = parseWaterfall(this.waterfall);
+
+            const intervals = Object.entries(
+                data.reduce((acc: Record<string, PreparedWaterfallInterval[]>, { intervals }) => {
+                    intervals.forEach((interval) => {
+                        if (!acc[interval.color]) {
+                            acc[interval.color] = [];
+                        }
+
+                        acc[interval.color].push(interval);
+                    });
+
+                    return acc;
+                }, {})
             );
-        });
 
-        this.dots = dots.sort((a, b) => {
-            if (a.pos !== b.pos) {
-                return a.pos - b.pos;
-            }
+            const points = intervals.map(([color, intervals]) => {
+                const newPoints: { type: 'start' | 'end'; time: number }[] = [];
 
-            if (a.index === b.index) {
-                return a.sort - b.sort;
-            }
+                intervals.forEach(({ start, end }) => {
+                    newPoints.push({ type: 'start', time: start });
+                    newPoints.push({ type: 'end', time: end });
+                });
 
-            if (a.type === 'start' && b.type === 'start') {
-                return a.level - b.level;
-            } else if (a.type === 'end' && b.type === 'end') {
-                return b.level - a.level;
-            }
+                newPoints.sort((a, b) => a.time - b.time);
 
-            return 0;
-        });
+                return {
+                    color,
+                    points: newPoints,
+                };
+            });
 
-        this.maxLevel = maxLevel;
+            let globalMaxLevel = 0;
 
+            this.waterfallDots = points.map(({ color, points }) => {
+                const { dots, maxLevel } = this.makeRenderDots(points);
+
+                globalMaxLevel = Math.max(globalMaxLevel, maxLevel);
+
+                return {
+                    color,
+                    dots,
+                };
+            });
+
+            this.waterfallMaxLevel = globalMaxLevel;
+        }
+    }
+
+    setData({ flameChartNodes, waterfall }: { flameChartNodes?: FlameChartNodes; waterfall?: Waterfall }) {
+        this.flameChartNodes = flameChartNodes;
+        this.waterfall = waterfall;
+
+        this.makeFlameChartDots();
         this.offscreenRender();
+    }
+
+    setFlameChartNodes(flameChartNodes: FlameChartNodes) {
+        this.flameChartNodes = flameChartNodes;
+
+        this.makeFlameChartDots();
+        this.offscreenRender();
+    }
+
+    setWaterfall(waterfall: Waterfall) {
+        this.waterfall = waterfall;
+
+        this.makeWaterfallDots();
+        this.offscreenRender();
+    }
+
+    renderChart(
+        dots: RenderDot[],
+        maxLevel: number,
+        options: { strokeColor: string; fillColor: string; type?: TimeframeGraphTypes }
+    ) {
+        const zoom = this.offscreenRenderEngine.getInitialZoom();
+
+        this.offscreenRenderEngine.setStrokeColor(options.strokeColor);
+        this.offscreenRenderEngine.setCtxColor(options.fillColor);
+        this.offscreenRenderEngine.ctx.beginPath();
+
+        const flameChartLevelHeight = (this.height - this.renderEngine.charHeight - 4) / maxLevel;
+
+        if (dots.length) {
+            const xy = dots.map(({ pos, level }) => [
+                (pos - this.offscreenRenderEngine.min) * zoom,
+                this.castLevelToHeight(level, flameChartLevelHeight),
+            ]);
+
+            this.offscreenRenderEngine.ctx.moveTo(xy[0][0], xy[0][1]);
+
+            if (options.type === 'smooth' || !options.type) {
+                for (let i = 1; i < xy.length - 2; i++) {
+                    const xc = (xy[i][0] + xy[i + 1][0]) / 2;
+                    const yc = (xy[i][1] + xy[i + 1][1]) / 2;
+
+                    this.offscreenRenderEngine.ctx.quadraticCurveTo(xy[i][0], xy[i][1], xc, yc);
+                }
+
+                const preLast = xy[xy.length - 2];
+                const last = xy[xy.length - 1];
+
+                this.offscreenRenderEngine.ctx.quadraticCurveTo(preLast[0], preLast[1], last[0], last[1]);
+            } else if (options.type === 'square') {
+                for (let i = 1; i < xy.length; i++) {
+                    this.offscreenRenderEngine.ctx.lineTo(xy[i][0], xy[i][1]);
+                }
+            }
+        }
+
+        this.offscreenRenderEngine.ctx.closePath();
+
+        this.offscreenRenderEngine.ctx.stroke();
+        this.offscreenRenderEngine.ctx.fill();
     }
 
     offscreenRender() {
@@ -366,32 +510,21 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.timeGrid.renderLines(0, this.offscreenRenderEngine.height);
         this.timeGrid.renderTimes();
 
-        this.offscreenRenderEngine.setStrokeColor(this.styles.graphStrokeColor);
-        this.offscreenRenderEngine.setCtxColor(this.styles.graphFillColor);
-        this.offscreenRenderEngine.ctx.beginPath();
+        this.renderChart(this.flameChartDots, this.flameChartMaxLevel, {
+            strokeColor: this.styles.graphStrokeColor,
+            fillColor: this.styles.graphFillColor,
+            type: this.styles.flameChartGraphType,
+        });
 
-        const levelHeight = (this.height - this.renderEngine.charHeight - 4) / this.maxLevel;
+        this.waterfallDots.forEach(({ color, dots }) => {
+            const colorObj = new Color(color);
 
-        if (this.dots.length) {
-            this.offscreenRenderEngine.ctx.moveTo(
-                (this.dots[0].pos - this.offscreenRenderEngine.min) * zoom,
-                this.castLevelToHeight(this.dots[0].level, levelHeight)
-            );
-
-            this.dots.forEach((dot) => {
-                const { pos, level } = dot;
-
-                this.offscreenRenderEngine.ctx.lineTo(
-                    (pos - this.offscreenRenderEngine.min) * zoom,
-                    this.castLevelToHeight(level, levelHeight)
-                );
+            this.renderChart(dots, this.waterfallMaxLevel, {
+                strokeColor: colorObj.alpha(this.styles.waterfallStrokeOpacity).rgb().toString(),
+                fillColor: colorObj.alpha(this.styles.waterfallFillOpacity).rgb().toString(),
+                type: this.styles.waterfallGraphType,
             });
-        }
-
-        this.offscreenRenderEngine.ctx.closePath();
-
-        this.offscreenRenderEngine.ctx.stroke();
-        this.offscreenRenderEngine.ctx.fill();
+        });
 
         this.offscreenRenderEngine.setCtxColor(this.styles.bottomLineColor);
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);

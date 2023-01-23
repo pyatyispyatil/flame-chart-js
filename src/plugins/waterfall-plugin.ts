@@ -1,34 +1,12 @@
 import { mergeObjects } from '../utils';
 import UIPlugin from './ui-plugin';
-import { HitRegion, RegionTypes, Waterfall, WaterfallInterval, WaterfallItems } from '../types';
+import { HitRegion, RegionTypes, Waterfall, WaterfallItems } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
-
-function getValueByChoice<T extends Omit<WaterfallInterval, 'start' | 'end'> & { start: number; end: number }>(
-    array: T[],
-    property: 'end' | 'start',
-    fn: Math['min'] | Math['max']
-): number {
-    if (array.length) {
-        return array.reduce((acc, { [property]: value }) => fn(acc, value), array[0][property]);
-    }
-
-    return 0;
-}
+import { parseWaterfall, PreparedWaterfallItem } from './utils/waterfall-parser';
 
 export type WaterfallPluginStyles = {
     defaultHeight: number;
-};
-
-type WatterfallPluginDataItem = {
-    intervals: { start: number; end: number; color: string; name: string; type: 'block' | 'line' }[];
-    index: number;
-    max: number;
-    min: number;
-    name: string;
-    textBlock: { start: number; end: number };
-    timing: Record<PropertyKey, number>;
-    meta?: any[];
 };
 
 export type WaterfallPluginSettings = {
@@ -43,7 +21,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     override styles: WaterfallPluginStyles = defaultWaterfallPluginStyles;
     height = defaultWaterfallPluginStyles.defaultHeight;
 
-    data: WatterfallPluginDataItem[] = [];
+    data: PreparedWaterfallItem[] = [];
     positionY = 0;
     hoveredRegion: HitRegion<number> | null = null;
     selectedRegion: HitRegion<number> | null = null;
@@ -121,48 +99,13 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         this.positionY = 0;
     }
 
-    setData({ items: data, intervals: commonIntervals }: Waterfall) {
+    setData(waterfall: Waterfall) {
         this.positionY = 0;
 
-        this.initialData = data;
-        this.data = data
-            .map(({ name, intervals, timing, ...rest }, index) => {
-                const resolvedIntervals = typeof intervals === 'string' ? commonIntervals[intervals] : intervals;
-                const preparedIntervals = resolvedIntervals
-                    .map(({ start, end, color, type, name }) => ({
-                        start: typeof start === 'string' ? timing[start] : start,
-                        end: typeof end === 'string' ? timing[end] : end,
-                        color,
-                        name,
-                        type,
-                    }))
-                    .filter(({ start, end }) => typeof start === 'number' && typeof end === 'number');
-                const blocks = preparedIntervals.filter(({ type }) => type === 'block');
+        this.initialData = waterfall.items;
+        this.data = parseWaterfall(waterfall);
 
-                const blockStart = getValueByChoice(blocks, 'start', Math.min);
-                const blockEnd = getValueByChoice(blocks, 'end', Math.max);
-
-                const min = getValueByChoice(preparedIntervals, 'start', Math.min);
-                const max = getValueByChoice(preparedIntervals, 'end', Math.max);
-
-                return {
-                    ...rest,
-                    intervals: preparedIntervals,
-                    textBlock: {
-                        start: blockStart,
-                        end: blockEnd,
-                    },
-                    name,
-                    timing,
-                    min,
-                    max,
-                    index,
-                };
-            })
-            .filter(({ intervals }) => intervals.length)
-            .sort((a, b) => a.min - b.min || b.max - a.max);
-
-        if (data.length) {
+        if (waterfall.items.length) {
             this.min = this.data.reduce((acc, { min }) => Math.min(acc, min), this.data[0].min);
             this.max = this.data.reduce((acc, { max }) => Math.max(acc, max), this.data[0].max);
         }
@@ -249,7 +192,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         const rightSide = this.renderEngine.positionX + this.renderEngine.getRealView();
         const leftSide = this.renderEngine.positionX;
         const blockHeight = this.renderEngine.blockHeight + 1;
-        const stack: WatterfallPluginDataItem[] = [];
+        const stack: PreparedWaterfallItem[] = [];
         const viewedData = this.data
             .filter(({ min, max }) => !((rightSide < min && rightSide < max) || (leftSide > max && rightSide > min)))
             .map((entry) => {

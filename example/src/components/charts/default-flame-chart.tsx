@@ -1,26 +1,43 @@
 import { FlameChartWrapper, NodeTypes } from './flame-chart-wrapper';
-import { FlameChartNode, FlameChartStyles } from '../../../../src';
+import { FlameChartNode, FlameChartStyles, WaterfallItems } from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
 import styles from './default-flame-chart.module.css';
-import { waterfallIntervals, waterfallItems } from '../../test-data';
+import { waterfallIntervals } from '../../test-data';
+import { useMemo } from 'react';
 
 export type DefaultFlameChartProps = {
-    data: FlameChartNode[];
+    flameChartData: FlameChartNode[];
+    waterfallData: WaterfallItems;
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
     onSelect?: (node: NodeTypes) => void;
 };
 
-export const DefaultFlameChart = ({ data, stylesSettings, onSelect }: DefaultFlameChartProps) => {
+export const DefaultFlameChart = ({
+    flameChartData,
+    waterfallData,
+    stylesSettings,
+    onSelect,
+}: DefaultFlameChartProps) => {
+    const waterfall = useMemo(
+        () => ({
+            intervals: waterfallIntervals,
+            items: waterfallData,
+        }),
+        [waterfallData]
+    );
+
+    const settings = useMemo(
+        () => ({
+            styles: stylesSettings,
+        }),
+        [stylesSettings]
+    );
+
     return (
         <FlameChartWrapper
-            data={data}
-            waterfall={{
-                intervals: waterfallIntervals,
-                items: waterfallItems,
-            }}
-            settings={{
-                styles: stylesSettings,
-            }}
+            data={flameChartData}
+            waterfall={waterfall}
+            settings={settings}
             className={styles.flameChart}
             onSelect={onSelect}
         />

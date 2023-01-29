@@ -88,7 +88,7 @@ export class TimeGrid {
     }
 
     renderLines(start: number, height: number, renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
-        renderEngine.setCtxColor(this.styles.color);
+        renderEngine.setCtxValue('fillStyle', this.styles.color);
 
         this.forEachTime((pixelPosition: number) => {
             renderEngine.fillRect(pixelPosition, start, 1, height);
@@ -96,7 +96,7 @@ export class TimeGrid {
     }
 
     renderTimes(renderEngine: OffscreenRenderEngine | RenderEngine = this.renderEngine) {
-        renderEngine.setCtxColor(renderEngine.styles.fontColor);
+        renderEngine.setCtxValue('fillStyle', renderEngine.styles.fontColor);
         renderEngine.setCtxFont(renderEngine.styles.font);
 
         this.forEachTime((pixelPosition, timePosition) => {

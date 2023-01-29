@@ -7,19 +7,22 @@ import { TreeSettings } from './settings/tree-settings';
 import { StylesSettings } from './settings/styles-settings';
 import {
     generateRandomMarks,
+    generateRandomTimeseries,
     generateRandomTree,
     generateRandomWaterfallItems,
     MarksConfig,
+    TimeseriesConfig,
     TreeConfig,
     WaterfallConfig,
 } from '../test-data';
 import { DefaultFlameChart } from './charts/default-flame-chart';
-import { FlameChartNode, FlameChartNodes, Marks, WaterfallItems } from '../../../src';
+import { FlameChartNode, FlameChartNodes, Marks, Timeseries, WaterfallItems } from '../../../src';
 import { CustomFlameChart } from './charts/custom-flame-chart';
 import { NodeTypes } from './charts/flame-chart-wrapper';
 import { SelectedData } from './charts/selected-data';
 import { WaterfallSettings } from './settings/waterfall-settings';
 import { MarksSettings } from './settings/marks-settings';
+import { TimeseriesSettings } from './settings/timeseries-settings';
 
 enum ChartType {
     Default = 'default',
@@ -46,6 +49,7 @@ export const App = () => {
     const [customFlameChartData, setCustomFlameChartData] = useState<FlameChartNodes[] | null>(null);
     const [waterfallData, setWaterfallData] = useState<WaterfallItems | null>(null);
     const [marksData, setMarksData] = useState<Marks | null>(null);
+    const [timeseriesData, setTimeseriesData] = useState<Timeseries | null>(null);
     const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
     const generateTree = useCallback((chart: ChartType, config?: TreeConfig) => {
@@ -92,6 +96,73 @@ export const App = () => {
         }
     }, []);
 
+    const generateTimeseries = useCallback((config?: TimeseriesConfig) => {
+        if (config) {
+            const cpuConfig = {
+                ...config,
+                min: 0,
+                max: 50,
+            };
+
+            const memConfig = {
+                ...config,
+                min: 0,
+                max: 8096,
+            };
+
+            setTimeseriesData([
+                {
+                    name: 'CPU #1',
+                    group: 'CPU',
+                    points: generateRandomTimeseries(cpuConfig),
+                    units: '%',
+                    min: 0,
+                    max: 100,
+                    style: {
+                        lineColor: 'rgba(203,179,20,0.2)',
+                        fillColor: 'rgba(203,179,20,0.2)',
+                    },
+                },
+                {
+                    name: 'CPU #2',
+                    group: 'CPU',
+                    points: generateRandomTimeseries(cpuConfig),
+                    units: '%',
+                    min: 0,
+                    max: 100,
+                    style: {
+                        lineColor: 'rgba(203,179,20,0.2)',
+                        fillColor: 'rgba(203,179,20,0.2)',
+                    },
+                },
+                {
+                    name: 'Allocated',
+                    group: 'Memory',
+                    points: generateRandomTimeseries(memConfig),
+                    units: 'MB',
+                    min: 0,
+                    style: {
+                        type: 'bar',
+                        lineColor: 'rgba(60,122,255,0.2)',
+                        fillColor: 'rgba(60,122,255,0.2)',
+                    },
+                },
+                {
+                    name: 'Free',
+                    group: 'Memory',
+                    points: generateRandomTimeseries(memConfig),
+                    units: 'MB',
+                    min: 0,
+                    style: {
+                        type: 'bar',
+                        lineColor: 'rgba(107,223,243,0.2)',
+                        fillColor: 'rgba(107,223,243,0.2)',
+                    },
+                },
+            ]);
+        }
+    }, []);
+
     const handleChartChange = useCallback(
         (value: string) => {
             setCurrentChart(value as ChartType);
@@ -119,6 +190,9 @@ export const App = () => {
                 <Collapse title='Marks data settings' isCollapsed={false}>
                     <MarksSettings onChange={(config) => generateMarks(config)} isGenerating={isGenerating} />
                 </Collapse>
+                <Collapse title='Timeseries data settings' isCollapsed={false}>
+                    <TimeseriesSettings onChange={(config) => generateTimeseries(config)} isGenerating={isGenerating} />
+                </Collapse>
                 <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
@@ -128,11 +202,12 @@ export const App = () => {
                     </Collapse>
                 )}
             </div>
-            {currentChart === 'default' && flameChartData && waterfallData && marksData && (
+            {currentChart === 'default' && flameChartData && waterfallData && marksData && timeseriesData && (
                 <DefaultFlameChart
                     flameChartData={flameChartData}
                     waterfallData={waterfallData}
                     marksData={marksData}
+                    timeseriesData={timeseriesData}
                     stylesSettings={stylesSettings}
                     onSelect={setSelectedData}
                 />

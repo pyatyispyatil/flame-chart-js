@@ -164,6 +164,8 @@ export class BasicRenderEngine extends EventEmitter {
         this.textRenderQueue = [];
         this.strokeRenderQueue = [];
         this.rectRenderQueue = {};
+        this.ctxCachedCalls = {};
+        this.ctxCachedSettings = {};
     }
 
     setCtxValue = (field: string, value: number | string) => {
@@ -213,9 +215,12 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {
-        this.ctx.clearRect(x, y, w, h - 1);
         this.setCtxValue('fillStyle', this.styles.backgroundColor);
+        this.ctx.clearRect(x, y, w, h - 1);
         this.ctx.fillRect(x, y, w, h);
+
+        this.ctxCachedCalls = {};
+        this.ctxCachedSettings = {};
 
         this.emit('clear');
     }

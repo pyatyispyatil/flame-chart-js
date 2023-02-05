@@ -10,6 +10,7 @@ export type DefaultFlameChartProps = {
     waterfallData: WaterfallItems;
     marksData: Marks;
     timeseriesData: Timeseries;
+    timeframeTimeseriesData: Timeseries;
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
     onSelect?: (node: NodeTypes) => void;
 };
@@ -19,6 +20,7 @@ export const DefaultFlameChart = ({
     waterfallData,
     marksData,
     timeseriesData,
+    timeframeTimeseriesData,
     stylesSettings,
     onSelect,
 }: DefaultFlameChartProps) => {
@@ -43,6 +45,7 @@ export const DefaultFlameChart = ({
             waterfall={waterfall}
             marks={marksData}
             timeseries={timeseriesData}
+            timeframeTimeseries={timeframeTimeseriesData}
             settings={settings}
             className={styles.flameChart}
             onSelect={onSelect}

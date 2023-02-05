@@ -15,6 +15,7 @@ import {
     MetaClusterizedFlatTree,
     Mouse,
     RegionTypes,
+    Timeseries,
     Waterfall,
 } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
@@ -22,7 +23,15 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 import UIPlugin from './ui-plugin';
 import { parseWaterfall, PreparedWaterfallInterval } from './utils/waterfall-parser';
 import Color from 'color';
-import { ChartLineType, ChartPoints, renderChart } from './utils/chart-render';
+import {
+    ChartLineType,
+    ChartPoints,
+    getMinMax,
+    prepareTmeseries,
+    renderChart,
+    renderChartTooltipFields,
+} from './utils/chart-render';
+import { PreparedTimeseries } from './timeseries-plugin';
 
 const TIMEFRAME_STICK_DISTANCE = 2;
 
@@ -77,6 +86,8 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
 
     private flameChartNodes?: FlameChartNodes;
     private waterfall?: Waterfall;
+    private timeseries?: Timeseries;
+    private preparedTimeseries?: PreparedTimeseries;
     private shouldRender: boolean;
     private leftKnobMoving = false;
     private rightKnobMoving = false;
@@ -92,21 +103,25 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private waterfallDots: { color: string; dots: ChartPoints }[] = [];
     private waterfallMaxLevel = 0;
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
+    private hoveredRegion: HitRegion<{}> | null = null;
 
     constructor({
         waterfall,
         flameChartNodes,
+        timeseries,
         settings,
         name = 'timeframeSelectorPlugin',
     }: {
         flameChartNodes?: FlameChartNodes;
         waterfall?: Waterfall;
+        timeseries?: Timeseries;
         settings: TimeframeSelectorPluginSettings;
         name?: string;
     }) {
         super(name);
         this.flameChartNodes = flameChartNodes;
         this.waterfall = waterfall;
+        this.timeseries = timeseries;
         this.shouldRender = true;
         this.setSettings(settings);
     }
@@ -117,8 +132,13 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.interactionsEngine.on('down', this.handleMouseDown.bind(this));
         this.interactionsEngine.on('up', this.handleMouseUp.bind(this));
         this.interactionsEngine.on('move', this.handleMouseMove.bind(this));
+        this.interactionsEngine.on('hover', this.handleHover.bind(this));
 
         this.setSettings();
+    }
+
+    handleHover(region: HitRegion<number> | null) {
+        this.hoveredRegion = region;
     }
 
     handleMouseDown(region: HitRegion<'right' | 'left'>, mouse: Mouse) {
@@ -224,6 +244,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.setData({
             flameChartNodes: this.flameChartNodes,
             waterfall: this.waterfall,
+            timeseries: this.timeseries,
         });
     }
 
@@ -412,11 +433,37 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         }
     }
 
-    setData({ flameChartNodes, waterfall }: { flameChartNodes?: FlameChartNodes; waterfall?: Waterfall }) {
+    prepareTimeseries() {
+        if (this.timeseries?.length) {
+            this.preparedTimeseries = prepareTmeseries(this.timeseries);
+        } else {
+            this.preparedTimeseries = undefined;
+        }
+    }
+
+    setData({
+        flameChartNodes,
+        waterfall,
+        timeseries,
+    }: {
+        flameChartNodes?: FlameChartNodes;
+        waterfall?: Waterfall;
+        timeseries?: Timeseries;
+    }) {
         this.flameChartNodes = flameChartNodes;
         this.waterfall = waterfall;
+        this.timeseries = timeseries;
 
         this.makeFlameChartDots();
+        this.makeWaterfallDots();
+        this.prepareTimeseries();
+        this.offscreenRender();
+    }
+
+    setTimeseries(timeseries: Timeseries) {
+        this.timeseries = timeseries;
+
+        this.prepareTimeseries();
         this.offscreenRender();
     }
 
@@ -472,6 +519,22 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 },
             });
         });
+
+        if (this.preparedTimeseries) {
+            const { summary, timeseries } = this.preparedTimeseries;
+
+            timeseries.forEach((chart) => {
+                const minmax = getMinMax(chart.points, chart, summary);
+
+                renderChart({
+                    engine: this.offscreenRenderEngine,
+                    points: chart.points,
+                    min: minmax.min,
+                    max: minmax.max,
+                    style: chart.style,
+                });
+            });
+        }
 
         this.offscreenRenderEngine.setCtxValue('fillStyle', this.styles.bottomLineColor);
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
@@ -548,6 +611,35 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         );
     }
 
+    override renderTooltip(): boolean {
+        if (this.hoveredRegion) {
+            const mouseX = this.interactionsEngine.getMouse().x;
+            const currentTimestamp = this.renderEngine.pixelToTime(mouseX) + this.renderEngine.positionX;
+
+            const time = `${currentTimestamp.toFixed(this.renderEngine.getAccuracy() + 2)} ${
+                this.renderEngine.timeUnits
+            }`;
+
+            const timeseriesFields = this.preparedTimeseries
+                ? renderChartTooltipFields(this.renderEngine, mouseX, this.preparedTimeseries)
+                : [];
+
+            this.renderEngine.renderTooltipFromData(
+                [
+                    {
+                        text: time,
+                    },
+                    ...timeseriesFields,
+                ],
+                this.interactionsEngine.getGlobalMouse()
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
     override render() {
         if (this.shouldRender) {
             this.shouldRender = false;
@@ -556,6 +648,8 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
 
         this.renderEngine.copy(this.offscreenRenderEngine);
         this.renderTimeframe();
+
+        this.interactionsEngine.addHitRegion(RegionTypes.TIMEFRAME, null, 0, 0, this.renderEngine.width, this.height);
 
         return true;
     }

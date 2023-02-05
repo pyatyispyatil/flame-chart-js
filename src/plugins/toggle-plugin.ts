@@ -139,11 +139,11 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
 
         this.renderEngine.setCtxFont(this.styles.font);
 
-        this.renderEngine.setCtxColor(this.styles.color);
-        this.renderEngine.setStrokeColor(this.styles.strokeColor);
+        this.renderEngine.setCtxValue('fillStyle', this.styles.color);
+        this.renderEngine.setCtxValue('strokeStyle', this.styles.strokeColor);
         this.renderEngine.fillRect(0, 0, this.renderEngine.width, this.styles.height);
 
-        this.renderEngine.setCtxColor(this.styles.fontColor);
+        this.renderEngine.setCtxValue('fillStyle', this.styles.fontColor);
         this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
         this.renderEngine.renderTriangle(
             this.styles.triangleColor,

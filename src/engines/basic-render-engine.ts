@@ -44,6 +44,10 @@ export type RenderStyles = {
     tooltipHeaderFontColor: string;
     tooltipBodyFontColor: string;
     tooltipBackgroundColor: string;
+    tooltipShadowColor: string;
+    tooltipShadowBlur: number;
+    tooltipShadowOffsetX: number;
+    tooltipShadowOffsetY: number;
     headerHeight: number;
     headerColor: string;
     headerStrokeColor: string;
@@ -69,10 +73,21 @@ export const defaultRenderStyles: RenderStyles = {
     tooltipHeaderFontColor: 'black',
     tooltipBodyFontColor: '#688f45',
     tooltipBackgroundColor: 'white',
+    tooltipShadowColor: 'black',
+    tooltipShadowBlur: 6,
+    tooltipShadowOffsetX: 0,
+    tooltipShadowOffsetY: 0,
     headerHeight: 14,
     headerColor: 'rgba(112, 112, 112, 0.25)',
     headerStrokeColor: 'rgba(112, 112, 112, 0.5)',
     headerTitleLeftPadding: 16,
+};
+
+export type Shadow = {
+    color: string;
+    blur: number;
+    offsetX?: number;
+    offsetY?: number;
 };
 
 export class BasicRenderEngine extends EventEmitter {
@@ -95,12 +110,13 @@ export class BasicRenderEngine extends EventEmitter {
     textRenderQueue: Text[] = [];
     strokeRenderQueue: Stroke[] = [];
     rectRenderQueue: RectRenderQueue = {};
-    lastUsedColor: string | null = null;
-    lastUsedStrokeColor: string | null = null;
     zoom: number = 0;
     positionX = 0;
     min = 0;
     max = 0;
+
+    ctxCachedSettings = {};
+    ctxCachedCalls = {};
 
     constructor(canvas: HTMLCanvasElement, settings: RenderSettings) {
         super();
@@ -148,20 +164,29 @@ export class BasicRenderEngine extends EventEmitter {
         this.textRenderQueue = [];
         this.strokeRenderQueue = [];
         this.rectRenderQueue = {};
+        this.ctxCachedCalls = {};
+        this.ctxCachedSettings = {};
     }
 
-    setCtxColor(color: string) {
-        if (color && this.lastUsedColor !== color) {
-            this.ctx.fillStyle = color;
-            this.lastUsedColor = color;
+    setCtxValue = (field: string, value: number | string) => {
+        if (this.ctxCachedSettings[field] !== value) {
+            this.ctx[field] = value;
+            this.ctxCachedSettings[field] = value;
         }
-    }
+    };
 
-    setStrokeColor(color: string) {
-        if (color && this.lastUsedStrokeColor !== color) {
-            this.ctx.strokeStyle = color;
-            this.lastUsedStrokeColor = color;
+    callCtx = (fn, value) => {
+        if (!this.ctxCachedCalls[fn] || this.ctxCachedCalls[fn] !== value) {
+            this.ctx[fn](value);
+            this.ctxCachedCalls[fn] = value;
         }
+    };
+
+    setCtxShadow(shadow: Shadow) {
+        this.setCtxValue('shadowBlur', shadow.blur);
+        this.setCtxValue('shadowColor', shadow.color);
+        this.setCtxValue('shadowOffsetY', shadow.offsetY ?? 0);
+        this.setCtxValue('shadowOffsetX', shadow.offsetX ?? 0);
     }
 
     setCtxFont(font: string) {
@@ -179,20 +204,23 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderBlock(color: string, x: number, y: number, w: number) {
-        this.setCtxColor(color);
+        this.setCtxValue('fillStyle', color);
         this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
     renderStroke(color: string, x: number, y: number, w: number, h: number) {
-        this.setStrokeColor(color);
+        this.setCtxValue('strokeStyle', color);
         this.ctx.setLineDash([]);
         this.ctx.strokeRect(x, y, w, h);
     }
 
     clear(w = this.width, h = this.height, x = 0, y = 0) {
+        this.setCtxValue('fillStyle', this.styles.backgroundColor);
         this.ctx.clearRect(x, y, w, h - 1);
-        this.setCtxColor(this.styles.backgroundColor);
         this.ctx.fillRect(x, y, w, h);
+
+        this.ctxCachedCalls = {};
+        this.ctxCachedSettings = {};
 
         this.emit('clear');
     }
@@ -241,7 +269,7 @@ export class BasicRenderEngine extends EventEmitter {
 
     resolveRectRenderQueue() {
         Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
-            this.setCtxColor(color);
+            this.setCtxValue('fillStyle', color);
 
             items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
         });
@@ -250,7 +278,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveTextRenderQueue() {
-        this.setCtxColor(this.styles.fontColor);
+        this.setCtxValue('fillStyle', this.styles.fontColor);
 
         this.textRenderQueue.forEach(({ text, x, y, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
@@ -361,8 +389,6 @@ export class BasicRenderEngine extends EventEmitter {
         this.canvas.height = this.height * this.pixelRatio;
         this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
         this.ctx.font = this.styles.font;
-        this.lastUsedColor = null;
-        this.lastUsedStrokeColor = null;
     }
 
     copy(engine: OffscreenRenderEngine) {
@@ -393,10 +419,15 @@ export class BasicRenderEngine extends EventEmitter {
             .reduce((acc, { width }) => Math.max(acc, width), 0);
         const fullWidth = maxWidth + this.blockPaddingLeftRight * 2;
 
-        this.ctx.shadowColor = 'black';
-        this.ctx.shadowBlur = 5;
+        this.setCtxShadow({
+            color: this.styles.tooltipShadowColor,
+            blur: this.styles.tooltipShadowBlur,
+            offsetX: this.styles.tooltipShadowOffsetX,
+            offsetY: this.styles.tooltipShadowOffsetY,
+        });
 
-        this.setCtxColor(this.styles.tooltipBackgroundColor);
+        this.setCtxValue('fillStyle', this.styles.tooltipBackgroundColor);
+
         this.ctx.fillRect(
             mouseX,
             mouseY,
@@ -404,16 +435,18 @@ export class BasicRenderEngine extends EventEmitter {
             (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2
         );
 
-        this.ctx.shadowColor = 'transparent';
-        this.ctx.shadowBlur = 0;
+        this.setCtxShadow({
+            color: 'transparent',
+            blur: 0,
+        });
 
         fields.forEach(({ text, color }, index) => {
             if (color) {
-                this.setCtxColor(color);
+                this.setCtxValue('fillStyle', color);
             } else if (!index) {
-                this.setCtxColor(this.styles.tooltipHeaderFontColor);
+                this.setCtxValue('fillStyle', this.styles.tooltipHeaderFontColor);
             } else {
-                this.setCtxColor(this.styles.tooltipBodyFontColor);
+                this.setCtxValue('fillStyle', this.styles.tooltipBodyFontColor);
             }
 
             this.ctx.fillText(
@@ -425,7 +458,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderShape(color: string, dots: Dots, posX: number, posY: number) {
-        this.setCtxColor(color);
+        this.setCtxValue('fillStyle', color);
 
         this.ctx.beginPath();
 
@@ -487,7 +520,7 @@ export class BasicRenderEngine extends EventEmitter {
     renderCircle(color: string, x: number, y: number, radius: number) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-        this.setCtxColor(color);
+        this.setCtxValue('fillStyle', color);
         this.ctx.fill();
     }
 }

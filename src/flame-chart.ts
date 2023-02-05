@@ -5,14 +5,16 @@ import { WaterfallPlugin, WaterfallPluginStyles } from './plugins/waterfall-plug
 import { TogglePlugin, TogglePluginStyles } from './plugins/toggle-plugin';
 import { FlameChartPlugin } from './plugins/flame-chart-plugin';
 import { MarksPlugin } from './plugins/marks-plugin';
-import { Colors, FlameChartNodes, Marks, Waterfall } from './types';
+import { Colors, FlameChartNodes, Marks, Timeseries, Waterfall } from './types';
 import { UIPlugin } from './plugins/ui-plugin';
+import { TimeseriesPlugin, TimeseriesPluginStyles } from './plugins/timeseries-plugin';
 
 export type FlameChartStyles = {
     timeGridPlugin?: Partial<TimeGridPluginStyles>;
     timeframeSelectorPlugin?: Partial<TimeframeSelectorPluginStyles>;
     waterfallPlugin?: Partial<WaterfallPluginStyles>;
     togglePlugin?: Partial<TogglePluginStyles>;
+    timeseriesPlugin?: Partial<TimeseriesPluginStyles>;
 };
 
 export type FlameChartSettings = {
@@ -27,6 +29,7 @@ export type FlameChartOptions = {
     data?: FlameChartNodes;
     marks?: Marks;
     waterfall?: Waterfall;
+    timeseries?: Timeseries;
     colors?: Colors;
     settings?: FlameChartSettings;
     plugins?: UIPlugin[];
@@ -36,6 +39,7 @@ const defaultSettings: FlameChartSettings = {};
 
 export class FlameChart extends FlameChartContainer<FlameChartStyles> {
     setData: (data: FlameChartNodes) => void;
+    setTimeseries: (timeseries: Timeseries) => void;
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
     setFlameChartPosition: ({ x, y }: { x?: number; y?: number }) => void;
@@ -45,6 +49,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         data,
         marks,
         waterfall,
+        timeseries,
         colors,
         settings = defaultSettings,
         plugins = [],
@@ -62,6 +67,16 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         let waterfallPlugin: WaterfallPlugin | undefined;
         let timeframeSelectorPlugin: TimeframeSelectorPlugin | undefined;
         let flameChartPlugin: FlameChartPlugin | undefined;
+        let timeseriesPlugin: TimeseriesPlugin | undefined;
+
+        if (timeseries) {
+            timeseriesPlugin = new TimeseriesPlugin({
+                data: timeseries,
+                settings: { styles: styles?.timeseriesPlugin },
+            });
+
+            activePlugins.push(timeseriesPlugin);
+        }
 
         if (marks) {
             marksPlugin = new MarksPlugin({ data: marks });
@@ -148,6 +163,14 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
 
                 if (timeframeSelectorPlugin) {
                     timeframeSelectorPlugin.setWaterfall(data);
+                }
+            };
+        }
+
+        if (timeseriesPlugin) {
+            this.setTimeseries = (data) => {
+                if (timeseriesPlugin) {
+                    timeseriesPlugin.setData(data);
                 }
             };
         }

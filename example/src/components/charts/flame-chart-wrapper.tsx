@@ -9,6 +9,7 @@ import {
     Mark,
     UIPlugin,
     FlatTreeNode,
+    Timeseries,
 } from '../../../../src';
 import useResizeObserver from 'use-resize-observer';
 
@@ -22,6 +23,7 @@ export type FlameChartProps = {
     data?: FlameChartNodes;
     marks?: Marks;
     waterfall?: Waterfall;
+    timeseries?: Timeseries;
     colors?: Record<string, string>;
     settings?: FlameChartSettings;
     position?: { x: number; y: number };
@@ -46,7 +48,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     });
 
     const initialize = useCallback(() => {
-        const { data, marks, waterfall, settings, colors, plugins } = props;
+        const { data, marks, waterfall, timeseries, settings, colors, plugins } = props;
 
         if (canvasRef.current && boxRef.current) {
             const { width = 0, height = 0 } = boxRef.current.getBoundingClientRect();
@@ -59,6 +61,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
                 data,
                 marks,
                 waterfall,
+                timeseries,
                 settings,
                 colors,
                 plugins,
@@ -105,8 +108,16 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     }, [props.waterfall]);
 
     useEffect(() => {
-        if (props.settings) {
-            flameChart.current?.setSettings(props.settings);
+        if (props.timeseries) {
+            flameChart.current?.setTimeseries(props.timeseries);
+        }
+    }, [props.timeseries]);
+
+    useEffect(() => {
+        if (props.settings && flameChart.current) {
+            flameChart.current.setSettings(props.settings);
+            flameChart.current.renderEngine.recalcChildrenSizes();
+            flameChart.current.render();
         }
     }, [props.settings]);
 

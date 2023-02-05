@@ -47,7 +47,7 @@ export class MarksPlugin extends UIPlugin {
     }
 
     override get height() {
-        return this.renderEngine.blockHeight + 1;
+        return this.renderEngine.blockHeight + 2;
     }
 
     prepareMarks(marks: Marks) {
@@ -88,14 +88,14 @@ export class MarksPlugin extends UIPlugin {
             const position = this.renderEngine.timeToPosition(timestamp);
             const blockPosition = this.calcMarksBlockPosition(position, prevEnding);
 
-            this.renderEngine.addRectToRenderQueue(color, blockPosition, 0, fullWidth);
-            this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 0, fullWidth);
+            this.renderEngine.addRectToRenderQueue(color, blockPosition, 1, fullWidth);
+            this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 1, fullWidth);
 
             this.interactionsEngine.addHitRegion(
                 RegionTypes.TIMESTAMP,
                 node,
                 blockPosition,
-                0,
+                1,
                 fullWidth,
                 this.renderEngine.blockHeight
             );
@@ -109,9 +109,10 @@ export class MarksPlugin extends UIPlugin {
             const { timestamp, color } = node;
             const position = this.renderEngine.timeToPosition(timestamp);
 
-            this.renderEngine.parent.setStrokeColor(color);
+            this.renderEngine.parent.setCtxValue('strokeStyle', color);
+            this.renderEngine.parent.setCtxValue('lineWidth', 1);
+            this.renderEngine.parent.callCtx('setLineDash', [8, 7]);
             this.renderEngine.parent.ctx.beginPath();
-            this.renderEngine.parent.ctx.setLineDash([8, 7]);
             this.renderEngine.parent.ctx.moveTo(position, this.renderEngine.position);
             this.renderEngine.parent.ctx.lineTo(position, this.renderEngine.parent.height);
             this.renderEngine.parent.ctx.stroke();

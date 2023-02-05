@@ -7,6 +7,7 @@ import {
     FlatTreeNode,
     FlameChartNode,
 } from '../../types';
+import { last } from '../../utils';
 
 const MIN_BLOCK_SIZE = 1;
 const STICK_DISTANCE = 0.25;
@@ -69,7 +70,7 @@ export const getFlatTreeMinMax = (flatTree: FlatTree) => {
 
 const calcClusterDuration = (nodes: FlatTreeNode[]) => {
     const firstNode = nodes[0];
-    const lastNode = nodes[nodes.length - 1];
+    const lastNode = last(nodes);
 
     return lastNode.source.start + lastNode.source.duration - firstNode.source.start;
 };
@@ -89,8 +90,8 @@ export function metaClusterizeFlatTree(
 ): MetaClusterizedFlatTree {
     return flatTree
         .reduce<FlatTreeNode[][]>((acc, node) => {
-            const lastCluster = acc[acc.length - 1];
-            const lastNode = lastCluster && lastCluster[lastCluster.length - 1];
+            const lastCluster = last(acc);
+            const lastNode = lastCluster && last(lastCluster);
 
             if (lastNode && lastNode.level === node.level && condition(lastNode, node)) {
                 lastCluster.push(node);

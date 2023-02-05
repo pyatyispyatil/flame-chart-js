@@ -10,3 +10,5 @@ export const mergeObjects = <S extends Record<PropertyKey, any>>(defaultStyles: 
     }, {} as S);
 
 export const isNumber = (val: unknown): val is number => typeof val === 'number';
+
+export const last = <T>(array: T[]): T => array[array.length - 1];

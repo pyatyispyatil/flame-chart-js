@@ -1,5 +1,5 @@
 import { FlameChartWrapper, NodeTypes } from './flame-chart-wrapper';
-import { FlameChartNode, FlameChartStyles, Marks, WaterfallItems } from '../../../../src';
+import { FlameChartNode, FlameChartStyles, Marks, Timeseries, WaterfallItems } from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
 import styles from './default-flame-chart.module.css';
 import { waterfallIntervals } from '../../test-data';
@@ -9,6 +9,7 @@ export type DefaultFlameChartProps = {
     flameChartData: FlameChartNode[];
     waterfallData: WaterfallItems;
     marksData: Marks;
+    timeseriesData: Timeseries;
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
     onSelect?: (node: NodeTypes) => void;
 };
@@ -17,6 +18,7 @@ export const DefaultFlameChart = ({
     flameChartData,
     waterfallData,
     marksData,
+    timeseriesData,
     stylesSettings,
     onSelect,
 }: DefaultFlameChartProps) => {
@@ -40,6 +42,7 @@ export const DefaultFlameChart = ({
             data={flameChartData}
             waterfall={waterfall}
             marks={marksData}
+            timeseries={timeseriesData}
             settings={settings}
             className={styles.flameChart}
             onSelect={onSelect}

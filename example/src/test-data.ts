@@ -1,4 +1,5 @@
 import { FlameChartNode, Mark, WaterfallIntervals, WaterfallItems } from '../../src';
+import { ChartPoints } from '../../src/plugins/utils/chart-render';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -113,6 +114,14 @@ export type MarksConfig = {
     end: number;
 };
 
+export type TimeseriesConfig = {
+    count: number;
+    start: number;
+    end: number;
+    min?: number;
+    max?: number;
+};
+
 export const treeConfigDefaults: TreeConfig = {
     count: 100000,
     start: 500,
@@ -137,6 +146,12 @@ export const waterfallConfigDefaults: WaterfallConfig = {
 export const marksConfigDefaults: MarksConfig = {
     count: 5,
     start: 0,
+    end: 4500,
+};
+
+export const timeseriesConfigDefaults: TimeseriesConfig = {
+    count: 100,
+    start: 400,
     end: 4500,
 };
 
@@ -331,4 +346,11 @@ export const generateRandomMarks = ({ count, start, end }: MarksConfig): Mark[] 
             color: rndItem(marksColors),
         };
     });
+};
+
+export const generateRandomTimeseries = ({ count, start, end, min, max }: TimeseriesConfig): ChartPoints => {
+    return Array(count)
+        .fill(null)
+        .map(() => [rndFloat(start, end), rndFloat(min ?? 0, max ?? 100)])
+        .sort((a, b) => a[0] - b[0]) as ChartPoints;
 };

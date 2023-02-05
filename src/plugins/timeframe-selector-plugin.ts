@@ -22,6 +22,7 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 import UIPlugin from './ui-plugin';
 import { parseWaterfall, PreparedWaterfallInterval } from './utils/waterfall-parser';
 import Color from 'color';
+import { ChartLineType, ChartPoints, renderChart } from './utils/chart-render';
 
 const TIMEFRAME_STICK_DISTANCE = 2;
 
@@ -30,21 +31,16 @@ type Dot = {
     type: 'start' | 'end';
 };
 
-type RenderDot = {
-    pos: number;
-    level: number;
-};
-
 export type TimeframeSelectorPluginStyles = {
     font: string;
     fontColor: string;
     overlayColor: string;
     graphStrokeColor: string;
     graphFillColor: string;
-    flameChartGraphType: TimeframeGraphTypes;
+    flameChartGraphType: ChartLineType;
     waterfallStrokeOpacity: number;
     waterfallFillOpacity: number;
-    waterfallGraphType: TimeframeGraphTypes;
+    waterfallGraphType: ChartLineType;
     bottomLineColor: string;
     knobColor: string;
     knobStrokeColor: string;
@@ -56,8 +52,6 @@ export type TimeframeSelectorPluginStyles = {
 export type TimeframeSelectorPluginSettings = {
     styles?: Partial<TimeframeSelectorPluginStyles>;
 };
-
-export type TimeframeGraphTypes = 'square' | 'smooth';
 
 export const defaultTimeframeSelectorPluginStyles: TimeframeSelectorPluginStyles = {
     font: '9px sans-serif',
@@ -94,8 +88,8 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     private actualClusters: ClusterizedFlatTree = [];
     private clusters: MetaClusterizedFlatTree = [];
     private flameChartMaxLevel = 0;
-    private flameChartDots: RenderDot[] = [];
-    private waterfallDots: { color: string; dots: RenderDot[] }[] = [];
+    private flameChartDots: ChartPoints = [];
+    private waterfallDots: { color: string; dots: ChartPoints }[] = [];
     private waterfallMaxLevel = 0;
     private actualClusterizedFlatTree: ClusterizedFlatTree = [];
 
@@ -340,24 +334,14 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         }
     }
 
-    makeRenderDots(dots: Dot[]): { dots: RenderDot[]; maxLevel: number } {
-        const renderDots: RenderDot[] = [];
+    makeRenderDots(dots: Dot[]): { dots: ChartPoints; maxLevel: number } {
+        const renderDots: ChartPoints = [];
         let level = 0;
         let maxLevel = 0;
 
         dots.forEach(({ type, time }) => {
-            if (type === 'start') {
-                renderDots.push({
-                    pos: time,
-                    level: level,
-                });
-            }
-
-            if (type === 'end') {
-                renderDots.push({
-                    pos: time,
-                    level: level,
-                });
+            if (type === 'start' || type === 'end') {
+                renderDots.push([time, level]);
             }
 
             if (type === 'start') {
@@ -368,10 +352,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
 
             maxLevel = Math.max(maxLevel, level);
 
-            renderDots.push({
-                pos: time,
-                level,
-            });
+            renderDots.push([time, level]);
         });
 
         return {
@@ -453,52 +434,6 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.offscreenRender();
     }
 
-    renderChart(
-        dots: RenderDot[],
-        maxLevel: number,
-        options: { strokeColor: string; fillColor: string; type?: TimeframeGraphTypes }
-    ) {
-        const zoom = this.offscreenRenderEngine.getInitialZoom();
-
-        this.offscreenRenderEngine.setStrokeColor(options.strokeColor);
-        this.offscreenRenderEngine.setCtxColor(options.fillColor);
-        this.offscreenRenderEngine.ctx.beginPath();
-
-        const flameChartLevelHeight = (this.height - this.renderEngine.charHeight - 4) / maxLevel;
-
-        if (dots.length) {
-            const xy = dots.map(({ pos, level }) => [
-                (pos - this.offscreenRenderEngine.min) * zoom,
-                this.castLevelToHeight(level, flameChartLevelHeight),
-            ]);
-
-            this.offscreenRenderEngine.ctx.moveTo(xy[0][0], xy[0][1]);
-
-            if (options.type === 'smooth' || !options.type) {
-                for (let i = 1; i < xy.length - 2; i++) {
-                    const xc = (xy[i][0] + xy[i + 1][0]) / 2;
-                    const yc = (xy[i][1] + xy[i + 1][1]) / 2;
-
-                    this.offscreenRenderEngine.ctx.quadraticCurveTo(xy[i][0], xy[i][1], xc, yc);
-                }
-
-                const preLast = xy[xy.length - 2];
-                const last = xy[xy.length - 1];
-
-                this.offscreenRenderEngine.ctx.quadraticCurveTo(preLast[0], preLast[1], last[0], last[1]);
-            } else if (options.type === 'square') {
-                for (let i = 1; i < xy.length; i++) {
-                    this.offscreenRenderEngine.ctx.lineTo(xy[i][0], xy[i][1]);
-                }
-            }
-        }
-
-        this.offscreenRenderEngine.ctx.closePath();
-
-        this.offscreenRenderEngine.ctx.stroke();
-        this.offscreenRenderEngine.ctx.fill();
-    }
-
     offscreenRender() {
         const zoom = this.offscreenRenderEngine.getInitialZoom();
 
@@ -510,28 +445,36 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         this.timeGrid.renderLines(0, this.offscreenRenderEngine.height);
         this.timeGrid.renderTimes();
 
-        this.renderChart(this.flameChartDots, this.flameChartMaxLevel, {
-            strokeColor: this.styles.graphStrokeColor,
-            fillColor: this.styles.graphFillColor,
-            type: this.styles.flameChartGraphType,
+        renderChart({
+            engine: this.offscreenRenderEngine,
+            points: this.flameChartDots,
+            min: 0,
+            max: this.flameChartMaxLevel,
+            style: {
+                lineColor: this.styles.graphStrokeColor,
+                fillColor: this.styles.graphFillColor,
+                type: this.styles.flameChartGraphType,
+            },
         });
 
         this.waterfallDots.forEach(({ color, dots }) => {
             const colorObj = new Color(color);
 
-            this.renderChart(dots, this.waterfallMaxLevel, {
-                strokeColor: colorObj.alpha(this.styles.waterfallStrokeOpacity).rgb().toString(),
-                fillColor: colorObj.alpha(this.styles.waterfallFillOpacity).rgb().toString(),
-                type: this.styles.waterfallGraphType,
+            renderChart({
+                engine: this.offscreenRenderEngine,
+                points: dots,
+                min: 0,
+                max: this.waterfallMaxLevel,
+                style: {
+                    lineColor: colorObj.alpha(this.styles.waterfallStrokeOpacity).rgb().toString(),
+                    fillColor: colorObj.alpha(this.styles.waterfallFillOpacity).rgb().toString(),
+                    type: this.styles.waterfallGraphType,
+                },
             });
         });
 
-        this.offscreenRenderEngine.setCtxColor(this.styles.bottomLineColor);
+        this.offscreenRenderEngine.setCtxValue('fillStyle', this.styles.bottomLineColor);
         this.offscreenRenderEngine.ctx.fillRect(0, this.height - 1, this.offscreenRenderEngine.width, 1);
-    }
-
-    castLevelToHeight(level: number, levelHeight: number) {
-        return this.height - level * levelHeight;
     }
 
     renderTimeframe() {
@@ -544,7 +487,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         const currentRightKnobPosition = currentRightPosition - this.styles.knobSize / 2;
         const knobHeight = this.renderEngine.height / 3;
 
-        this.renderEngine.setCtxColor(this.styles.overlayColor);
+        this.renderEngine.setCtxValue('fillStyle', this.styles.overlayColor);
         this.renderEngine.fillRect(0, 0, currentLeftPosition, this.renderEngine.height);
         this.renderEngine.fillRect(
             currentRightPosition,
@@ -553,11 +496,11 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             this.renderEngine.height
         );
 
-        this.renderEngine.setCtxColor(this.styles.overlayColor);
+        this.renderEngine.setCtxValue('fillStyle', this.styles.overlayColor);
         this.renderEngine.fillRect(currentLeftPosition - 1, 0, 1, this.renderEngine.height);
         this.renderEngine.fillRect(currentRightPosition + 1, 0, 1, this.renderEngine.height);
 
-        this.renderEngine.setCtxColor(this.styles.knobColor);
+        this.renderEngine.setCtxValue('fillStyle', this.styles.knobColor);
         this.renderEngine.fillRect(currentLeftKnobPosition, 0, this.styles.knobSize, knobHeight);
         this.renderEngine.fillRect(currentRightKnobPosition, 0, this.styles.knobSize, knobHeight);
 

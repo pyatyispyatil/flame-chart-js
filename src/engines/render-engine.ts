@@ -260,7 +260,9 @@ export class RenderEngine extends BasicRenderEngine {
             if (plugin.postRender) {
                 plugin.postRender();
             }
+        });
 
+        this.plugins.forEach((plugin) => {
             if (plugin.renderTooltip) {
                 tooltipRendered = tooltipRendered || Boolean(plugin.renderTooltip());
             }

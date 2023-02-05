@@ -10,11 +10,13 @@ import styles from './styles-settings.module.css';
 import { Button } from '../shared/button';
 import { FlameChartStyles } from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
+import { defaultTimeseriesPluginStyles } from '../../../../src/plugins/timeseries-plugin';
 
 const defaultStyles: FlameChartContainerStyles<FlameChartStyles> = {
     main: defaultRenderStyles,
     timeGrid: defaultTimeGridStyles,
     timeGridPlugin: defaultTimeGridPluginStyles,
+    timeseriesPlugin: defaultTimeseriesPluginStyles,
     timeframeSelectorPlugin: defaultTimeframeSelectorPluginStyles,
     waterfallPlugin: defaultWaterfallPluginStyles,
     togglePlugin: defaultTogglePluginStyles,

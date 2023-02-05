@@ -59,6 +59,7 @@ const flameChart = new FlameChart({
     waterfall: {
         /* ... */
     },
+    timeseries: [/* ... */],
     colors: {
         task: '#FFFFFF',
         'sub-task': '#000000',
@@ -96,6 +97,9 @@ type setData = (data: Data) => void;
 
 // set marks for marks plugin
 type setMarks = (data: Marks) => void;
+
+// set chart data for timeseries plugin
+type setTimeseries = (data: Timeseries) => void;
 
 // resize canvas
 type resize = (width: number, height: number) => void;
@@ -140,61 +144,7 @@ You can use the [classic flame chart with react like this](https://github.com/py
 
 #### Settings
 
-##### Default styles
-
-```json
-{
-    "main": {
-        "blockHeight": 16,
-        "blockPaddingLeftRight": 4,
-        "backgroundColor": "white",
-        "font": "10px sans-serif",
-        "fontColor": "black",
-        "tooltipHeaderFontColor": "black",
-        "tooltipBodyFontColor": "#688f45",
-        "tooltipBackgroundColor": "white",
-        "headerHeight": 14,
-        "headerColor": "rgba(112, 112, 112, 0.25)",
-        "headerStrokeColor": "rgba(112, 112, 112, 0.5)",
-        "headerTitleLeftPadding": 16
-    },
-    "timeGrid": {
-        "color": "rgb(126, 126, 126, 0.5)"
-    },
-    "timeGridPlugin": {
-        "font": "10px sans-serif",
-        "fontColor": "black"
-    },
-    "timeframeSelectorPlugin": {
-        "font": "9px sans-serif",
-        "fontColor": "black",
-        "overlayColor": "rgba(112, 112, 112, 0.5)",
-        "graphStrokeColor": "rgb(0, 0, 0, 0.2)",
-        "graphFillColor": "rgb(0, 0, 0, 0.25)",
-        "bottomLineColor": "rgb(0, 0, 0, 0.25)",
-        "knobColor": "rgb(131, 131, 131)",
-        "knobStrokeColor": "white",
-        "knobSize": 6,
-        "height": 60,
-        "backgroundColor": "white"
-    },
-    "waterfallPlugin": {
-        "defaultHeight": 150
-    },
-    "togglePlugin": {
-        "height": 16,
-        "color": "rgb(202,202,202, 0.25)",
-        "strokeColor": "rgb(138,138,138, 0.50)",
-        "dotsColor": "rgb(97,97,97)",
-        "fontColor": "black",
-        "font": "10px sans-serif",
-        "triangleWidth": 10,
-        "triangleHeight": 7,
-        "triangleColor": "black",
-        "leftPadding": 10
-    }
-}
-```
+##### Styles
 
 You can override whatever style you want. For example:
 
@@ -207,6 +157,9 @@ You can override whatever style you want. For example:
 ```
 
 After applying this style, the blocks of the flame chart will be 20 pixels high instead of 16 pixels.
+
+To learn more about styles, you can take a look at [the example](https://pyatyispyatil.github.io/flame-chart-js) - 
+all styles will be available in one of the dropdowns on the left side of the interface.
 
 ##### Custom Tooltip
 
@@ -281,6 +234,19 @@ type Waterfall = {
     items: WaterfallItems;
     intervals: WaterfallIntervals;
 };
+
+type TimeseriesChart = {
+  points: [number, number][];
+  group?: string;
+  units?: string;
+  name?: string;
+  style?: Partial<ChartStyle>;
+  min?: number;
+  max?: number;
+  dynamicMinMax?: boolean;
+};
+
+type Timeseries = TimeseriesChart[];
 ```
 
 #### Updating
@@ -289,6 +255,7 @@ type Waterfall = {
 flameChart.setData(newData);
 flameChart.setMarks(newMarks);
 flameChart.setWaterfall(newWaterfall);
+flameChart.setTimeseries(newTimeseries);
 ```
 
 #### Scaling

@@ -1,3 +1,5 @@
+import { ChartPoints, ChartStyle } from './plugins/utils/chart-render';
+
 export const EVENT_NAMES = ['down', 'up', 'move', 'click', 'select'] as const;
 
 export interface Mark {
@@ -132,6 +134,7 @@ export const enum RegionTypes {
     KNOB_RESIZE = 'knob-resize',
     TOGGLE = 'toggle',
     TIMESTAMP = 'timestamp',
+    TIMESERIES = 'timeseries',
 }
 
 export const enum CursorTypes {
@@ -139,6 +142,7 @@ export const enum CursorTypes {
     ROW_RESIZE = 'row-resize',
     POINTER = 'pointer',
     EW_RESIZE = 'ew-resize',
+    GRABBING = 'grabbing',
 }
 
 export interface HitRegion<S = any> {
@@ -151,3 +155,16 @@ export interface HitRegion<S = any> {
     cursor?: CursorTypes;
     id?: number;
 }
+
+export type TimeseriesChart = {
+    points: ChartPoints;
+    group?: string;
+    units?: string;
+    name?: string;
+    style?: Partial<ChartStyle>;
+    min?: number;
+    max?: number;
+    dynamicMinMax?: boolean;
+};
+
+export type Timeseries = TimeseriesChart[];

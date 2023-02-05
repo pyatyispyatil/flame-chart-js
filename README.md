@@ -2,7 +2,7 @@
 
 [![npm flame-chart-js package](https://img.shields.io/npm/v/flame-chart-js)](https://www.npmjs.com/package/flame-chart-js)
 
-![image](https://user-images.githubusercontent.com/4976306/214061192-7b514d3e-3b40-4f25-8acf-c705e05552c1.png)
+![image](https://user-images.githubusercontent.com/4976306/216842335-a771eb70-f8cd-46dc-ba60-3a399aaaf585.png)
 
 ### Installation
 
@@ -60,6 +60,7 @@ const flameChart = new FlameChart({
         /* ... */
     },
     timeseries: [/* ... */],
+    timeframeTimeseries: [/* ... */],
     colors: {
         task: '#FFFFFF',
         'sub-task': '#000000',
@@ -208,13 +209,13 @@ type Node = {
     children?: Array<Node>; // node children (same structure as for node)
 };
 
-type Data = Array<Node>;
+type Nodes = Array<Node>;
 
 type WaterfallItems = Array<{
     name: string;
-    intervals: string | WaterfallInterval;
+    intervals: string | WaterfallInterval; // if you use a string, then the intervals will be taken from the array of intervals
     timing: {
-        [string: key]: number;
+        [string: key]: number; // The timing name must match the start and end fields within the described intervals
     };
 }>;
 
@@ -236,14 +237,14 @@ type Waterfall = {
 };
 
 type TimeseriesChart = {
-  points: [number, number][];
-  group?: string;
-  units?: string;
-  name?: string;
+  points: [number, number][]; // data points to render - the first element of the internal array is the timestamp and the second element is the value of the point
+  group?: string; // group to calculate common minimum, maximum for multiple charts
+  units?: string; // points to be used for grouping (if the group field is missing) and for rendering the tooltip (for example '%', 'mb', 'kb/s')
+  name?: string; // the name will be used to display the tooltip
   style?: Partial<ChartStyle>;
-  min?: number;
-  max?: number;
-  dynamicMinMax?: boolean;
+  min?: number; // if absent, then min and max will be calculated from points
+  max?: number; // same
+  dynamicMinMax?: boolean; // dynamically calculate minimum and maximum based on current zoom level 
 };
 
 type Timeseries = TimeseriesChart[];

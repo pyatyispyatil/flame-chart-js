@@ -1,6 +1,8 @@
 import { RenderEngine } from '../../engines/render-engine';
 import { OffscreenRenderEngine } from '../../engines/offscreen-render-engine';
 import { last } from '../../utils';
+import { Timeseries, TimeseriesChart, TooltipField } from '../../types';
+import { PreparedTimeseries, TimeseriesPreparedChart } from '../timeseries-plugin';
 
 const castLevelToHeight = (level: number, minLevel: number, levelHeight: number, totalheight: number) => {
     return totalheight - (level - minLevel) * levelHeight;
@@ -26,6 +28,143 @@ export const defaultChartStyle: ChartStyle = {
     lineDash: [],
     lineColor: 'rgba(0, 0, 0, 0.5)',
     type: 'smooth',
+};
+
+export const prepareTmeseries = (timeseries: Timeseries): PreparedTimeseries => {
+    const timeboxes: { start: number; end: number }[] = [];
+
+    const preparedTimeseries: TimeseriesPreparedChart[] = timeseries.map((chart) => ({
+        group: chart.units && !chart.group ? chart.units : 'default',
+        ...chart,
+        style: {
+            lineWidth: 1,
+            fillColor: 'rgba(0, 0, 0, 0.15)',
+            lineColor: 'rgba(0, 0, 0, 0.20)',
+            lineDash: [],
+            type: 'smooth',
+            ...(chart.style ?? {}),
+        },
+    }));
+
+    const summary: Record<string, { min: number; max: number }> = preparedTimeseries.reduce(
+        (acc, { points, group, min, max }, index) => {
+            if (!acc[group]) {
+                acc[group] = {
+                    min: min ?? points[0][1],
+                    max: max ?? points[0][1],
+                };
+            }
+
+            timeboxes[index] = {
+                start: points[0][0],
+                end: last(points)[0],
+            };
+
+            points.forEach(([time, value]) => {
+                if (min === undefined) {
+                    acc[group].min = Math.min(acc[group].min, value);
+                }
+
+                if (max === undefined) {
+                    acc[group].max = Math.max(acc[group].max, value);
+                }
+
+                timeboxes[index].start = Math.min(timeboxes[index].start, time);
+                timeboxes[index].end = Math.max(timeboxes[index].end, time);
+            });
+
+            return acc;
+        },
+        {}
+    );
+
+    const min = Math.min(...timeboxes.map(({ start }) => start));
+    const max = Math.max(...timeboxes.map(({ end }) => end));
+
+    return {
+        summary,
+        total: {
+            min,
+            max,
+        },
+        timeseries: preparedTimeseries,
+        timeboxes: timeboxes,
+    };
+};
+
+export const getMinMax = (
+    points: ChartPoints,
+    chart: TimeseriesChart,
+    summary: Record<string, { min: number; max: number }>
+): { min: number; max: number } => {
+    return chart.dynamicMinMax
+        ? points.reduce(
+              (acc, [, value]) => {
+                  acc.min = Math.min(acc.min, value);
+                  acc.max = Math.max(acc.max, value);
+
+                  return acc;
+              },
+              { min: chart.min ?? Infinity, max: chart.max ?? -Infinity }
+          )
+        : chart.group
+        ? summary[chart.group]
+        : {
+              min: -Infinity,
+              max: Infinity,
+          };
+};
+
+export const renderChartTooltipFields = (
+    renderEngine: OffscreenRenderEngine,
+    mouseX: number,
+    { timeseries }: PreparedTimeseries
+): TooltipField[] => {
+    const currentX = renderEngine.pixelToTime(mouseX) + renderEngine.positionX;
+    const targetPoints: Record<string, string[]> = timeseries.reduce((acc, { points, units, name, group }) => {
+        const point = chartPointsBinarySearch(points, currentX);
+        const hasGroup = group !== units && group !== 'default';
+        const resolvedGroup = hasGroup ? group : 'default';
+
+        let result = '';
+
+        if (point) {
+            if (name) {
+                result += name + ': ';
+            }
+
+            result += point[1].toFixed(2);
+
+            if (units) {
+                result += units;
+            }
+        }
+
+        if (!acc[resolvedGroup]) {
+            acc[resolvedGroup] = [];
+        }
+
+        acc[resolvedGroup].push(result);
+
+        return acc;
+    }, {});
+
+    return Object.entries(targetPoints).reduce((acc: TooltipField[], [group, values]) => {
+        if (group !== 'default') {
+            acc.push({
+                text: group,
+                color: 'black',
+            });
+        }
+
+        values.forEach((value) => {
+            acc.push({
+                text: value,
+            });
+        });
+
+        return acc;
+    }, []);
 };
 
 export const renderChart = ({

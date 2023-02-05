@@ -73,6 +73,7 @@ interface Rect {
     y: number;
     w: number;
 }
+
 export interface RectRenderQueue {
     [color: string]: Rect[];
 }
@@ -129,6 +130,7 @@ export interface TooltipField {
 export const enum RegionTypes {
     WATERFALL_NODE = 'waterfall-node',
     CLUSTER = 'cluster',
+    TIMEFRAME = 'timeframe',
     TIMEFRAME_AREA = 'timeframeArea',
     TIMEFRAME_KNOB = 'timeframeKnob',
     KNOB_RESIZE = 'knob-resize',

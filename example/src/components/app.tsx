@@ -50,6 +50,7 @@ export const App = () => {
     const [waterfallData, setWaterfallData] = useState<WaterfallItems | null>(null);
     const [marksData, setMarksData] = useState<Marks | null>(null);
     const [timeseriesData, setTimeseriesData] = useState<Timeseries | null>(null);
+    const [timeframeTimeseriesData, setTimeframeTimeseriesData] = useState<Timeseries | null>(null);
     const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
     const generateTree = useCallback((chart: ChartType, config?: TreeConfig) => {
@@ -109,6 +110,20 @@ export const App = () => {
                 min: 0,
                 max: 8096,
             };
+
+            setTimeframeTimeseriesData([
+                {
+                    name: 'CPU Total',
+                    points: generateRandomTimeseries(cpuConfig),
+                    units: '%',
+                    min: 0,
+                    max: 100,
+                    style: {
+                        lineColor: 'rgba(239,36,255,0.2)',
+                        fillColor: 'rgba(239,36,255,0.2)',
+                    },
+                },
+            ]);
 
             setTimeseriesData([
                 {
@@ -178,40 +193,46 @@ export const App = () => {
                 <Collapse title='Variants'>
                     <RadioGroup value={currentChart} options={flameChartVariants} onChange={handleChartChange} />
                 </Collapse>
-                <Collapse title='Flame chart data settings' isCollapsed={false}>
+                <Collapse title='Flame chart data settings' isCollapsed={true}>
                     <TreeSettings
                         onChange={(config) => generateTree(currentChart, config)}
                         isGenerating={isGenerating}
                     />
                 </Collapse>
-                <Collapse title='Waterfall data settings' isCollapsed={false}>
+                <Collapse title='Waterfall data settings' isCollapsed={true}>
                     <WaterfallSettings onChange={(config) => generateWaterfall(config)} isGenerating={isGenerating} />
                 </Collapse>
-                <Collapse title='Marks data settings' isCollapsed={false}>
+                <Collapse title='Marks data settings' isCollapsed={true}>
                     <MarksSettings onChange={(config) => generateMarks(config)} isGenerating={isGenerating} />
                 </Collapse>
-                <Collapse title='Timeseries data settings' isCollapsed={false}>
+                <Collapse title='Timeseries data settings' isCollapsed={true}>
                     <TimeseriesSettings onChange={(config) => generateTimeseries(config)} isGenerating={isGenerating} />
                 </Collapse>
                 <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
                 {selectedData?.node && (
-                    <Collapse title='Selected node' isCollapsed={false}>
+                    <Collapse title='Selected node' isCollapsed={true}>
                         <SelectedData data={selectedData} />
                     </Collapse>
                 )}
             </div>
-            {currentChart === 'default' && flameChartData && waterfallData && marksData && timeseriesData && (
-                <DefaultFlameChart
-                    flameChartData={flameChartData}
-                    waterfallData={waterfallData}
-                    marksData={marksData}
-                    timeseriesData={timeseriesData}
-                    stylesSettings={stylesSettings}
-                    onSelect={setSelectedData}
-                />
-            )}
+            {currentChart === 'default' &&
+                flameChartData &&
+                waterfallData &&
+                marksData &&
+                timeseriesData &&
+                timeframeTimeseriesData && (
+                    <DefaultFlameChart
+                        flameChartData={flameChartData}
+                        waterfallData={waterfallData}
+                        marksData={marksData}
+                        timeseriesData={timeseriesData}
+                        timeframeTimeseriesData={timeframeTimeseriesData}
+                        stylesSettings={stylesSettings}
+                        onSelect={setSelectedData}
+                    />
+                )}
             {currentChart === 'custom' && customFlameChartData && (
                 <CustomFlameChart flameChartData={customFlameChartData} stylesSettings={stylesSettings} />
             )}

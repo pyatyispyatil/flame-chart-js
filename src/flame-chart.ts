@@ -29,6 +29,7 @@ export type FlameChartOptions = {
     data?: FlameChartNodes;
     marks?: Marks;
     waterfall?: Waterfall;
+    timeframeTimeseries?: Timeseries;
     timeseries?: Timeseries;
     colors?: Colors;
     settings?: FlameChartSettings;
@@ -38,8 +39,9 @@ export type FlameChartOptions = {
 const defaultSettings: FlameChartSettings = {};
 
 export class FlameChart extends FlameChartContainer<FlameChartStyles> {
-    setData: (data: FlameChartNodes) => void;
+    setNodes: (nodes: FlameChartNodes) => void;
     setTimeseries: (timeseries: Timeseries) => void;
+    setTimeframeTimeseries: (timeseries: Timeseries) => void;
     setMarks: (data: Marks) => void;
     setWaterfall: (data: Waterfall) => void;
     setFlameChartPosition: ({ x, y }: { x?: number; y?: number }) => void;
@@ -49,6 +51,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         data,
         marks,
         waterfall,
+        timeframeTimeseries,
         timeseries,
         colors,
         settings = defaultSettings,
@@ -107,10 +110,11 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
             activePlugins.push(flameChartPlugin);
         }
 
-        if (data || waterfall) {
+        if (data || waterfall || timeframeTimeseries) {
             timeframeSelectorPlugin = new TimeframeSelectorPlugin({
                 flameChartNodes: data,
                 waterfall: waterfall,
+                timeseries: timeframeTimeseries,
                 settings: { styles: styles?.timeframeSelectorPlugin },
             });
 
@@ -124,7 +128,7 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
         });
 
         if (flameChartPlugin && timeframeSelectorPlugin) {
-            this.setData = (data) => {
+            this.setNodes = (data) => {
                 if (flameChartPlugin) {
                     flameChartPlugin.setData(data);
                 }
@@ -172,6 +176,12 @@ export class FlameChart extends FlameChartContainer<FlameChartStyles> {
                 if (timeseriesPlugin) {
                     timeseriesPlugin.setData(data);
                 }
+            };
+        }
+
+        if (timeframeSelectorPlugin) {
+            this.setTimeframeTimeseries = (data) => {
+                timeframeSelectorPlugin?.setTimeseries(data);
             };
         }
     }

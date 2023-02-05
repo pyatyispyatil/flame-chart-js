@@ -24,6 +24,7 @@ export type FlameChartProps = {
     marks?: Marks;
     waterfall?: Waterfall;
     timeseries?: Timeseries;
+    timeframeTimeseries?: Timeseries;
     colors?: Record<string, string>;
     settings?: FlameChartSettings;
     position?: { x: number; y: number };
@@ -48,7 +49,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     });
 
     const initialize = useCallback(() => {
-        const { data, marks, waterfall, timeseries, settings, colors, plugins } = props;
+        const { data, marks, waterfall, timeseries, settings, colors, plugins, timeframeTimeseries } = props;
 
         if (canvasRef.current && boxRef.current) {
             const { width = 0, height = 0 } = boxRef.current.getBoundingClientRect();
@@ -62,6 +63,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
                 marks,
                 waterfall,
                 timeseries,
+                timeframeTimeseries,
                 settings,
                 colors,
                 plugins,
@@ -91,7 +93,7 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
 
     useEffect(() => {
         if (props.data) {
-            flameChart.current?.setData(props.data);
+            flameChart.current?.setNodes(props.data);
         }
     }, [props.data]);
 
@@ -112,6 +114,12 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
             flameChart.current?.setTimeseries(props.timeseries);
         }
     }, [props.timeseries]);
+
+    useEffect(() => {
+        if (props.timeframeTimeseries) {
+            flameChart.current?.setTimeframeTimeseries(props.timeframeTimeseries);
+        }
+    }, [props.timeframeTimeseries]);
 
     useEffect(() => {
         if (props.settings && flameChart.current) {

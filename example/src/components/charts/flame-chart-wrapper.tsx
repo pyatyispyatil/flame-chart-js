@@ -114,8 +114,10 @@ export const FlameChartWrapper = (props: FlameChartProps) => {
     }, [props.timeseries]);
 
     useEffect(() => {
-        if (props.settings) {
-            flameChart.current?.setSettings(props.settings);
+        if (props.settings && flameChart.current) {
+            flameChart.current.setSettings(props.settings);
+            flameChart.current.renderEngine.recalcChildrenSizes();
+            flameChart.current.render();
         }
     }, [props.settings]);
 

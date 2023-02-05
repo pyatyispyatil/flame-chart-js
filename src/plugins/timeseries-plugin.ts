@@ -1,9 +1,9 @@
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
 import { SeparatedInteractionsEngine } from '../engines/separated-interactions-engine';
-import { HitRegion, RegionTypes, Timeseries, TimeseriesChart, TooltipField } from '../types';
+import { CursorTypes, HitRegion, RegionTypes, Timeseries, TimeseriesChart, TooltipField } from '../types';
 import UIPlugin from './ui-plugin';
-import { mergeObjects } from '../utils';
-import { binarySearch, ChartStyle, renderChart } from './utils/chart-render';
+import { last, mergeObjects } from '../utils';
+import { chartPointsBinarySearch, ChartStyle, renderChart } from './utils/chart-render';
 
 export type TimeseriesPluginStyles = {
     height: number;
@@ -27,7 +27,7 @@ type PreparedTimeseries = TimeseriesPreparedChart[];
 const EXTRA_POINTS_FOR_RENDER = 2;
 
 export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
-    height = 68;
+    height = 56;
 
     private data: PreparedTimeseries;
     private hoveredRegion: HitRegion<{}> | null = null;
@@ -61,7 +61,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
     handlePositionChange(position: { deltaX: number }) {
         const startPositionX = this.renderEngine.parent.positionX;
 
-        this.interactionsEngine.setCursor('grabbing');
+        this.interactionsEngine.setCursor(CursorTypes.GRABBING);
 
         this.renderEngine.tryToChangePosition(position.deltaX);
 
@@ -103,7 +103,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
 
             this.timeboxes[index] = {
                 start: points[0][0],
-                end: points[points.length - 1][0],
+                end: last(points)[0],
             };
 
             points.forEach(([time, value]) => {
@@ -140,7 +140,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
             const currentX =
                 this.renderEngine.pixelToTime(this.interactionsEngine.getMouse().x) + this.renderEngine.positionX;
             const targetPoints: Record<string, string[]> = this.data.reduce((acc, { points, units, name, group }) => {
-                const point = binarySearch(points, currentX);
+                const point = chartPointsBinarySearch(points, currentX);
 
                 let result = '';
 

@@ -1,5 +1,6 @@
 import { RenderEngine } from '../../engines/render-engine';
 import { OffscreenRenderEngine } from '../../engines/offscreen-render-engine';
+import { last } from '../../utils';
 
 const castLevelToHeight = (level: number, minLevel: number, levelHeight: number, totalheight: number) => {
     return totalheight - (level - minLevel) * levelHeight;
@@ -71,11 +72,11 @@ export const renderChart = ({
                 engine.ctx.quadraticCurveTo(xy[i][0], xy[i][1], xc, yc);
             }
 
-            const preLast = xy[xy.length - 2];
-            const last = xy[xy.length - 1];
+            const preLastPoint = xy[xy.length - 2];
+            const lastPoint = last(xy);
 
-            engine.ctx.quadraticCurveTo(preLast[0], preLast[1], last[0], last[1]);
-            engine.ctx.quadraticCurveTo(last[0], last[1], last[0], engine.height);
+            engine.ctx.quadraticCurveTo(preLastPoint[0], preLastPoint[1], lastPoint[0], lastPoint[1]);
+            engine.ctx.quadraticCurveTo(lastPoint[0], lastPoint[1], lastPoint[0], engine.height);
         } else if (resolvedStyle.type === 'line') {
             for (let i = 1; i < xy.length; i++) {
                 engine.ctx.lineTo(xy[i][0], xy[i][1]);
@@ -99,7 +100,7 @@ export const renderChart = ({
                 }
             }
 
-            engine.ctx.lineTo(xy[xy.length - 1][0], engine.height);
+            engine.ctx.lineTo(last(xy)[0], engine.height);
         }
     }
 
@@ -109,13 +110,17 @@ export const renderChart = ({
     engine.ctx.fill();
 };
 
-export const binarySearch = (array: ChartPoints, value: number, outside: boolean = true) => {
+export const chartPointsBinarySearch = (
+    array: ChartPoints,
+    value: number,
+    outside: boolean = true
+): ChartPoint | null => {
     if (array[0][0] >= value) {
         return outside ? array[0] : null;
     }
 
-    if (array[array.length - 1][0] <= value) {
-        return outside ? array[array.length - 1] : null;
+    if (last(array)[0] <= value) {
+        return outside ? last(array) : null;
     }
 
     if (array.length <= 1) {

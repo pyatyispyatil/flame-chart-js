@@ -142,6 +142,7 @@ export const enum CursorTypes {
     ROW_RESIZE = 'row-resize',
     POINTER = 'pointer',
     EW_RESIZE = 'ew-resize',
+    GRABBING = 'grabbing',
 }
 
 export interface HitRegion<S = any> {

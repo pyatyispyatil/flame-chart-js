@@ -1,4 +1,4 @@
-import { mergeObjects } from '../utils';
+import { last, mergeObjects } from '../utils';
 import UIPlugin from './ui-plugin';
 import { HitRegion, RegionTypes, Waterfall, WaterfallItems } from '../types';
 import { OffscreenRenderEngine } from '../engines/offscreen-render-engine';
@@ -196,7 +196,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
         const viewedData = this.data
             .filter(({ min, max }) => !((rightSide < min && rightSide < max) || (leftSide > max && rightSide > min)))
             .map((entry) => {
-                while (stack.length && entry.min - stack[stack.length - 1].max > 0) {
+                while (stack.length && entry.min - last(stack).max > 0) {
                     stack.pop();
                 }
 

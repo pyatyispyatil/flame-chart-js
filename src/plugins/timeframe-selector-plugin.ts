@@ -614,14 +614,14 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     override renderTooltip(): boolean {
         if (this.hoveredRegion) {
             const mouseX = this.interactionsEngine.getMouse().x;
-            const currentTimestamp = this.renderEngine.pixelToTime(mouseX) + this.renderEngine.positionX;
+            const currentTimestamp = mouseX / this.renderEngine.getInitialZoom() + this.renderEngine.min;
 
             const time = `${currentTimestamp.toFixed(this.renderEngine.getAccuracy() + 2)} ${
                 this.renderEngine.timeUnits
             }`;
 
             const timeseriesFields = this.preparedTimeseries
-                ? renderChartTooltipFields(this.renderEngine, mouseX, this.preparedTimeseries)
+                ? renderChartTooltipFields(currentTimestamp, this.preparedTimeseries)
                 : [];
 
             this.renderEngine.renderTooltipFromData(

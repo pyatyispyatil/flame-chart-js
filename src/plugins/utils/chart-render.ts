@@ -115,14 +115,9 @@ export const getMinMax = (
           };
 };
 
-export const renderChartTooltipFields = (
-    renderEngine: OffscreenRenderEngine,
-    mouseX: number,
-    { timeseries }: PreparedTimeseries
-): TooltipField[] => {
-    const currentX = renderEngine.pixelToTime(mouseX) + renderEngine.positionX;
+export const renderChartTooltipFields = (timestamp: number, { timeseries }: PreparedTimeseries): TooltipField[] => {
     const targetPoints: Record<string, string[]> = timeseries.reduce((acc, { points, units, name, group }) => {
-        const point = chartPointsBinarySearch(points, currentX);
+        const point = chartPointsBinarySearch(points, timestamp);
         const hasGroup = group !== units && group !== 'default';
         const resolvedGroup = hasGroup ? group : 'default';
 

@@ -109,7 +109,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
                 this.renderEngine.timeUnits
             }`;
 
-            const values = renderChartTooltipFields(this.renderEngine, mouseX, this.data);
+            const values = renderChartTooltipFields(currentTimestamp, this.data);
 
             this.renderEngine.renderTooltipFromData(
                 [

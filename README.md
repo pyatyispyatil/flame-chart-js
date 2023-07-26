@@ -23,7 +23,7 @@ You can find some [plans on the wiki](https://github.com/pyatyispyatil/flame-cha
 You can ignore any of the marks, data, or waterfall arguments to initialize only the items you want. The flame chart will automatically adjust and hide unused plugins.
 
 ```js
-import FlameChart from 'flame-chart-js';
+import { FlameChart } from 'flame-chart-js';
 
 const canvas = document.getElementById('canvas');
 
@@ -94,7 +94,7 @@ type setFlameChartPosition = ({ x: number, y: number }) => void;
 type render = () => void;
 
 // set new data for the flame-chart
-type setData = (data: Data) => void;
+type setNodes = (nodes: FlameChartNodes) => void;
 
 // set marks for marks plugin
 type setMarks = (data: Marks) => void;

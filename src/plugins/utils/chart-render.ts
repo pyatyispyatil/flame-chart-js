@@ -75,7 +75,7 @@ export const prepareTmeseries = (timeseries: Timeseries): PreparedTimeseries => 
 
             return acc;
         },
-        {}
+        {},
     );
 
     const min = Math.min(...timeboxes.map(({ start }) => start));
@@ -95,7 +95,7 @@ export const prepareTmeseries = (timeseries: Timeseries): PreparedTimeseries => 
 export const getMinMax = (
     points: ChartPoints,
     chart: TimeseriesChart,
-    summary: Record<string, { min: number; max: number }>
+    summary: Record<string, { min: number; max: number }>,
 ): { min: number; max: number } => {
     return chart.dynamicMinMax
         ? points.reduce(
@@ -105,7 +105,7 @@ export const getMinMax = (
 
                   return acc;
               },
-              { min: chart.min ?? Infinity, max: chart.max ?? -Infinity }
+              { min: chart.min ?? Infinity, max: chart.max ?? -Infinity },
           )
         : chart.group
         ? summary[chart.group]
@@ -247,7 +247,7 @@ export const renderChart = ({
 export const chartPointsBinarySearch = (
     array: ChartPoints,
     value: number,
-    outside: boolean = true
+    outside: boolean = true,
 ): ChartPoint | null => {
     if (array[0][0] >= value) {
         return outside ? array[0] : null;

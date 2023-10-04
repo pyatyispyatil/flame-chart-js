@@ -118,7 +118,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
                     },
                     ...values,
                 ],
-                this.interactionsEngine.getGlobalMouse()
+                this.interactionsEngine.getGlobalMouse(),
             );
 
             return true;
@@ -146,7 +146,7 @@ export class TimeseriesPlugin extends UIPlugin<TimeseriesPluginStyles> {
                     : Math.max(
                           chart.points.findIndex(([timestamp]) => timestamp >= timestampStart) -
                               EXTRA_POINTS_FOR_RENDER,
-                          0
+                          0,
                       );
             const rightIndex =
                 timestampEnd >= this.data.timeboxes[index].end

@@ -10,7 +10,7 @@ import {
     UIPlugin,
     FlatTreeNode,
     Timeseries,
-} from '../../../../src';
+} from '../../index';
 import useResizeObserver from 'use-resize-observer';
 
 export type NodeTypes =
@@ -19,7 +19,7 @@ export type NodeTypes =
     | { node: Mark | null; type: 'mark' }
     | null;
 
-export type FlameChartProps = {
+export type FlameChartWrapperProps = {
     data?: FlameChartNodes;
     marks?: Marks;
     waterfall?: Waterfall;
@@ -38,7 +38,7 @@ export type FlameChartProps = {
     onSelect?: (data: NodeTypes) => void;
 };
 
-export const FlameChartWrapper = (props: FlameChartProps) => {
+export const FlameChartWrapper = (props: FlameChartWrapperProps) => {
     const boxRef = useRef<null | HTMLDivElement>(null);
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
     const flameChart = useRef<null | FlameChart>(null);

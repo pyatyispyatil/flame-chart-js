@@ -254,7 +254,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
         if (mouseX < maxPosition - 1) {
             const realView = this.renderEngine.getRealView();
             const delta = this.renderEngine.setPositionX(
-                this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min
+                this.offscreenRenderEngine.pixelToTime(mouseX) + this.renderEngine.min,
             );
             const zoom = this.renderEngine.width / (realView - delta);
 
@@ -322,7 +322,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 this.min,
                 this.max,
                 TIMEFRAME_STICK_DISTANCE,
-                Infinity
+                Infinity,
             );
             this.actualClusterizedFlatTree = reclusterizeClusteredFlatTree(
                 this.actualClusters,
@@ -330,7 +330,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                 this.min,
                 this.max,
                 TIMEFRAME_STICK_DISTANCE,
-                Infinity
+                Infinity,
             ).sort((a, b) => a.start - b.start);
 
             this.actualClusterizedFlatTree.forEach(({ start, end }) => {
@@ -342,7 +342,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                     {
                         time: end,
                         type: 'end',
-                    }
+                    },
                 );
             });
 
@@ -397,7 +397,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                     });
 
                     return acc;
-                }, {})
+                }, {}),
             );
 
             const points = intervals.map(([color, intervals]) => {
@@ -556,7 +556,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             currentRightPosition,
             0,
             this.renderEngine.width - currentRightPosition,
-            this.renderEngine.height
+            this.renderEngine.height,
         );
 
         this.renderEngine.setCtxValue('fillStyle', this.styles.overlayColor);
@@ -572,14 +572,14 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             currentLeftKnobPosition,
             0,
             this.styles.knobSize,
-            knobHeight
+            knobHeight,
         );
         this.renderEngine.renderStroke(
             this.styles.knobStrokeColor,
             currentRightKnobPosition,
             0,
             this.styles.knobSize,
-            knobHeight
+            knobHeight,
         );
 
         this.interactionsEngine.addHitRegion(
@@ -589,7 +589,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             0,
             this.styles.knobSize,
             knobHeight,
-            CursorTypes.EW_RESIZE
+            CursorTypes.EW_RESIZE,
         );
         this.interactionsEngine.addHitRegion(
             RegionTypes.TIMEFRAME_KNOB,
@@ -598,7 +598,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             0,
             this.styles.knobSize,
             knobHeight,
-            CursorTypes.EW_RESIZE
+            CursorTypes.EW_RESIZE,
         );
         this.interactionsEngine.addHitRegion(
             RegionTypes.TIMEFRAME_AREA,
@@ -607,7 +607,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             0,
             this.renderEngine.width,
             this.renderEngine.height,
-            CursorTypes.TEXT
+            CursorTypes.TEXT,
         );
     }
 
@@ -631,7 +631,7 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
                     },
                     ...timeseriesFields,
                 ],
-                this.interactionsEngine.getGlobalMouse()
+                this.interactionsEngine.getGlobalMouse(),
             );
 
             return true;

@@ -103,7 +103,7 @@ export class TimeGrid {
             renderEngine.fillText(
                 timePosition.toFixed(this.accuracy) + this.timeUnits,
                 pixelPosition + renderEngine.blockPaddingLeftRight,
-                renderEngine.charHeight
+                renderEngine.charHeight,
             );
         });
     }

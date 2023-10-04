@@ -195,7 +195,7 @@ export class FlameChartPlugin extends UIPlugin {
             this.metaClusterizedFlatTree,
             this.renderEngine.zoom,
             this.min,
-            this.max
+            this.max,
         );
 
         this.reclusterizeClusteredFlatTree();
@@ -206,7 +206,7 @@ export class FlameChartPlugin extends UIPlugin {
             this.initialClusterizedFlatTree,
             this.renderEngine.zoom,
             this.renderEngine.positionX,
-            this.renderEngine.positionX + this.renderEngine.getRealView()
+            this.renderEngine.positionX + this.renderEngine.getRealView(),
         );
     }
 
@@ -228,7 +228,7 @@ export class FlameChartPlugin extends UIPlugin {
                 this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
                 );
             } else {
                 const {
@@ -249,7 +249,7 @@ export class FlameChartPlugin extends UIPlugin {
 
                 this.renderEngine.renderTooltipFromData(
                     [{ text: header }, { text: dur }, { text: st }],
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
                 );
             }
 

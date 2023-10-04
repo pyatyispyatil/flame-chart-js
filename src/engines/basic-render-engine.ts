@@ -302,7 +302,7 @@ export class BasicRenderEngine extends EventEmitter {
                 this.ctx.fillText(
                     text,
                     (x < 0 ? 0 : x) + this.blockPaddingLeftRight,
-                    y + this.blockHeight - this.blockPaddingTopBottom
+                    y + this.blockHeight - this.blockPaddingTopBottom,
                 );
             }
         });
@@ -404,7 +404,7 @@ export class BasicRenderEngine extends EventEmitter {
                 0,
                 engine.position || 0,
                 engine.width * ratio,
-                engine.height * ratio
+                engine.height * ratio,
             );
         }
     }
@@ -432,7 +432,7 @@ export class BasicRenderEngine extends EventEmitter {
             mouseX,
             mouseY,
             fullWidth + this.blockPaddingLeftRight * 2,
-            (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2
+            (this.charHeight + 2) * fields.length + this.blockPaddingLeftRight * 2,
         );
 
         this.setCtxShadow({
@@ -452,7 +452,7 @@ export class BasicRenderEngine extends EventEmitter {
             this.ctx.fillText(
                 text,
                 mouseX + this.blockPaddingLeftRight,
-                mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * index
+                mouseY + this.blockHeight - this.blockPaddingTopBottom + (this.charHeight + 2) * index,
             );
         });
     }
@@ -477,7 +477,7 @@ export class BasicRenderEngine extends EventEmitter {
         y: number,
         width: number,
         height: number,
-        direction: 'bottom' | 'left' | 'right' | 'top'
+        direction: 'bottom' | 'left' | 'right' | 'top',
     ) {
         const halfHeight = height / 2;
         const halfWidth = width / 2;

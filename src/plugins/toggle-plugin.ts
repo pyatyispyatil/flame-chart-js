@@ -151,7 +151,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
             this.styles.height / 2,
             this.styles.triangleWidth,
             this.styles.triangleHeight,
-            nextEngine.collapsed ? 'right' : 'bottom'
+            nextEngine.collapsed ? 'right' : 'bottom',
         );
 
         const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title);
@@ -164,7 +164,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
             0,
             buttonWidth,
             this.styles.height,
-            CursorTypes.POINTER
+            CursorTypes.POINTER,
         );
 
         if (prevEngine.flexible) {
@@ -179,7 +179,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
                 0,
                 this.renderEngine.width - buttonWidth,
                 this.styles.height,
-                CursorTypes.ROW_RESIZE
+                CursorTypes.ROW_RESIZE,
             );
         }
     }

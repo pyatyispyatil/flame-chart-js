@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { UIPlugin, FlameChartContainer, FlameChartContainerSettings } from '../../../../src';
+import { UIPlugin, FlameChartContainer, FlameChartContainerSettings } from '../../index';
 import useResizeObserver from 'use-resize-observer';
 
 export type FlameChartContainerProps = {

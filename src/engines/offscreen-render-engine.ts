@@ -75,7 +75,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     // @ts-ignore - overrides a parent function which has different signature
     override resize(
         { width, height, position }: { width?: number; height?: number; position?: number },
-        isParentCall?: boolean
+        isParentCall?: boolean,
     ) {
         const isHeightChanged = super.resize(width, height);
 

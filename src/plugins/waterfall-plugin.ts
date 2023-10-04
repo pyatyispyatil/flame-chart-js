@@ -177,7 +177,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                             ...timingTexts,
                             ...(metaTexts.length ? [metaHeader, ...metaTexts] : []),
                         ],
-                        this.interactionsEngine.getGlobalMouse()
+                        this.interactionsEngine.getGlobalMouse(),
                     );
                 }
             }
@@ -236,7 +236,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                             w: w + acc.w,
                         };
                     },
-                    { x: null, w: 0 }
+                    { x: null, w: 0 },
                 );
 
                 if (this.selectedRegion && this.selectedRegion.type === 'waterfall-node') {
@@ -253,7 +253,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     x ?? 0,
                     y,
                     w,
-                    this.renderEngine.blockHeight
+                    this.renderEngine.blockHeight,
                 );
             }
         }, 0);

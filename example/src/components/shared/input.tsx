@@ -16,7 +16,7 @@ export const Input = (props: PropsWithChildren<InputProps>) => {
         (event: ChangeEvent<HTMLInputElement>) => {
             props.onChange(event.target.value);
         },
-        [props.onChange]
+        [props.onChange],
     );
 
     return (

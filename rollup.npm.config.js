@@ -1,8 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import jsx from 'acorn-jsx';
+
 import fs from 'fs';
 
 const pkg = JSON.parse(fs.readFileSync('./package.json').toString());
@@ -11,7 +14,12 @@ const moduleName = pkg.name;
 const name = 'flameChartJs';
 const author = pkg.author;
 const inputFileName = './src/index.ts';
-const external = [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})];
+const reactInputFileName = './src/react.ts';
+const external = [
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.devDependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
+];
 const config = {
     plugins: [
         resolve({
@@ -22,6 +30,21 @@ const config = {
         typescript({ compilerOptions: { outDir: './dist' }, noForceEmit: true, tsconfig: './tsconfig.npm.json' }),
         builtins(),
     ],
+};
+
+const reactConfig = {
+    ...config,
+    acornInjectPlugins: [jsx()],
+    input: reactInputFileName,
+    external: external.concat(fileURLToPath(new URL('src/index.ts', import.meta.url))),
+};
+
+const indexPaths = (filePath) => {
+    if (filePath.endsWith('src/index.ts')) {
+        return pkg.main.replace('dist/', './');
+    }
+
+    return filePath;
 };
 
 const banner = `
@@ -40,7 +63,7 @@ export default [
         input: inputFileName,
         output: [
             {
-                file: pkg.main.replace('.js', '.min.js'),
+                file: pkg.exports.umd,
                 format: 'umd',
                 name: name,
                 exports: 'named',
@@ -51,30 +74,35 @@ export default [
         ],
     },
 
-    // ES
+    // ES React
     {
-        ...config,
-        input: inputFileName,
+        ...reactConfig,
         output: [
             {
-                file: pkg.module,
+                file: './dist/react.js',
                 format: 'es',
                 banner,
                 exports: 'named',
+                paths: indexPaths,
             },
         ],
-        external,
     },
 
-    // CommonJS
+    // JS
     {
         ...config,
         input: inputFileName,
         output: [
             {
-                file: pkg.main,
+                file: pkg.exports.cjs,
                 name: name,
                 format: 'cjs',
+                banner,
+                exports: 'named',
+            },
+            {
+                file: pkg.module,
+                format: 'es',
                 banner,
                 exports: 'named',
             },

@@ -4,7 +4,7 @@ function getValueByChoice<V, P extends string, T extends Record<P, V>>(
     array: T[],
     property: P,
     comparator: (firstValue: V, secondValue: V) => V,
-    defaultValue: V
+    defaultValue: V,
 ): V {
     if (array.length) {
         return array.reduce((acc: V, { [property]: value }: T) => comparator(acc, value), array[0][property]);

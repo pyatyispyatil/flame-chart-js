@@ -184,7 +184,7 @@ export class RenderEngine extends BasicRenderEngine {
             {
                 position: 0,
                 result: [],
-            }
+            },
         ).result;
     }
 

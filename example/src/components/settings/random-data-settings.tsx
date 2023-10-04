@@ -11,7 +11,7 @@ export type RandomDataSettingsProps<Config> = {
 };
 
 export const RandomDataSettings = <Config extends Record<string, string | number>>(
-    props: PropsWithChildren<RandomDataSettingsProps<Config>>
+    props: PropsWithChildren<RandomDataSettingsProps<Config>>,
 ) => {
     const [values, setValues] = useState<Config>({
         ...props.config,

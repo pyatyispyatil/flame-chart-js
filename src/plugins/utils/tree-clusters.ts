@@ -17,7 +17,7 @@ export const walk = (
     treeList: FlameChartNodes,
     cb: (child: FlameChartNode, parent: any, level: number) => FlatTreeNode,
     parent: FlatTreeNode | FlameChartNode | null = null,
-    level = 0
+    level = 0,
 ) => {
     treeList.forEach((child) => {
         const res = cb(child, parent, level);
@@ -86,7 +86,7 @@ const defaultClusterizeCondition = (prevNode: FlatTreeNode, node: FlatTreeNode) 
 
 export function metaClusterizeFlatTree(
     flatTree: FlatTree,
-    condition = defaultClusterizeCondition
+    condition = defaultClusterizeCondition,
 ): MetaClusterizedFlatTree {
     return flatTree
         .reduce<FlatTreeNode[][]>((acc, node) => {
@@ -113,7 +113,7 @@ export const clusterizeFlatTree = (
     start = 0,
     end = 0,
     stickDistance = STICK_DISTANCE,
-    minBlockSize = MIN_BLOCK_SIZE
+    minBlockSize = MIN_BLOCK_SIZE,
 ): ClusterizedFlatTree => {
     let lastCluster: FlatTreeNode[] | null = null;
     let lastNode: FlatTreeNode | null = null;
@@ -175,7 +175,7 @@ export const reclusterizeClusteredFlatTree = (
     start: number,
     end: number,
     stickDistance?: number,
-    minBlockSize?: number
+    minBlockSize?: number,
 ): ClusterizedFlatTree => {
     return clusteredFlatTree.reduce<ClusterizedFlatTree>((acc, cluster) => {
         if (checkClusterTimeboundNesting(cluster, start, end)) {

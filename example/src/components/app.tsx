@@ -18,7 +18,7 @@ import {
 import { DefaultFlameChart } from './charts/default-flame-chart';
 import { FlameChartNode, FlameChartNodes, Marks, Timeseries, WaterfallItems } from '../../../src';
 import { CustomFlameChart } from './charts/custom-flame-chart';
-import { NodeTypes } from './charts/flame-chart-wrapper';
+import { NodeTypes } from '../../../src/wrappers/react/flame-chart-wrapper';
 import { SelectedData } from './charts/selected-data';
 import { WaterfallSettings } from './settings/waterfall-settings';
 import { MarksSettings } from './settings/marks-settings';
@@ -184,7 +184,7 @@ export const App = () => {
 
             generateTree(value as ChartType, treeConfig);
         },
-        [treeConfig, generateTree]
+        [treeConfig, generateTree],
     );
 
     return (

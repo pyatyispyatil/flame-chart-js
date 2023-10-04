@@ -97,7 +97,7 @@ export class MarksPlugin extends UIPlugin {
                 blockPosition,
                 1,
                 fullWidth,
-                this.renderEngine.blockHeight
+                this.renderEngine.blockHeight,
             );
 
             return blockPosition + fullWidth;
@@ -127,7 +127,7 @@ export class MarksPlugin extends UIPlugin {
                 this.renderEngine.options.tooltip(
                     this.hoveredRegion,
                     this.renderEngine,
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
                 );
             } else {
                 const {
@@ -140,7 +140,7 @@ export class MarksPlugin extends UIPlugin {
 
                 this.renderEngine.renderTooltipFromData(
                     [{ text: header }, { text: time }],
-                    this.interactionsEngine.getGlobalMouse()
+                    this.interactionsEngine.getGlobalMouse(),
                 );
             }
 

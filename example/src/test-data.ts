@@ -73,7 +73,7 @@ const generateRandomNesting = (count: number, minChild: number, maxChild: number
 
     console.log(
         'Total count:',
-        levels.reduce((acc, level) => level.reduce((acc, subLevel) => acc + subLevel.length, acc), 0)
+        levels.reduce((acc, level) => level.reduce((acc, subLevel) => acc + subLevel.length, acc), 0),
     );
 
     return levels[0][0];
@@ -159,7 +159,7 @@ export const generateRandomTimestamps = (
     count: number,
     thinning: number,
     start: number,
-    end: number
+    end: number,
 ): { start: number; end: number; duration: number }[] => {
     const timestamps =
         count > 1
@@ -260,7 +260,7 @@ export const generateRandomWaterfallItems = ({
                     responseEnd: end,
                 },
                 intervals: rndItem(types),
-            }))
+            })),
         );
     }
 

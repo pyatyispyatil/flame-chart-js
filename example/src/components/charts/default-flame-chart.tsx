@@ -1,4 +1,4 @@
-import { FlameChartWrapper, NodeTypes } from './flame-chart-wrapper';
+import { FlameChartWrapper, NodeTypes } from '../../../../src/wrappers/react/flame-chart-wrapper';
 import { FlameChartNode, FlameChartStyles, Marks, Timeseries, WaterfallItems } from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
 import styles from './default-flame-chart.module.css';
@@ -29,14 +29,14 @@ export const DefaultFlameChart = ({
             intervals: waterfallIntervals,
             items: waterfallData,
         }),
-        [waterfallData]
+        [waterfallData],
     );
 
     const settings = useMemo(
         () => ({
             styles: stylesSettings,
         }),
-        [stylesSettings]
+        [stylesSettings],
     );
 
     return (

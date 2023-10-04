@@ -28,7 +28,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
                 if (!region || region.id === this.id) {
                     this.resend(eventName, region, mouse, isClick);
                 }
-            })
+            }),
         );
 
         ['hover'].forEach((eventName) =>
@@ -36,7 +36,7 @@ export class SeparatedInteractionsEngine extends EventEmitter {
                 if (!region || region.id === this.id) {
                     this.emit(eventName, region, mouse);
                 }
-            })
+            }),
         );
 
         parent.on('change-position', (data, startMouse, endMouse, instance) => {

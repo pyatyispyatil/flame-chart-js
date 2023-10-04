@@ -19,6 +19,7 @@
                 "@typescript-eslint/no-unnecessary-qualifier": "off",
                 "@typescript-eslint/prefer-includes": "off",
                 "@typescript-eslint/prefer-nullish-coalescing": "off",
+                "@typescript-eslint/prefer-optional-chain": "off",
                 "@typescript-eslint/prefer-string-starts-ends-with": "off",
                 "unused-imports/no-unused-imports": "off",
                 "unused-imports/no-unused-vars": "off"
@@ -111,7 +112,7 @@
         "@typescript-eslint/no-unnecessary-qualifier": "error",
         "@typescript-eslint/prefer-for-of": "error",
         "@typescript-eslint/prefer-includes": "error",
-        "@typescript-eslint/prefer-nullish-coalescing": "error",
+        "@typescript-eslint/prefer-nullish-coalescing": "off",
         "@typescript-eslint/prefer-string-starts-ends-with": "error",
 
         // React rules

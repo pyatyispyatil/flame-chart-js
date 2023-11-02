@@ -104,6 +104,7 @@
     "rollup-plugin-cleaner": "^1.0.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-node-builtins": "^2.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^2.0.2",
     "stylelint": "^15.10.3",

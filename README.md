@@ -141,7 +141,64 @@ const flameChart = new FlameChartContainer({
 
 #### Usage with React
 
-You can use the [classic flame chart with react like this](https://github.com/pyatyispyatil/flame-chart-js/blob/master/example/src/components/charts/flame-chart-wrapper.tsx) or [like this with pluggins](https://github.com/pyatyispyatil/flame-chart-js/blob/master/example/src/components/charts/flame-chart-container-wrapper.tsx).
+Default flame chart:
+```tsx
+import { FlameChartWrapper } from 'flame-chart-js/react';
+
+export const DefaultFlameChart = ({
+    flameChartData,
+    stylesSettings,
+    onSelect,
+}) => {
+    const settings = useMemo(
+        () => ({
+            styles: stylesSettings,
+        }),
+        [stylesSettings],
+    );
+
+    return (
+        <FlameChartWrapper
+            data={flameChartData}
+            settings={settings}
+            onSelect={onSelect}
+            className={styles.flameChart}
+        />
+    );
+};
+```
+
+Custom flame chart:
+```tsx
+import { FlameChartContainerWrapper } from 'flame-chart-js/react';
+
+const CustomFlameChart = ({ flameChartData, stylesSettings }) => {
+  const plugins = useMemo(() => {
+    return [
+      new TimeGridPlugin(),
+      new TogglePlugin('FlameChart 1'),
+      new FlameChartPlugin({
+        name: 'flameChart1',
+        data: flameChartData[0],
+      }),
+      new TogglePlugin('FlameChart 2'),
+      new FlameChartPlugin({
+        name: 'flameChart2',
+        data: flameChartData[1],
+      }),
+    ];
+  }, [flameChartData]);
+
+  const settings = useMemo(
+    () => ({
+      styles: stylesSettings,
+    }),
+    [stylesSettings],
+  );
+
+  return <FlameChartContainerWrapper settings={settings} plugins={plugins} className={styles.flameChart} />;
+};
+```
 
 #### Settings
 

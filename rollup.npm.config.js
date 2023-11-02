@@ -4,8 +4,6 @@ import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import jsx from 'acorn-jsx';
-
 import fs from 'fs';
 
 const pkg = JSON.parse(fs.readFileSync('./package.json').toString());
@@ -34,7 +32,6 @@ const config = {
 
 const reactConfig = {
     ...config,
-    acornInjectPlugins: [jsx()],
     input: reactInputFileName,
     external: external.concat(fileURLToPath(new URL('src/index.ts', import.meta.url))),
 };
@@ -63,7 +60,7 @@ export default [
         input: inputFileName,
         output: [
             {
-                file: pkg.exports.umd,
+                file: pkg.exports['.'].umd,
                 format: 'umd',
                 name: name,
                 exports: 'named',
@@ -79,7 +76,7 @@ export default [
         ...reactConfig,
         output: [
             {
-                file: './dist/react.js',
+                file: pkg.exports['./react'].default,
                 format: 'es',
                 banner,
                 exports: 'named',
@@ -94,14 +91,14 @@ export default [
         input: inputFileName,
         output: [
             {
-                file: pkg.exports.cjs,
+                file: pkg.exports['.'].cjs,
                 name: name,
                 format: 'cjs',
                 banner,
                 exports: 'named',
             },
             {
-                file: pkg.module,
+                file: pkg.exports['.'].default,
                 format: 'es',
                 banner,
                 exports: 'named',

@@ -2,7 +2,6 @@
     "plugins": ["stylelint-prettier"],
     "extends": [
         "stylelint-config-standard",
-        "stylelint-config-prettier",
         "stylelint-config-css-modules"
     ],
     "ignoreFiles": [

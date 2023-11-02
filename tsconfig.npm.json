@@ -9,7 +9,7 @@
             "es2020"
         ],
         "module": "es2020",
-        "jsx": "preserve",
+        "jsx": "react-jsx",
         "moduleResolution": "node",
         "declaration": true,
         "outDir": "./dist",

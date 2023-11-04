@@ -23,6 +23,7 @@ import { SelectedData } from './charts/selected-data';
 import { WaterfallSettings } from './settings/waterfall-settings';
 import { MarksSettings } from './settings/marks-settings';
 import { TimeseriesSettings } from './settings/timeseries-settings';
+import { defaultPatterns, PatternsSettings } from './settings/patterns-settings';
 
 enum ChartType {
     Default = 'default',
@@ -43,6 +44,7 @@ const flameChartVariants = [
 export const App = () => {
     const [treeConfig, setTreeConfig] = useState<TreeConfig>();
     const [stylesSettings, setStylesSettings] = useState({});
+    const [patternsSettings, setPatternsSettings] = useState(defaultPatterns);
     const [currentChart, setCurrentChart] = useState(ChartType.Default);
     const [isGenerating, setIsGenerating] = useState(false);
     const [flameChartData, setFlameChartData] = useState<FlameChartNode[] | null>(null);
@@ -190,6 +192,7 @@ export const App = () => {
     return (
         <div className={styles.root}>
             <div className={styles.sidebar}>
+                <div className={styles.version}>v{window.app.version}</div>
                 <Collapse title='Variants'>
                     <RadioGroup value={currentChart} options={flameChartVariants} onChange={handleChartChange} />
                 </Collapse>
@@ -211,6 +214,9 @@ export const App = () => {
                 <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
                 </Collapse>
+                <Collapse title='Patterns settings' isCollapsed={true}>
+                    <PatternsSettings onChange={setPatternsSettings} value={patternsSettings} />
+                </Collapse>
                 {selectedData?.node && (
                     <Collapse title='Selected node' isCollapsed={true}>
                         <SelectedData data={selectedData} />
@@ -230,6 +236,7 @@ export const App = () => {
                         timeseriesData={timeseriesData}
                         timeframeTimeseriesData={timeframeTimeseriesData}
                         stylesSettings={stylesSettings}
+                        patternsSettings={patternsSettings}
                         onSelect={setSelectedData}
                     />
                 )}

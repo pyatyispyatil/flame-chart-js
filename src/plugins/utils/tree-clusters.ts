@@ -82,7 +82,9 @@ const checkClusterTimeboundNesting = (node: ClusterizedFlatTreeNode, start: numb
     (node.start < end && node.end > start) || (node.start > start && node.end < end);
 
 const defaultClusterizeCondition = (prevNode: FlatTreeNode, node: FlatTreeNode) =>
-    prevNode.source.color === node.source.color && prevNode.source.type === node.source.type;
+    prevNode.source.color === node.source.color &&
+    prevNode.source.pattern === node.source.pattern &&
+    prevNode.source.type === node.source.type;
 
 export function metaClusterizeFlatTree(
     flatTree: FlatTree,
@@ -163,6 +165,7 @@ export const clusterizeFlatTree = (
                 duration,
                 type: node.source.type,
                 color: node.source.color,
+                pattern: node.source.pattern,
                 level: node.level,
                 nodes,
             };

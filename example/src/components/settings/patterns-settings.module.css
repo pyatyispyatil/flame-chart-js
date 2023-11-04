@@ -1,0 +1,33 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 500px;
+    padding: 8px;
+}
+
+.section {
+    margin-bottom: 8px;
+}
+
+.input {
+    width: 100%;
+    height: 400px;
+    box-sizing: border-box;
+}
+
+.sectionsWrapper {
+    flex: 1;
+    overflow: auto;
+}
+
+.sectionHeader {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.applyButton {
+    width: 100%;
+    margin-top: 8px;
+}

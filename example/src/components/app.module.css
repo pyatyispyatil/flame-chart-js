@@ -23,3 +23,7 @@
     width: 350px;
     overflow: auto;
 }
+
+.version {
+    padding: 8px;
+}

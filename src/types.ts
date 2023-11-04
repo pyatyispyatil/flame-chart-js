@@ -17,6 +17,7 @@ export interface FlameChartNode {
     duration: number; // node duration
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
+    pattern?: string; // node pattern type
     children?: FlameChartNode[]; // node children (same structure as for node)
 }
 
@@ -42,6 +43,7 @@ export type WaterfallItemMeta = {
 export type WaterfallInterval = {
     name: string;
     color: string;
+    pattern?: string;
     type: 'block' | 'line';
     start: string | number; // timing name or timestamp
     end: string | number; // timing name or timestamp
@@ -75,7 +77,9 @@ interface Rect {
 }
 
 export interface RectRenderQueue {
-    [color: string]: Rect[];
+    [pattern: string]: {
+        [color: string]: Rect[];
+    };
 }
 
 export interface Text {
@@ -116,6 +120,7 @@ export interface ClusterizedFlatTreeNode {
     duration: number;
     type?: string;
     color?: string;
+    pattern?: string;
     level: number;
     nodes: FlatTreeNode[];
 }

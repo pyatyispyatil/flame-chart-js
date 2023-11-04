@@ -17,6 +17,7 @@ export type PreparedWaterfallInterval = {
     start: number;
     end: number;
     color: string;
+    pattern?: string;
     type: 'block' | 'line';
     name: string;
 };
@@ -42,10 +43,11 @@ export const parseWaterfall = (waterfall: Waterfall): PreparedWaterfallItem[] =>
         .map(({ name, intervals, timing, meta }, index) => {
             const resolvedIntervals = typeof intervals === 'string' ? waterfall.intervals[intervals] : intervals;
             const preparedIntervals: PreparedWaterfallInterval[] = resolvedIntervals
-                .map(({ start, end, color, type, name }) => ({
+                .map(({ start, end, color, pattern, type, name }) => ({
                     start: typeof start === 'string' ? timing[start] : start,
                     end: typeof end === 'string' ? timing[end] : end,
                     color,
+                    pattern,
                     name,
                     type,
                 }))

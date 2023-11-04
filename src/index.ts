@@ -13,3 +13,13 @@ export * from './types';
 
 export { FlameChartContainer } from './flame-chart-container';
 export type { FlameChartContainerSettings, FlameChartContainerOptions } from './flame-chart-container';
+
+export type {
+    DefaultPatterns,
+    Pattern,
+    PatternCreator,
+    StripesPatternConfig,
+    GradientPatternConfig,
+    CombinedPatternConfig,
+    DotsPatternConfig,
+} from './engines/patterns';

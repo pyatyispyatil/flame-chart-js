@@ -3,6 +3,7 @@ import { mergeObjects } from '../utils';
 import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
 import { RenderEngine } from './render-engine';
+import { DefaultPatterns, defaultPatterns, Pattern, PatternCreator } from './patterns';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';
@@ -54,9 +55,13 @@ export type RenderStyles = {
     headerTitleLeftPadding: number;
 };
 
+export type CustomPattern = { name: string; creator: PatternCreator };
+export type RenderPatterns = Array<DefaultPatterns | CustomPattern>;
+
 export type RenderSettings = {
     options?: Partial<RenderOptions>;
     styles?: Partial<RenderStyles>;
+    patterns?: RenderPatterns;
 };
 
 export const defaultRenderSettings: RenderOptions = {
@@ -114,6 +119,7 @@ export class BasicRenderEngine extends EventEmitter {
     positionX = 0;
     min = 0;
     max = 0;
+    patterns: Record<string, Pattern> = {};
 
     ctxCachedSettings = {};
     ctxCachedCalls = {};
@@ -135,9 +141,17 @@ export class BasicRenderEngine extends EventEmitter {
         this.reset();
     }
 
-    setSettings({ options, styles }: RenderSettings) {
+    setSettings({ options, styles, patterns }: RenderSettings) {
         this.options = mergeObjects(defaultRenderSettings, options);
         this.styles = mergeObjects(defaultRenderStyles, styles);
+
+        if (patterns) {
+            const customPatterns = patterns.filter((preset) => 'creator' in preset) as CustomPattern[];
+            const defaultPatterns = patterns.filter((preset) => !('creator' in preset)) as DefaultPatterns[];
+
+            this.createDefaultPatterns(defaultPatterns);
+            customPatterns.forEach((pattern) => this.createBlockPattern(pattern));
+        }
 
         this.timeUnits = this.options.timeUnits;
 
@@ -203,8 +217,7 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(color: string, x: number, y: number, w: number) {
-        this.setCtxValue('fillStyle', color);
+    renderBlock(x: number, y: number, w: number) {
         this.ctx.fillRect(x, y, w, this.blockHeight);
     }
 
@@ -245,12 +258,18 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(color: string, x: number, y: number, w: number) {
-        if (!this.rectRenderQueue[color]) {
-            this.rectRenderQueue[color] = [];
+    addRectToRenderQueue(rect: { color: string; pattern?: string; x: number; y: number; w: number }) {
+        rect.pattern = rect.pattern || 'none';
+
+        if (!this.rectRenderQueue[rect.pattern]) {
+            this.rectRenderQueue[rect.pattern] = {};
         }
 
-        this.rectRenderQueue[color].push({ x, y, w });
+        if (!this.rectRenderQueue[rect.pattern][rect.color]) {
+            this.rectRenderQueue[rect.pattern][rect.color] = [];
+        }
+
+        this.rectRenderQueue[rect.pattern][rect.color].push(rect);
     }
 
     addTextToRenderQueue(text: string, x: number, y: number, w: number) {
@@ -268,10 +287,35 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([color, items]) => {
-            this.setCtxValue('fillStyle', color);
+        Object.entries(this.rectRenderQueue).forEach(([patternName, colors]) => {
+            let matrix = new DOMMatrixReadOnly();
+            let scale = 1;
+            let pattern;
 
-            items.forEach(({ x, y, w }) => this.renderBlock(color, x, y, w));
+            if (patternName !== 'none' && this.patterns[patternName]) {
+                scale = this.patterns[patternName].scale ?? scale;
+                pattern = this.patterns[patternName].pattern;
+
+                if (scale !== 1) {
+                    matrix = matrix.scale(1 / scale, 1 / scale);
+                }
+
+                this.ctx.fillStyle = pattern;
+            }
+
+            Object.entries(colors).forEach(([color, items]) => {
+                if (!pattern) {
+                    this.setCtxValue('fillStyle', color);
+                }
+
+                items.forEach((rect) => {
+                    if (pattern) {
+                        pattern.setTransform(matrix.translate(rect.x * scale, 0));
+                    }
+
+                    this.renderBlock(rect.x, rect.y, rect.w);
+                });
+            });
         });
 
         this.rectRenderQueue = {};
@@ -407,6 +451,23 @@ export class BasicRenderEngine extends EventEmitter {
                 engine.height * ratio,
             );
         }
+    }
+
+    createDefaultPatterns(patterns: Array<DefaultPatterns>) {
+        patterns.forEach(({ name, type, config }) => {
+            const defaultPattern = defaultPatterns[type];
+
+            if (defaultPattern) {
+                this.createBlockPattern({
+                    name,
+                    creator: defaultPattern(config as any),
+                });
+            }
+        });
+    }
+
+    createBlockPattern({ name, creator }: { name: string; creator: PatternCreator }) {
+        this.patterns[name] = creator(this);
     }
 
     renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {

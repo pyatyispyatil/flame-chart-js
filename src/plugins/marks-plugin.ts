@@ -88,7 +88,7 @@ export class MarksPlugin extends UIPlugin {
             const position = this.renderEngine.timeToPosition(timestamp);
             const blockPosition = this.calcMarksBlockPosition(position, prevEnding);
 
-            this.renderEngine.addRectToRenderQueue(color, blockPosition, 1, fullWidth);
+            this.renderEngine.addRectToRenderQueue({ color, x: blockPosition, y: 1, w: fullWidth });
             this.renderEngine.addTextToRenderQueue(shortName, blockPosition, 1, fullWidth);
 
             this.interactionsEngine.addHitRegion(

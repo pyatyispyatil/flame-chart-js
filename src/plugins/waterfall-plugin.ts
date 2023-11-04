@@ -222,11 +222,11 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                 this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
 
                 const { x, w } = intervals.reduce<{ x: number | null; w: number }>(
-                    (acc, { color, start, end, type }, index) => {
+                    (acc, { color, pattern, start, end, type }, index) => {
                         const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
                         if (type === 'block') {
-                            this.renderEngine.addRectToRenderQueue(color, x, y, w);
+                            this.renderEngine.addRectToRenderQueue({ color, pattern, x, y, w });
                         } else if (type === 'line') {
                             // ToDo add other types
                         }

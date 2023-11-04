@@ -2,7 +2,7 @@ import { RenderEngine } from './engines/render-engine';
 import { InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 import { TimeGrid, TimeGridStyles } from './engines/time-grid';
-import { RenderOptions, RenderStyles } from './engines/basic-render-engine';
+import { RenderOptions, RenderPatterns, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
 export type FlameChartContainerStyles<Styles = {}> = {
@@ -13,6 +13,7 @@ export type FlameChartContainerStyles<Styles = {}> = {
 export interface FlameChartContainerSettings<Styles = {}> {
     options?: Partial<RenderOptions>;
     styles?: FlameChartContainerStyles<Styles>;
+    patterns?: RenderPatterns;
 }
 
 export interface FlameChartContainerOptions<Styles = {}> {
@@ -90,7 +91,11 @@ export class FlameChartContainer<Styles = {}> extends EventEmitter {
 
     setSettings(settings: FlameChartContainerSettings<Styles>) {
         this.timeGrid.setSettings({ styles: settings.styles?.timeGrid });
-        this.renderEngine.setSettings({ options: settings.options, styles: settings.styles?.main });
+        this.renderEngine.setSettings({
+            options: settings.options,
+            styles: settings.styles?.main,
+            patterns: settings.patterns,
+        });
         this.plugins.forEach((plugin) => plugin.setSettings?.({ styles: settings.styles?.[plugin.name] }));
         this.renderEngine.render();
     }

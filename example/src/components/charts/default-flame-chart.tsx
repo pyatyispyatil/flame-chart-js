@@ -1,5 +1,13 @@
 import { FlameChartWrapper, NodeTypes } from '../../../../src/wrappers/react/flame-chart-wrapper';
-import { FlameChartNode, FlameChartStyles, Marks, Timeseries, WaterfallItems } from '../../../../src';
+import {
+    DefaultPatterns,
+    FlameChartNode,
+    FlameChartSettings,
+    FlameChartStyles,
+    Marks,
+    Timeseries,
+    WaterfallItems,
+} from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
 import styles from './default-flame-chart.module.css';
 import { waterfallIntervals } from '../../test-data';
@@ -12,6 +20,7 @@ export type DefaultFlameChartProps = {
     timeseriesData: Timeseries;
     timeframeTimeseriesData: Timeseries;
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
+    patternsSettings?: DefaultPatterns[];
     onSelect?: (node: NodeTypes) => void;
 };
 
@@ -22,6 +31,7 @@ export const DefaultFlameChart = ({
     timeseriesData,
     timeframeTimeseriesData,
     stylesSettings,
+    patternsSettings,
     onSelect,
 }: DefaultFlameChartProps) => {
     const waterfall = useMemo(
@@ -33,10 +43,11 @@ export const DefaultFlameChart = ({
     );
 
     const settings = useMemo(
-        () => ({
+        (): FlameChartSettings => ({
             styles: stylesSettings,
+            patterns: patternsSettings,
         }),
-        [stylesSettings],
+        [stylesSettings, patternsSettings],
     );
 
     return (

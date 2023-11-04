@@ -278,7 +278,7 @@ export class FlameChartPlugin extends UIPlugin {
         };
 
         const renderCluster = (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => {
-            const { type, nodes, color } = cluster;
+            const { type, nodes, color, pattern } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
@@ -286,7 +286,7 @@ export class FlameChartPlugin extends UIPlugin {
             }
 
             if (w >= 0.25) {
-                this.renderEngine.addRectToRenderQueue(this.getColor(type, color), x, y, w);
+                this.renderEngine.addRectToRenderQueue({ color: this.getColor(type, color), pattern, x, y, w });
             }
 
             if (w >= minTextWidth && nodes.length === 1) {

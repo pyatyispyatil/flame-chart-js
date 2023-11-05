@@ -232,12 +232,14 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                         if (type === 'block') {
                             this.renderEngine.addRectToRenderQueue({ color, pattern, x, y, w });
                         } else if (type === 'line') {
+                            const lineWidth = Math.min(this.styles.lineWidth, w);
+
                             this.renderEngine.addRectToRenderQueue({
                                 color,
                                 pattern,
-                                x: index === 0 ? x + this.styles.lineWidth : x,
+                                x: index === 0 ? x + lineWidth : x,
                                 y: y + (blockHeight - this.styles.lineWidth) / 2,
-                                w: index === intervals.length - 1 ? w - this.styles.lineWidth : w,
+                                w: index === intervals.length - 1 ? w - lineWidth : w,
                                 h: this.styles.lineWidth,
                             });
 
@@ -248,9 +250,9 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                                 this.renderEngine.addRectToRenderQueue({
                                     color,
                                     pattern,
-                                    x: index === 0 ? x : x + w - this.styles.lineWidth,
+                                    x: index === 0 ? x : x + w - lineWidth,
                                     y: y + (blockHeight - lineHeight) / 2,
-                                    w: this.styles.lineWidth,
+                                    w: lineWidth,
                                     h: lineHeight,
                                 });
                             }

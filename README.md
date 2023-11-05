@@ -319,7 +319,7 @@ you will get a beautiful layering of layers on top of each other.
 type CombinedPattern = {
     type: 'combined',
     name: string, // your pattern name
-    config: Array<StripesPattern | DotsPattern | GradientPattern>
+    config: Array<StripesPattern | DotsPattern | GradientPattern | TrianglesPattern>
 }
 ```
 
@@ -423,6 +423,7 @@ type Node = {
     duration: number; // node duration
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
+    pattern?: string; // node pattern (use it for customize node view - see section Patterns)
     badge?: string; // node badge color (if present, the badge will be displayed in the upper left corner of the node)
     children?: Array<Node>; // node children (same structure as for node)
 };
@@ -440,6 +441,7 @@ type WaterfallItems = Array<{
 type WaterfallInterval = {
     name: string;
     color: string;
+    pattern?: string; // interval pattern (use it for customize interval view - see section Patterns)
     type: 'block' | 'line';
     start: string; // timing name
     end: string; // timing name

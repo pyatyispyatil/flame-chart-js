@@ -1,4 +1,4 @@
-import { Waterfall, WaterfallItem, WaterfallItemMeta } from '../../types';
+import { Waterfall, WaterfallInterval, WaterfallItem, WaterfallItemMeta } from '../../types';
 
 function getValueByChoice<V, P extends string, T extends Record<P, V>>(
     array: T[],
@@ -13,13 +13,9 @@ function getValueByChoice<V, P extends string, T extends Record<P, V>>(
     return defaultValue;
 }
 
-export type PreparedWaterfallInterval = {
+export type PreparedWaterfallInterval = WaterfallInterval & {
     start: number;
     end: number;
-    color: string;
-    pattern?: string;
-    type: 'block' | 'line';
-    name: string;
 };
 
 export type PreparedWaterfallTextBlock = {
@@ -43,13 +39,10 @@ export const parseWaterfall = (waterfall: Waterfall): PreparedWaterfallItem[] =>
         .map(({ name, intervals, timing, meta }, index) => {
             const resolvedIntervals = typeof intervals === 'string' ? waterfall.intervals[intervals] : intervals;
             const preparedIntervals: PreparedWaterfallInterval[] = resolvedIntervals
-                .map(({ start, end, color, pattern, type, name }) => ({
+                .map(({ start, end, ...rest }) => ({
                     start: typeof start === 'string' ? timing[start] : start,
                     end: typeof end === 'string' ? timing[end] : end,
-                    color,
-                    pattern,
-                    name,
-                    type,
+                    ...rest,
                 }))
                 .filter(({ start, end }) => typeof start === 'number' && typeof end === 'number');
             const blocks = preparedIntervals.filter(({ type }) => type === 'block');

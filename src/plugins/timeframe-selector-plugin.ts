@@ -389,11 +389,17 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
             const intervals = Object.entries(
                 data.reduce((acc: Record<string, PreparedWaterfallInterval[]>, { intervals }) => {
                     intervals.forEach((interval) => {
-                        if (!acc[interval.color]) {
-                            acc[interval.color] = [];
-                        }
+                        const { timeframeChart } = interval;
 
-                        acc[interval.color].push(interval);
+                        if (timeframeChart) {
+                            const key = typeof timeframeChart === 'string' ? timeframeChart : interval.color;
+
+                            if (!acc[key]) {
+                                acc[key] = [];
+                            }
+
+                            acc[key].push(interval);
+                        }
                     });
 
                     return acc;

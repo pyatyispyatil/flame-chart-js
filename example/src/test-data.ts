@@ -294,6 +294,7 @@ export const waterfallIntervals: WaterfallIntervals = {
             type: 'block',
             start: 'requestStart',
             end: 'responseStart',
+            timeframeChart: true,
         },
         {
             name: 'downloading',
@@ -301,6 +302,7 @@ export const waterfallIntervals: WaterfallIntervals = {
             type: 'block',
             start: 'responseStart',
             end: 'responseEnd',
+            timeframeChart: true,
         },
     ],
     css: [
@@ -317,6 +319,7 @@ export const waterfallIntervals: WaterfallIntervals = {
             type: 'block',
             start: 'requestStart',
             end: 'responseStart',
+            timeframeChart: true,
         },
         {
             name: 'downloading',
@@ -324,6 +327,7 @@ export const waterfallIntervals: WaterfallIntervals = {
             type: 'block',
             start: 'responseStart',
             end: 'responseEnd',
+            timeframeChart: true,
         },
     ],
 };

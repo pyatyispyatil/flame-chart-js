@@ -45,6 +45,7 @@ export type WaterfallInterval = {
     color: string;
     pattern?: string;
     type: 'block' | 'line';
+    timeframeChart?: boolean | string;
     start: string | number; // timing name or timestamp
     end: string | number; // timing name or timestamp
 };

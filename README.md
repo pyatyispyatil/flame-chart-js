@@ -424,6 +424,9 @@ type WaterfallInterval = {
     type: 'block' | 'line';
     start: string; // timing name
     end: string; // timing name
+    // if true, then the interval will be displayed on the timeframe chart, 
+    // if color string, then the interval will be displayed on the timeframe chart with the specified color (same colors will be merged)
+    timeframeChart: boolean | string;
 };
 
 type WaterfallIntervals = {

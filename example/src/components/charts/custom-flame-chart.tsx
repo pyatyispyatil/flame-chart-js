@@ -1,7 +1,7 @@
 import { FlameChartNodes, FlameChartPlugin, FlameChartStyles, TimeGridPlugin, TogglePlugin } from '../../../../src';
 import { FlameChartContainerStyles } from '../../../../src/flame-chart-container';
 import styles from './default-flame-chart.module.css';
-import { FlameChartContainerWrapper } from '../../../../src/wrappers/react/flame-chart-container-wrapper';
+import { FlameChartContainerComponent } from '../../../../src/wrappers/react/flame-chart-container-component';
 import { useMemo } from 'react';
 
 export type CustomFlameChartProps = {
@@ -33,5 +33,5 @@ export const CustomFlameChart = ({ flameChartData, stylesSettings }: CustomFlame
         [stylesSettings],
     );
 
-    return <FlameChartContainerWrapper settings={settings} plugins={plugins} className={styles.flameChart} />;
+    return <FlameChartContainerComponent settings={settings} plugins={plugins} className={styles.flameChart} />;
 };

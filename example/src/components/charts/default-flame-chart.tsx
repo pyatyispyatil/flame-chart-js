@@ -1,4 +1,4 @@
-import { FlameChartWrapper, NodeTypes } from '../../../../src/wrappers/react/flame-chart-wrapper';
+import { FlameChartComponent, NodeTypes } from '../../../../src/wrappers/react/flame-chart-component';
 import {
     DefaultPatterns,
     FlameChartNode,
@@ -51,7 +51,7 @@ export const DefaultFlameChart = ({
     );
 
     return (
-        <FlameChartWrapper
+        <FlameChartComponent
             data={flameChartData}
             waterfall={waterfall}
             marks={marksData}

@@ -143,7 +143,7 @@ const flameChart = new FlameChartContainer({
 
 Default flame chart:
 ```tsx
-import { FlameChartWrapper } from 'flame-chart-js/react';
+import { FlameChartComponent } from 'flame-chart-js/react';
 
 export const DefaultFlameChart = ({
     flameChartData,
@@ -158,7 +158,7 @@ export const DefaultFlameChart = ({
     );
 
     return (
-        <FlameChartWrapper
+        <FlameChartComponent
             data={flameChartData}
             settings={settings}
             onSelect={onSelect}
@@ -170,7 +170,7 @@ export const DefaultFlameChart = ({
 
 Custom flame chart:
 ```tsx
-import { FlameChartContainerWrapper } from 'flame-chart-js/react';
+import { FlameChartContainerComponent } from 'flame-chart-js/react';
 
 const CustomFlameChart = ({ flameChartData, stylesSettings }) => {
   const plugins = useMemo(() => {
@@ -196,7 +196,7 @@ const CustomFlameChart = ({ flameChartData, stylesSettings }) => {
     [stylesSettings],
   );
 
-  return <FlameChartContainerWrapper settings={settings} plugins={plugins} className={styles.flameChart} />;
+  return <FlameChartContainerComponent settings={settings} plugins={plugins} className={styles.flameChart} />;
 };
 ```
 

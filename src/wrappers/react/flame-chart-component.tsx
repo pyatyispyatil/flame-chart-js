@@ -38,7 +38,7 @@ export type FlameChartWrapperProps = {
     onSelect?: (data: NodeTypes) => void;
 };
 
-export const FlameChartWrapper = (props: FlameChartWrapperProps) => {
+export const FlameChartComponent = (props: FlameChartWrapperProps) => {
     const boxRef = useRef<null | HTMLDivElement>(null);
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
     const flameChart = useRef<null | FlameChart>(null);

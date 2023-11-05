@@ -1,4 +1,4 @@
-import { NodeTypes } from '../../../../src/wrappers/react/flame-chart-wrapper';
+import { NodeTypes } from '../../../../src/wrappers/react/flame-chart-component';
 import styles from './selected-data.module.css';
 
 export const SelectedData = ({ data }: { data: NodeTypes }) => {

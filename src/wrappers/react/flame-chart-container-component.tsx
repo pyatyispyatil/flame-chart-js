@@ -13,7 +13,7 @@ export type FlameChartContainerProps = {
     className?: string;
 };
 
-export const FlameChartContainerWrapper = (props: FlameChartContainerProps) => {
+export const FlameChartContainerComponent = (props: FlameChartContainerProps) => {
     const boxRef = useRef<null | HTMLDivElement>(null);
     const canvasRef = useRef<null | HTMLCanvasElement>(null);
     const flameChart = useRef<null | FlameChartContainer>(null);

@@ -223,18 +223,18 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                 const textStart = this.renderEngine.timeToPosition(textBlock.start);
                 const textEnd = this.renderEngine.timeToPosition(textBlock.end);
 
-                this.renderEngine.addTextToRenderQueue(name, textStart, y, textEnd - textStart);
+                this.renderEngine.addText({ text: name, x: textStart, y: y, w: textEnd - textStart });
 
                 const { x, w } = intervals.reduce<{ x: number | null; w: number }>(
                     (acc, { color, pattern, start, end, type }, index) => {
                         const { x, w } = this.calcRect(start, end - start, index === intervals.length - 1);
 
                         if (type === 'block') {
-                            this.renderEngine.addRectToRenderQueue({ color, pattern, x, y, w });
+                            this.renderEngine.addRect({ color, pattern, x, y, w });
                         } else if (type === 'line') {
                             const lineWidth = Math.min(this.styles.lineWidth, w);
 
-                            this.renderEngine.addRectToRenderQueue({
+                            this.renderEngine.addRect({
                                 color,
                                 pattern,
                                 x: index === 0 ? x + lineWidth : x,
@@ -247,7 +247,7 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                                 const lineHeight =
                                     this.styles.lineHeight === 'inherit' ? blockHeight / 2 : this.styles.lineHeight;
 
-                                this.renderEngine.addRectToRenderQueue({
+                                this.renderEngine.addRect({
                                     color,
                                     pattern,
                                     x: index === 0 ? x : x + w - lineWidth,
@@ -270,7 +270,13 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                     const selectedIndex = this.selectedRegion.data;
 
                     if (selectedIndex === index) {
-                        this.renderEngine.addStrokeToRenderQueue('green', x ?? 0, y, w, this.renderEngine.blockHeight);
+                        this.renderEngine.addStroke({
+                            color: 'green',
+                            x: x ?? 0,
+                            y,
+                            w,
+                            h: this.renderEngine.blockHeight,
+                        });
                     }
                 }
 

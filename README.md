@@ -2,7 +2,7 @@
 
 [![npm flame-chart-js package](https://img.shields.io/npm/v/flame-chart-js)](https://www.npmjs.com/package/flame-chart-js)
 
-![image](https://github.com/pyatyispyatil/flame-chart-js/assets/4976306/85ae88e7-e91f-4664-9185-6d86354cb502)
+![image](https://github.com/pyatyispyatil/flame-chart-js/assets/4976306/0e48f413-ead8-46f9-9fb6-9da3fbb2b44e)
 
 ### Installation
 
@@ -423,6 +423,7 @@ type Node = {
     duration: number; // node duration
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
+    badge?: string; // node badge color (if present, the badge will be displayed in the upper left corner of the node)
     children?: Array<Node>; // node children (same structure as for node)
 };
 
@@ -504,7 +505,7 @@ class MyPlugin extends UIPlugin {
     // this method will be called on each render
     override render() {
         // do something
-        this.renderEngine.addRectToRenderQueue('red', 10, 10, 20);
+        this.renderEngine.addRect({ color: 'red', x: 10, y: 10, w: 20 });
     }
 }
 ```

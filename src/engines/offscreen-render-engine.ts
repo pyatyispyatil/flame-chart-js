@@ -128,9 +128,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     }
 
     standardRender() {
-        this.resolveRectRenderQueue();
-        this.resolveTextRenderQueue();
-        this.resolveStrokeRenderQueue();
+        this.resolveQueue();
         this.renderTimeGrid();
     }
 

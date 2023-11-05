@@ -28,6 +28,7 @@ export interface FlameChartNode {
     type?: string; // node type (use it for custom colorization)
     color?: string; // node color (use it for current node colorization)
     pattern?: string; // node pattern type
+    badge?: string; // node badge color
     children?: FlameChartNode[]; // node children (same structure as for node)
 }
 
@@ -80,7 +81,7 @@ export type Dot = {
     y: number;
 };
 
-interface Rect {
+export interface Rect {
     x: number;
     y: number;
     w: number;
@@ -132,6 +133,7 @@ export interface ClusterizedFlatTreeNode {
     type?: string;
     color?: string;
     pattern?: string;
+    badge?: string;
     level: number;
     nodes: FlatTreeNode[];
 }

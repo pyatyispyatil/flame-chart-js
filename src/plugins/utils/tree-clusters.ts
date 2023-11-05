@@ -158,6 +158,7 @@ export const clusterizeFlatTree = (
         .map((nodes) => {
             const node = nodes[0];
             const duration = calcClusterDuration(nodes);
+            const badge = nodes.find((node) => node.source.badge)?.source.badge;
 
             return {
                 start: node.source.start,
@@ -167,6 +168,7 @@ export const clusterizeFlatTree = (
                 color: node.source.color,
                 pattern: node.source.pattern,
                 level: node.level,
+                badge,
                 nodes,
             };
         });

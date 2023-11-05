@@ -42,6 +42,7 @@ export type RenderStyles = {
     backgroundColor: string;
     font: string;
     fontColor: string;
+    badgeSize: number;
     tooltipHeaderFontColor: string;
     tooltipBodyFontColor: string;
     tooltipBackgroundColor: string;
@@ -75,6 +76,7 @@ export const defaultRenderStyles: RenderStyles = {
     backgroundColor: 'white',
     font: '10px sans-serif',
     fontColor: 'black',
+    badgeSize: 8,
     tooltipHeaderFontColor: 'black',
     tooltipBodyFontColor: '#688f45',
     tooltipBackgroundColor: 'white',
@@ -112,9 +114,14 @@ export class BasicRenderEngine extends EventEmitter {
     placeholderWidth = 0;
     avgCharWidth = 0;
     minTextWidth = 0;
-    textRenderQueue: Text[] = [];
-    strokeRenderQueue: Stroke[] = [];
-    rectRenderQueue: RectRenderQueue = {};
+    queue: Record<
+        string,
+        {
+            text: Text[];
+            stroke: Stroke[];
+            rect: RectRenderQueue;
+        }
+    > = {};
     zoom: number = 0;
     positionX = 0;
     min = 0;
@@ -149,7 +156,7 @@ export class BasicRenderEngine extends EventEmitter {
             const customPatterns = patterns.filter((preset) => 'creator' in preset) as CustomPattern[];
             const defaultPatterns = patterns.filter((preset) => !('creator' in preset)) as DefaultPatterns[];
 
-            this.createDefaultPatterns(defaultPatterns);
+            defaultPatterns.forEach((pattern) => this.createDefaultPattern(pattern));
             customPatterns.forEach((pattern) => this.createBlockPattern(pattern));
         }
 
@@ -175,9 +182,7 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     reset() {
-        this.textRenderQueue = [];
-        this.strokeRenderQueue = [];
-        this.rectRenderQueue = {};
+        this.queue = {};
         this.ctxCachedCalls = {};
         this.ctxCachedSettings = {};
     }
@@ -258,36 +263,70 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(rect: { color: string; pattern?: string; x: number; y: number; w: number; h?: number }) {
-        rect.pattern = rect.pattern || 'none';
+    getQueue(priority: number = 0) {
+        const queue = this.queue[priority];
 
-        if (!this.rectRenderQueue[rect.pattern]) {
-            this.rectRenderQueue[rect.pattern] = {};
+        if (!queue) {
+            this.queue[priority] = { text: [], stroke: [], rect: {} };
         }
 
-        if (!this.rectRenderQueue[rect.pattern][rect.color]) {
-            this.rectRenderQueue[rect.pattern][rect.color] = [];
-        }
-
-        this.rectRenderQueue[rect.pattern][rect.color].push(rect);
+        return this.queue[priority];
     }
 
-    addTextToRenderQueue(text: string, x: number, y: number, w: number) {
+    addRect(
+        rect: { color: string; pattern?: string; x: number; y: number; w: number; h?: number },
+        priority: number = 0,
+    ) {
+        const queue = this.getQueue(priority);
+
+        rect.pattern = rect.pattern || 'none';
+
+        if (!queue.rect[rect.pattern]) {
+            queue.rect[rect.pattern] = {};
+        }
+
+        if (!queue.rect[rect.pattern][rect.color]) {
+            queue.rect[rect.pattern][rect.color] = [];
+        }
+
+        queue.rect[rect.pattern][rect.color].push(rect);
+    }
+
+    addText({ text, x, y, w }: { text: string; x: number; y: number; w: number }, priority: number = 0) {
         if (text) {
             const textMaxWidth = w - (this.blockPaddingLeftRight * 2 - (x < 0 ? x : 0));
 
             if (textMaxWidth > 0) {
-                this.textRenderQueue.push({ text, x, y, w, textMaxWidth });
+                const queue = this.getQueue(priority);
+
+                queue.text.push({ text, x, y, w, textMaxWidth });
             }
         }
     }
 
-    addStrokeToRenderQueue(color: string, x: number, y: number, w: number, h: number) {
-        this.strokeRenderQueue.push({ color, x, y, w, h });
+    addStroke(stroke: { color: string; x: number; y: number; w: number; h: number }, priority: number = 0) {
+        const queue = this.getQueue(priority);
+
+        queue.stroke.push(stroke);
     }
 
-    resolveRectRenderQueue() {
-        Object.entries(this.rectRenderQueue).forEach(([patternName, colors]) => {
+    resolveQueue() {
+        Object.keys(this.queue)
+            .map((priority) => parseInt(priority))
+            .sort()
+            .forEach((priority) => {
+                const { rect, text, stroke } = this.queue[priority];
+
+                this.renderRects(rect);
+                this.renderTexts(text);
+                this.renderStrokes(stroke);
+            });
+
+        this.queue = {};
+    }
+
+    renderRects(rects: RectRenderQueue) {
+        Object.entries(rects).forEach(([patternName, colors]) => {
             let matrix = new DOMMatrixReadOnly();
             let scale = 1;
             let pattern;
@@ -301,6 +340,7 @@ export class BasicRenderEngine extends EventEmitter {
                 }
 
                 this.ctx.fillStyle = pattern;
+                this.ctxCachedSettings['fillStyle'] = patternName;
             }
 
             Object.entries(colors).forEach(([color, items]) => {
@@ -317,14 +357,12 @@ export class BasicRenderEngine extends EventEmitter {
                 });
             });
         });
-
-        this.rectRenderQueue = {};
     }
 
-    resolveTextRenderQueue() {
+    renderTexts(texts: Text[]) {
         this.setCtxValue('fillStyle', this.styles.fontColor);
 
-        this.textRenderQueue.forEach(({ text, x, y, textMaxWidth }) => {
+        texts.forEach(({ text, x, y, textMaxWidth }) => {
             const { width: textWidth } = this.ctx.measureText(text);
 
             if (textWidth > textMaxWidth) {
@@ -350,16 +388,12 @@ export class BasicRenderEngine extends EventEmitter {
                 );
             }
         });
-
-        this.textRenderQueue = [];
     }
 
-    resolveStrokeRenderQueue() {
-        this.strokeRenderQueue.forEach(({ color, x, y, w, h }) => {
+    renderStrokes(strokes: Stroke[]) {
+        strokes.forEach(({ color, x, y, w, h }) => {
             this.renderStroke(color, x, y, w, h);
         });
-
-        this.strokeRenderQueue = [];
     }
 
     setMinMax(min: number, max: number) {
@@ -453,17 +487,21 @@ export class BasicRenderEngine extends EventEmitter {
         }
     }
 
-    createDefaultPatterns(patterns: Array<DefaultPatterns>) {
-        patterns.forEach(({ name, type, config }) => {
-            const defaultPattern = defaultPatterns[type];
+    createDefaultPattern({ name, type, config }: DefaultPatterns) {
+        const defaultPattern = defaultPatterns[type];
 
-            if (defaultPattern) {
-                this.createBlockPattern({
-                    name,
-                    creator: defaultPattern(config as any),
-                });
-            }
-        });
+        if (defaultPattern) {
+            this.createBlockPattern({
+                name,
+                creator: defaultPattern(config as any),
+            });
+        }
+    }
+
+    createCachedDefaultPattern(pattern: DefaultPatterns) {
+        if (!this.patterns[pattern.name]) {
+            this.createDefaultPattern(pattern);
+        }
     }
 
     createBlockPattern({ name, creator }: { name: string; creator: PatternCreator }) {

@@ -3,6 +3,7 @@
 exports[`tree clusters clusterizeFlatTree 1`] = `
 [
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 4318.8956400700545,
     "end": 4854.223027416701,
@@ -64,6 +65,7 @@ exports[`tree clusters clusterizeFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 55.127917361818845,
     "end": 591.2789571018371,
@@ -159,6 +161,7 @@ exports[`tree clusters clusterizeFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 371.3241221156734,
     "end": 965.6148932031014,
@@ -232,6 +235,7 @@ exports[`tree clusters clusterizeFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 5.49393144798978,
     "end": 541.6590153080132,
@@ -1526,6 +1530,7 @@ exports[`tree clusters metaClusterizeFlatTree 1`] = `
 exports[`tree clusters reclusterizeClusteredFlatTree 1`] = `
 [
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 4318.8956400700545,
     "end": 4854.223027416701,
@@ -1587,6 +1592,7 @@ exports[`tree clusters reclusterizeClusteredFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 55.127917361818845,
     "end": 591.2789571018371,
@@ -1682,6 +1688,7 @@ exports[`tree clusters reclusterizeClusteredFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 371.3241221156734,
     "end": 965.6148932031014,
@@ -1755,6 +1762,7 @@ exports[`tree clusters reclusterizeClusteredFlatTree 1`] = `
     "type": "dUGYl",
   },
   {
+    "badge": undefined,
     "color": undefined,
     "duration": 5.49393144798978,
     "end": 541.6590153080132,

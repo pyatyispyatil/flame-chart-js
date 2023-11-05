@@ -203,6 +203,13 @@ export const generateRandomTree = ({
 
     rootNodes.forEach((item) => {
         item.pattern = rndItem(defaultPatternsNames);
+
+        item.children?.forEach(
+            (item) =>
+                item.children?.forEach((item) => {
+                    item.badge = 'rgb(197,5,0)';
+                }),
+        );
     });
 
     const mappedNestingArrays = map(rootNodes, (nodes: FlameChartNode[], parent?: FlameChartNode) => {

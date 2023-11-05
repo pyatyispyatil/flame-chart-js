@@ -278,7 +278,7 @@ export class FlameChartPlugin extends UIPlugin {
         };
 
         const renderCluster = (cluster: ClusterizedFlatTreeNode, x: number, y: number, w: number) => {
-            const { type, nodes, color, pattern } = cluster;
+            const { type, nodes, color, pattern, badge } = cluster;
             const mouse = this.interactionsEngine.getMouse();
 
             if (mouse.y >= y && mouse.y <= y + blockHeight) {
@@ -286,11 +286,38 @@ export class FlameChartPlugin extends UIPlugin {
             }
 
             if (w >= 0.25) {
-                this.renderEngine.addRectToRenderQueue({ color: this.getColor(type, color), pattern, x, y, w });
+                this.renderEngine.addRect({ color: this.getColor(type, color), pattern, x, y, w }, 0);
+
+                if (badge) {
+                    const badgePatternName = `node-badge-${badge}`;
+                    const badgeWidth = (this.renderEngine.styles.badgeSize * 2) / Math.SQRT2;
+
+                    this.renderEngine.createCachedDefaultPattern({
+                        name: badgePatternName,
+                        type: 'triangles',
+                        config: {
+                            color: badge,
+                            width: badgeWidth,
+                            align: 'top',
+                            direction: 'top-left',
+                        },
+                    });
+
+                    this.renderEngine.addRect(
+                        {
+                            pattern: badgePatternName,
+                            color: 'transparent',
+                            x,
+                            y,
+                            w: Math.min(badgeWidth, w),
+                        },
+                        1,
+                    );
+                }
             }
 
             if (w >= minTextWidth && nodes.length === 1) {
-                this.renderEngine.addTextToRenderQueue(nodes[0].source.name, x, y, w);
+                this.renderEngine.addText({ text: nodes[0].source.name, x, y, w }, 2);
             }
         };
 
@@ -307,7 +334,7 @@ export class FlameChartPlugin extends UIPlugin {
             } = this.selectedRegion.data;
             const { x, y, w } = this.calcRect(start, duration, level);
 
-            this.renderEngine.addStrokeToRenderQueue('green', x, y, w, this.renderEngine.blockHeight);
+            this.renderEngine.addStroke({ color: 'green', x, y, w, h: this.renderEngine.blockHeight }, 2);
         }
 
         clearTimeout(this.renderChartTimeout);

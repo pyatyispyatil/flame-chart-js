@@ -144,7 +144,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
         this.renderEngine.fillRect(0, 0, this.renderEngine.width, this.styles.height);
 
         this.renderEngine.setCtxValue('fillStyle', this.styles.fontColor);
-        this.renderEngine.addTextToRenderQueue(this.title, triangleFullWidth, 0, this.renderEngine.width);
+        this.renderEngine.addText({ text: this.title, x: triangleFullWidth, y: 0, w: this.renderEngine.width });
         this.renderEngine.renderTriangle(
             this.styles.triangleColor,
             this.styles.leftPadding,

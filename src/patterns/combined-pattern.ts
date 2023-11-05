@@ -3,11 +3,13 @@ import { PatternCreator, UnionizePatternsMap } from './types';
 import { stripesPattern } from './stripes-pattern';
 import { dotsPattern } from './dots-pattern';
 import { gradientPattern } from './gradient-pattern';
+import { trianglesPattern } from './triangles-pattern';
 
 const combinedPatterns = {
     stripes: stripesPattern,
     dots: dotsPattern,
     gradient: gradientPattern,
+    triangles: trianglesPattern,
 } as const;
 
 type CombinedPatterns = UnionizePatternsMap<typeof combinedPatterns>;

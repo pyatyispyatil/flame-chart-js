@@ -2,6 +2,16 @@ import { ChartPoints, ChartStyle } from './plugins/utils/chart-render';
 
 export const EVENT_NAMES = ['down', 'up', 'move', 'click', 'select'] as const;
 
+export type TriangleDirections =
+    | 'top'
+    | 'bottom'
+    | 'left'
+    | 'right'
+    | 'top-left'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-right';
+
 export interface Mark {
     shortName: string;
     fullName: string;
@@ -65,11 +75,10 @@ export interface Mouse {
     y: number;
 }
 
-interface Dot {
+export type Dot = {
     x: number;
     y: number;
-}
-export type Dots = [Dot, Dot, Dot];
+};
 
 interface Rect {
     x: number;

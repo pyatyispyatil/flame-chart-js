@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { mergeObjects } from '../utils';
-import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
+import { getTrianglePoints, mergeObjects } from '../utils';
+import { Dot, Mouse, RectRenderQueue, Stroke, Text, TooltipField, TriangleDirections } from '../types';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
 import { RenderEngine } from './render-engine';
 import { DefaultPatterns, defaultPatterns, Pattern, PatternCreator } from '../patterns';
@@ -518,7 +518,7 @@ export class BasicRenderEngine extends EventEmitter {
         });
     }
 
-    renderShape(color: string, dots: Dots, posX: number, posY: number) {
+    renderShape(color: string, dots: Dot[], posX: number, posY: number) {
         this.setCtxValue('fillStyle', color);
 
         this.ctx.beginPath();
@@ -532,50 +532,16 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fill();
     }
 
-    renderTriangle(
-        color: string,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        direction: 'bottom' | 'left' | 'right' | 'top',
-    ) {
-        const halfHeight = height / 2;
-        const halfWidth = width / 2;
-        let dots: Dots;
-
-        switch (direction) {
-            case 'top':
-                dots = [
-                    { x: 0 - halfWidth, y: halfHeight },
-                    { x: 0, y: 0 - halfHeight },
-                    { x: halfWidth, y: halfHeight },
-                ];
-                break;
-            case 'right':
-                dots = [
-                    { x: 0 - halfHeight, y: 0 - halfWidth },
-                    { x: 0 - halfHeight, y: halfWidth },
-                    { x: halfHeight, y: 0 },
-                ];
-                break;
-            case 'bottom':
-                dots = [
-                    { x: 0 - halfWidth, y: 0 - halfHeight },
-                    { x: halfWidth, y: 0 - halfHeight },
-                    { x: 0, y: halfHeight },
-                ];
-                break;
-            case 'left':
-                dots = [
-                    { x: halfHeight, y: 0 - halfWidth },
-                    { x: halfHeight, y: halfWidth },
-                    { x: 0 - halfHeight, y: 0 },
-                ];
-                break;
-        }
-
-        this.renderShape(color, dots, x, y);
+    renderTriangle(color: string, x: number, y: number, width: number, height: number, direction: TriangleDirections) {
+        this.renderShape(
+            color,
+            getTrianglePoints(width, height, direction).map(({ x, y }) => ({
+                x: x - width / 2,
+                y: y - height / 2,
+            })),
+            x,
+            y,
+        );
     }
 
     renderCircle(color: string, x: number, y: number, radius: number) {

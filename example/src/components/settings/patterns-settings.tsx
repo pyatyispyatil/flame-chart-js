@@ -6,12 +6,11 @@ import { DefaultPatterns } from '../../../../src';
 export const defaultPatterns: DefaultPatterns[] = [
     {
         name: 'example-stripes-pattern',
-        type: 'stripes',
+        type: 'triangles',
         config: {
             color: 'rgb(255,206,71)',
             background: 'rgb(227,180,76)',
             spacing: 6,
-            lineWidth: 6,
         },
     },
     {

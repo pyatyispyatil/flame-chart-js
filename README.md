@@ -243,13 +243,13 @@ const interval = {
 }
 ```
 
-For now available 4 default patterns
+##### Default patterns
 
 ###### Stripes
 ```ts
 type StripesPattern = {
     type: 'stripes',
-    name: 'your-pattern-name',
+    name: string, // your pattern name
     config: {
         color?: string, // color of the stripes
         background?: string, // background color
@@ -264,7 +264,7 @@ type StripesPattern = {
 ```ts
 type DotsPattern = {
     type: 'dots',
-    name: 'your-pattern-name',
+    name: string, // your pattern name
     config: {
         color?: string; // color of the dots
         background?: string; // background color
@@ -282,12 +282,30 @@ type DotsPattern = {
 ```ts
 type GradientPattern = {
     type: 'gradient',
-    name: 'your-pattern-name',
+    name: string, // your pattern name
     config: {
         colors: {
             offset: number; // offset of the color (from 0 to 1) 
             color: string // color of the gradient point
         }[]
+    }
+}
+```
+
+###### Triangles
+```ts
+type TrianglesPattern = {
+    type: 'gradient',
+    name: string, // your pattern name
+    config: {
+        color?: string; // color of the triangles
+        background?: string; // background color
+        width?: number; // width of the triangles
+        height?: number; // height of the triangles
+        align?: 'center' | 'top' | 'bottom'; // align of the triangles
+        // direction of the triangles (the direction where the vertex of the triangle will face)
+        direction?: 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+        spacing?: number; // spacing between triangles
     }
 }
 ```
@@ -300,7 +318,7 @@ you will get a beautiful layering of layers on top of each other.
 ```ts
 type CombinedPattern = {
     type: 'combined',
-    name: 'your-pattern-name',
+    name: string, // your pattern name
     config: Array<StripesPattern | DotsPattern | GradientPattern>
 }
 ```

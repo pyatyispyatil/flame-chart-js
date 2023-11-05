@@ -1,4 +1,4 @@
-import { BasicRenderEngine } from '../basic-render-engine';
+import { BasicRenderEngine } from '../engines/basic-render-engine';
 import { defaultPatterns } from './default-patterns';
 
 export type Pattern = { pattern: CanvasPattern; scale?: number; width?: number };

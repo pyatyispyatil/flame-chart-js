@@ -259,11 +259,16 @@ export const generateRandomWaterfallItems = ({
         items.push(
             ...timestamps.map(({ start, end }) => ({
                 name: randomString(14),
-                timing: {
-                    requestStart: start,
-                    responseStart: rndFloat(start, end),
-                    responseEnd: end,
-                },
+                timing: (() => {
+                    const [requestStart, responseStart] = [rndFloat(start, end), rndFloat(start, end)].sort();
+
+                    return {
+                        fetchStart: start,
+                        requestStart,
+                        responseStart,
+                        responseEnd: end,
+                    };
+                })(),
                 intervals: rndItem(types),
             })),
         );
@@ -278,6 +283,13 @@ export const waterfallIntervals: WaterfallIntervals = {
     js: [
         {
             name: 'waiting',
+            color: 'rgba(0,0,0,0.5)',
+            type: 'line',
+            start: 'fetchStart',
+            end: 'requestStart',
+        },
+        {
+            name: 'request',
             color: 'rgb(207,196,152)',
             type: 'block',
             start: 'requestStart',
@@ -294,6 +306,13 @@ export const waterfallIntervals: WaterfallIntervals = {
     css: [
         {
             name: 'waiting',
+            color: 'rgba(0,0,0,0.5)',
+            type: 'line',
+            start: 'fetchStart',
+            end: 'requestStart',
+        },
+        {
+            name: 'request',
             color: 'rgb(144,188,210)',
             type: 'block',
             start: 'requestStart',

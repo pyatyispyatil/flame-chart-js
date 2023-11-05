@@ -22,4 +22,4 @@ export type {
     GradientPatternConfig,
     CombinedPatternConfig,
     DotsPatternConfig,
-} from './engines/patterns';
+} from './patterns';

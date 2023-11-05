@@ -3,7 +3,7 @@ import { mergeObjects } from '../utils';
 import { Dots, Mouse, RectRenderQueue, Stroke, Text, TooltipField } from '../types';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
 import { RenderEngine } from './render-engine';
-import { DefaultPatterns, defaultPatterns, Pattern, PatternCreator } from './patterns';
+import { DefaultPatterns, defaultPatterns, Pattern, PatternCreator } from '../patterns';
 
 // eslint-disable-next-line prettier/prettier -- prettier complains about escaping of the " character
 const allChars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890_-+()[]{}\\/|\'";:.,?~';
@@ -217,8 +217,8 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fillText(text, x, y);
     }
 
-    renderBlock(x: number, y: number, w: number) {
-        this.ctx.fillRect(x, y, w, this.blockHeight);
+    renderBlock(x: number, y: number, w: number, h?: number) {
+        this.ctx.fillRect(x, y, w, h ?? this.blockHeight);
     }
 
     renderStroke(color: string, x: number, y: number, w: number, h: number) {
@@ -258,7 +258,7 @@ export class BasicRenderEngine extends EventEmitter {
         return x - currentPos;
     }
 
-    addRectToRenderQueue(rect: { color: string; pattern?: string; x: number; y: number; w: number }) {
+    addRectToRenderQueue(rect: { color: string; pattern?: string; x: number; y: number; w: number; h?: number }) {
         rect.pattern = rect.pattern || 'none';
 
         if (!this.rectRenderQueue[rect.pattern]) {
@@ -313,7 +313,7 @@ export class BasicRenderEngine extends EventEmitter {
                         pattern.setTransform(matrix.translate(rect.x * scale, 0));
                     }
 
-                    this.renderBlock(rect.x, rect.y, rect.w);
+                    this.renderBlock(rect.x, rect.y, rect.w, rect.h);
                 });
             });
         });

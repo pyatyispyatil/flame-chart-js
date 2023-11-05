@@ -7,6 +7,8 @@ import { parseWaterfall, PreparedWaterfallItem } from './utils/waterfall-parser'
 
 export type WaterfallPluginStyles = {
     defaultHeight: number;
+    lineWidth: number;
+    lineHeight: number | 'inherit';
 };
 
 export type WaterfallPluginSettings = {
@@ -15,6 +17,8 @@ export type WaterfallPluginSettings = {
 
 export const defaultWaterfallPluginStyles: WaterfallPluginStyles = {
     defaultHeight: 68,
+    lineWidth: 1,
+    lineHeight: 'inherit',
 };
 
 export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
@@ -228,7 +232,28 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
                         if (type === 'block') {
                             this.renderEngine.addRectToRenderQueue({ color, pattern, x, y, w });
                         } else if (type === 'line') {
-                            // ToDo add other types
+                            this.renderEngine.addRectToRenderQueue({
+                                color,
+                                pattern,
+                                x: index === 0 ? x + this.styles.lineWidth : x,
+                                y: y + (blockHeight - this.styles.lineWidth) / 2,
+                                w: index === intervals.length - 1 ? w - this.styles.lineWidth : w,
+                                h: this.styles.lineWidth,
+                            });
+
+                            if (index === 0 || index === intervals.length - 1) {
+                                const lineHeight =
+                                    this.styles.lineHeight === 'inherit' ? blockHeight / 2 : this.styles.lineHeight;
+
+                                this.renderEngine.addRectToRenderQueue({
+                                    color,
+                                    pattern,
+                                    x: index === 0 ? x : x + w - this.styles.lineWidth,
+                                    y: y + (blockHeight - lineHeight) / 2,
+                                    w: this.styles.lineWidth,
+                                    h: lineHeight,
+                                });
+                            }
                         }
 
                         return {

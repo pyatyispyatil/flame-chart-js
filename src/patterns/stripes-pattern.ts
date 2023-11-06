@@ -24,7 +24,7 @@ export const stripesPattern =
         const scale = 4;
 
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
-        canvas.height = (engine.blockHeight + 1) * scale;
+        canvas.height = engine.blockHeight * scale;
 
         const realLineWidth = lineWidth * scale;
         const realSpacing = spacing * scale + realLineWidth;

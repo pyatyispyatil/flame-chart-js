@@ -31,7 +31,7 @@ export const dotsPattern =
         const realVerticalSpacing = verticalSpicing * scale;
         const realHorizontalSpacing = horizontalSpicing * scale;
         const width = (size + realHorizontalSpacing / 4) * scale;
-        const height = (engine.blockHeight + 1) * scale;
+        const height = engine.blockHeight * scale;
         const rowsCount = rows ? rows : Math.floor(height / (realSize + realVerticalSpacing));
 
         ctx.setTransform(scale, 0, 0, scale, 0, 0);

@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import styles from './patterns-settings.module.css';
 import { Button } from '../shared/button';
-import { DefaultPatterns } from '../../../../src';
+import { defaultPatterns, DefaultPatterns } from '../../../../src';
 
-export const defaultPatterns: DefaultPatterns[] = [
+export const examplePatterns: DefaultPatterns[] = [
     {
-        name: 'example-stripes-pattern',
+        name: 'example-pattern-1',
         type: 'triangles',
         config: {
             color: 'rgb(255,206,71)',
@@ -14,7 +14,7 @@ export const defaultPatterns: DefaultPatterns[] = [
         },
     },
     {
-        name: 'example-combined-pattern',
+        name: 'example-pattern-2',
         type: 'combined',
         config: [
             {
@@ -66,7 +66,7 @@ export const defaultPatterns: DefaultPatterns[] = [
     },
 ];
 
-export const defaultPatternsNames = defaultPatterns.map((pattern) => pattern.name);
+export const examplePatternsNames = examplePatterns.map((pattern) => pattern.name);
 
 export const PatternsSettings = ({
     value = [],
@@ -92,8 +92,28 @@ export const PatternsSettings = ({
         <div className={styles.root}>
             <div className={styles.sectionsWrapper}>
                 {patterns.map(({ name, type, config }, index) => (
-                    <div key={(name || type) + index} className={styles.section}>
-                        <div className={styles.sectionHeader}>{name || type}</div>
+                    <div key={name} className={styles.section}>
+                        <div className={styles.sectionHeader}>{name}</div>
+                        type:{' '}
+                        <select
+                            value={type}
+                            className={styles.select}
+                            onChange={(e) => {
+                                const newValue = e.target.value as keyof typeof defaultPatterns;
+
+                                setPatterns(
+                                    patterns.map((pattern, i) =>
+                                        i === index ? { ...pattern, type: newValue } : pattern,
+                                    ),
+                                );
+                            }}
+                        >
+                            {Object.keys(defaultPatterns).map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
                         <textarea
                             className={styles.input}
                             value={config}

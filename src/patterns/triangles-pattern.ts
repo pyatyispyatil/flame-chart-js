@@ -33,7 +33,7 @@ export const trianglesPattern =
         const maxHeight = Math.max(...points.map(({ y }) => y));
 
         const fullWidth = maxWidth + spacing * scale;
-        const fullHeight = (engine.blockHeight + 1) * scale;
+        const fullHeight = engine.blockHeight * scale;
 
         const delta = align === 'center' ? (fullHeight - maxHeight) / 2 : align === 'top' ? 0 : fullHeight - maxHeight;
 

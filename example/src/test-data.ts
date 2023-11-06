@@ -1,6 +1,6 @@
 import { FlameChartNode, Mark, WaterfallIntervals, WaterfallItems } from '../../src';
 import { ChartPoints } from '../../src/plugins/utils/chart-render';
-import { defaultPatternsNames } from './components/settings/patterns-settings';
+import { examplePatternsNames } from './components/settings/patterns-settings';
 
 const chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
@@ -202,7 +202,7 @@ export const generateRandomTree = ({
     let currentType = types[typesCounter];
 
     rootNodes.forEach((item) => {
-        item.pattern = rndItem(defaultPatternsNames);
+        item.pattern = rndItem(examplePatternsNames);
 
         item.children?.forEach(
             (item) =>

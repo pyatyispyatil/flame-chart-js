@@ -28,6 +28,7 @@ export const dotsPattern =
         const scale = 4;
 
         const realSize = size * scale;
+        const radius = realSize / 2;
         const realVerticalSpacing = verticalSpicing * scale;
         const realHorizontalSpacing = horizontalSpicing * scale;
         const width = (size + realHorizontalSpacing / 4) * scale;
@@ -44,15 +45,11 @@ export const dotsPattern =
 
         ctx.fillStyle = color;
 
-        const delta =
-            align === 'center'
-                ? (height - (realSize + realVerticalSpacing) * (rowsCount + 1)) / 2
-                : align === 'top'
-                ? 0
-                : height - (realSize + realVerticalSpacing) * (rowsCount + 1);
+        const freeSpace = height - ((realSize + realVerticalSpacing) * rowsCount - realVerticalSpacing);
+        const padding = align === 'center' ? freeSpace / 2 : align === 'top' ? 0 : freeSpace;
 
-        for (let row = 1; row <= rowsCount; row++) {
-            ctx.arc(width / 2, delta + (realSize + realVerticalSpacing) * row, realSize / 2, 0, 2 * Math.PI);
+        for (let row = 0; row < rowsCount; row++) {
+            ctx.arc(width / 2, padding + (realSize + realVerticalSpacing) * row + radius, radius, 0, 2 * Math.PI);
             ctx.fill();
         }
 

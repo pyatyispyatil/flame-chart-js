@@ -23,3 +23,5 @@ export type {
     CombinedPatternConfig,
     DotsPatternConfig,
 } from './patterns';
+
+export { defaultPatterns } from './patterns';

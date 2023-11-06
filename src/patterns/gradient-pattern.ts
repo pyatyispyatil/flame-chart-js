@@ -10,7 +10,7 @@ export const gradientPattern =
         const scale = 4;
 
         const width = scale;
-        const height = (engine.blockHeight + 1) * scale;
+        const height = engine.blockHeight * scale;
 
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
 

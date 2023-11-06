@@ -350,7 +350,7 @@ export class BasicRenderEngine extends EventEmitter {
 
                 items.forEach((rect) => {
                     if (pattern) {
-                        pattern.setTransform(matrix.translate(rect.x * scale, 0));
+                        pattern.setTransform(matrix.translate(rect.x * scale, rect.y * scale));
                     }
 
                     this.renderBlock(rect.x, rect.y, rect.w, rect.h);

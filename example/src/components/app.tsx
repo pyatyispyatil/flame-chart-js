@@ -23,7 +23,7 @@ import { SelectedData } from './charts/selected-data';
 import { WaterfallSettings } from './settings/waterfall-settings';
 import { MarksSettings } from './settings/marks-settings';
 import { TimeseriesSettings } from './settings/timeseries-settings';
-import { defaultPatterns, PatternsSettings } from './settings/patterns-settings';
+import { examplePatterns, PatternsSettings } from './settings/patterns-settings';
 
 enum ChartType {
     Default = 'default',
@@ -44,7 +44,7 @@ const flameChartVariants = [
 export const App = () => {
     const [treeConfig, setTreeConfig] = useState<TreeConfig>();
     const [stylesSettings, setStylesSettings] = useState({});
-    const [patternsSettings, setPatternsSettings] = useState(defaultPatterns);
+    const [patternsSettings, setPatternsSettings] = useState(examplePatterns);
     const [currentChart, setCurrentChart] = useState(ChartType.Default);
     const [isGenerating, setIsGenerating] = useState(false);
     const [flameChartData, setFlameChartData] = useState<FlameChartNode[] | null>(null);

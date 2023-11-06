@@ -59,7 +59,7 @@ export const combinedPattern =
             return combinedPatterns[pattern.type](pattern.config as any)(engine);
         });
 
-        const height = (engine.blockHeight + 1) * scale;
+        const height = engine.blockHeight * scale;
         const width = findNumber(
             renderedPatterns.map(({ width = 1, scale: patternScale = 1 }) => width * (scale / patternScale)),
             engine.width * scale,

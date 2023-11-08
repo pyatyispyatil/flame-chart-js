@@ -295,7 +295,7 @@ type GradientPattern = {
 ###### Triangles
 ```ts
 type TrianglesPattern = {
-    type: 'gradient',
+    type: 'triangles',
     name: string, // your pattern name
     config: {
         color?: string; // color of the triangles

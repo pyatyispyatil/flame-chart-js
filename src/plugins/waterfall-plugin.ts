@@ -84,8 +84,11 @@ export class WaterfallPlugin extends UIPlugin<WaterfallPluginStyles> {
     handleSelect(region: HitRegion<number> | null) {
         if (this.selectedRegion !== region) {
             this.selectedRegion = region;
+
+            const index = region?.data ?? null;
+
             this.emit('select', {
-                node: region?.data ? this.initialData[region.data] : null,
+                node: index !== null ? this.initialData[index] : null,
                 type: 'waterfall-node',
             });
             this.renderEngine.render();

@@ -33,6 +33,7 @@ export type FlameChartWrapperProps = {
         end: number;
     };
     plugins?: UIPlugin[];
+    instance?: (instance: FlameChart) => void;
     className?: string;
 
     onSelect?: (data: NodeTypes) => void;
@@ -68,6 +69,8 @@ export const FlameChartComponent = (props: FlameChartWrapperProps) => {
                 colors,
                 plugins,
             });
+
+            props.instance?.(flameChart.current);
         }
     }, []);
 

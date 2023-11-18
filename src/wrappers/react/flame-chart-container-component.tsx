@@ -10,6 +10,7 @@ export type FlameChartContainerProps = {
         end: number;
     };
     plugins: UIPlugin[];
+    instance?: (instance: FlameChartContainer) => void;
     className?: string;
 };
 
@@ -37,6 +38,8 @@ export const FlameChartContainerComponent = (props: FlameChartContainerProps) =>
                 settings,
                 plugins,
             });
+
+            props.instance?.(flameChart.current);
         }
     }, []);
 

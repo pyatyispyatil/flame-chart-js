@@ -17,6 +17,7 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     flexible = false;
     collapsed = false;
     position = 0;
+    savedHeight: number | null = null;
 
     constructor({ width, height, parent, id }: OffscreenRenderEngineOptions) {
         const canvas = document.createElement('canvas');
@@ -57,11 +58,16 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
 
     collapse() {
         this.collapsed = true;
+        this.savedHeight = this.height;
         this.clear();
     }
 
     expand() {
         this.collapsed = false;
+
+        if (this.savedHeight) {
+            this.resize({ height: this.savedHeight });
+        }
     }
 
     setSettingsOverrides(settings: RenderSettings) {
@@ -79,8 +85,12 @@ export class OffscreenRenderEngine extends BasicRenderEngine {
     ) {
         const isHeightChanged = super.resize(width, height);
 
+        if ((height ?? 0) <= 0) {
+            this.collapsed = true;
+        }
+
         if (!isParentCall && isHeightChanged) {
-            this.parent.recalcChildrenSizes();
+            this.parent.recalcChildrenLayout();
         }
 
         if (typeof position === 'number') {

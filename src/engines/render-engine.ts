@@ -13,10 +13,13 @@ export type RenderEngineArgs = {
     plugins: UIPlugin[];
 };
 
-interface ChildrenSizes {
+type EngineTypes = 'flexibleStatic' | 'flexibleGrowing' | 'static';
+
+type ChildrenLayout = {
     position: number;
-    result: { width: number; position: number; height: number }[];
-}
+    placements: { width: number; position: number; height: number; type: EngineTypes }[];
+    freeSpace: number;
+};
 
 export class RenderEngine extends BasicRenderEngine {
     plugins: UIPlugin[];
@@ -84,7 +87,7 @@ export class RenderEngine extends BasicRenderEngine {
 
         if (this.children) {
             this.children.forEach((engine) => engine.setSettings(data));
-            this.recalcChildrenSizes();
+            this.recalcChildrenLayout();
         }
     }
 
@@ -92,7 +95,7 @@ export class RenderEngine extends BasicRenderEngine {
         const currentWidth = this.width;
 
         super.resize(width, height);
-        this.recalcChildrenSizes();
+        this.recalcChildrenLayout();
 
         if (this.getInitialZoom() > this.zoom) {
             this.resetView();
@@ -103,89 +106,129 @@ export class RenderEngine extends BasicRenderEngine {
         return true;
     }
 
-    recalcChildrenSizes() {
-        const childrenSizes = this.getChildrenSizes();
+    recalcChildrenLayout() {
+        const childrenLayout = this.getChildrenLayout();
 
-        this.freeSpace = childrenSizes.reduce((acc, { height }) => acc - height, this.height);
+        if (childrenLayout.freeSpace > 0) {
+            this.expandGrowingChildrenLayout(childrenLayout);
+        } else if (childrenLayout.freeSpace < 0) {
+            this.truncateChildrenLayout(childrenLayout);
+        }
+
+        this.freeSpace = childrenLayout.freeSpace;
         this.children.forEach((engine, index) => {
-            engine.resize(childrenSizes[index], true);
+            engine.resize(childrenLayout.placements[index], true);
         });
     }
 
-    getChildrenSizes() {
-        const indexes = this.children.map((_, index) => index);
-
-        const enginesTypes = indexes.map((index) => {
-            const plugin = this.plugins[index];
-            const engine = this.children[index];
-
-            if (engine.flexible && plugin.height) {
-                return 'flexibleStatic';
-            } else if (!plugin.height) {
-                return 'flexibleGrowing';
-            }
-
-            return 'static';
-        });
-
-        const freeSpace = enginesTypes.reduce((acc, type, index) => {
-            const plugin = this.plugins[index];
-            const engine = this.children[index];
-
-            if (engine.collapsed) {
-                return acc;
-            } else if (type === 'flexibleGrowing') {
-                return acc - (engine.height || 0);
-            } else if (type === 'flexibleStatic') {
-                return acc - (engine?.height || plugin?.height || 0);
-            } else if (type === 'static') {
-                return acc - (this.plugins[index]?.height ?? 0);
-            }
-
-            return acc;
-        }, this.height);
-
-        const flexibleGrowingCount = enginesTypes.filter((type) => type === 'flexibleGrowing').length;
-
-        const freeSpacePart = Math.floor(freeSpace / flexibleGrowingCount);
-
-        return enginesTypes.reduce<ChildrenSizes>(
-            (acc, type, index) => {
-                const engine = this.children[index];
+    getChildrenLayout() {
+        return this.children.reduce<ChildrenLayout>(
+            (acc, engine, index) => {
                 const plugin = this.plugins[index];
+                const pluginHeight = plugin.fullHeight;
+                let type: EngineTypes = 'static';
                 let height = 0;
+
+                if (engine.flexible && typeof plugin.height === 'number') {
+                    type = 'flexibleStatic';
+                } else if (plugin.height === 'flexible') {
+                    type = 'flexibleGrowing';
+                }
 
                 if (engine.collapsed) {
                     height = 0;
                 } else {
                     switch (type) {
                         case 'static':
-                            height = plugin.height ?? 0;
+                            height = pluginHeight;
                             break;
                         case 'flexibleGrowing':
-                            height = (engine.height || 0) + freeSpacePart;
+                            height = engine.height || 0;
                             break;
                         case 'flexibleStatic':
-                            height = (engine.height || this.plugins[index].height) ?? 0;
+                            height = (engine.height || pluginHeight) ?? 0;
                             break;
                     }
                 }
 
-                acc.result.push({
+                acc.placements.push({
                     width: this.width,
                     position: acc.position,
                     height,
+                    type,
                 });
 
                 acc.position += height;
+                acc.freeSpace -= height;
 
                 return acc;
             },
             {
                 position: 0,
-                result: [],
+                placements: [],
+                freeSpace: this.height,
             },
-        ).result;
+        );
+    }
+
+    expandGrowingChildrenLayout(childrenLayout: ChildrenLayout) {
+        const { placements, freeSpace } = childrenLayout;
+
+        const last = placements[placements.length - 1];
+        const growingChildren = placements.map(
+            ({ type, height }, index) => type === 'flexibleGrowing' && !this.children[index].collapsed && height === 0,
+        );
+        const growingChildrenCount = growingChildren.filter(Boolean).length;
+
+        if (growingChildrenCount) {
+            const vacantSpacePart = Math.max(0, Math.floor(freeSpace / growingChildrenCount));
+
+            growingChildren.forEach((isGrowing, index) => {
+                if (isGrowing) {
+                    placements[index].height += vacantSpacePart;
+                    childrenLayout.freeSpace -= vacantSpacePart;
+
+                    for (let nextIndex = index + 1; nextIndex < placements.length; nextIndex++) {
+                        placements[nextIndex].position += vacantSpacePart;
+                    }
+                }
+            });
+        }
+
+        if (last.type === 'flexibleGrowing' && !this.children[this.children.length - 1].collapsed) {
+            last.height = Math.max(0, this.height - last.position);
+            childrenLayout.freeSpace = 0;
+        }
+
+        return childrenLayout;
+    }
+
+    truncateChildrenLayout(childrenLayout: ChildrenLayout) {
+        const { placements, freeSpace } = childrenLayout;
+
+        let diff = Math.abs(freeSpace);
+
+        while (diff > 0) {
+            const lastFlexibleIndex = placements.findLastIndex(({ height, type }) => height > 0 && type !== 'static');
+
+            if (lastFlexibleIndex !== -1) {
+                const size = placements[lastFlexibleIndex];
+                const newHeight = Math.max(0, size.height - diff);
+                const delta = size.height - newHeight;
+
+                size.height = newHeight;
+                diff -= delta;
+                childrenLayout.freeSpace += delta;
+
+                placements.forEach((size, index) => {
+                    if (index > lastFlexibleIndex) {
+                        size.position -= delta;
+                    }
+                });
+            }
+        }
+
+        return childrenLayout;
     }
 
     getAccuracy() {

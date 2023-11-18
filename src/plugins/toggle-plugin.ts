@@ -72,7 +72,7 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
                     nextEngine.collapse();
                 }
 
-                this.renderEngine.parent.recalcChildrenSizes();
+                this.renderEngine.parent.recalcChildrenLayout();
                 this.renderEngine.parent.render();
             }
         });

@@ -6,7 +6,7 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 import { parseWaterfall, PreparedWaterfallItem } from './utils/waterfall-parser';
 
 export type WaterfallPluginStyles = {
-    defaultHeight: number;
+    defaultHeight: number | 'flexible';
     lineWidth: number;
     lineHeight: number | 'inherit';
 };

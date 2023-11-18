@@ -441,12 +441,15 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     resize(width?: number, height?: number) {
-        const isWidthChanged = typeof width === 'number' && this.width !== width;
-        const isHeightChanged = typeof height === 'number' && this.height !== height;
+        const resolvedWidth = Math.max(0, width || 0);
+        const resolvedHeight = Math.max(0, height || 0);
+
+        const isWidthChanged = typeof width === 'number' && this.width !== resolvedWidth;
+        const isHeightChanged = typeof height === 'number' && this.height !== resolvedHeight;
 
         if (isWidthChanged || isHeightChanged) {
-            this.width = isWidthChanged ? width : this.width;
-            this.height = isHeightChanged ? height : this.height;
+            this.width = isWidthChanged ? resolvedWidth : this.width;
+            this.height = isHeightChanged ? resolvedHeight : this.height;
 
             this.applyCanvasSize();
 

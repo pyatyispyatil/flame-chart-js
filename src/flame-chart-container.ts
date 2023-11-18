@@ -5,6 +5,8 @@ import { TimeGrid, TimeGridStyles } from './engines/time-grid';
 import { RenderOptions, RenderPatterns, RenderStyles } from './engines/basic-render-engine';
 import UIPlugin from './plugins/ui-plugin';
 
+export type FlameChartPatterns = RenderPatterns;
+
 export type FlameChartContainerStyles<Styles = {}> = {
     timeGrid?: Partial<TimeGridStyles>;
     main?: Partial<RenderStyles>;
@@ -13,7 +15,7 @@ export type FlameChartContainerStyles<Styles = {}> = {
 export interface FlameChartContainerSettings<Styles = {}> {
     options?: Partial<RenderOptions>;
     styles?: FlameChartContainerStyles<Styles>;
-    patterns?: RenderPatterns;
+    patterns?: FlameChartPatterns;
 }
 
 export interface FlameChartContainerOptions<Styles = {}> {
@@ -61,7 +63,7 @@ export class FlameChartContainer<Styles = {}> extends EventEmitter {
 
         this.renderEngine.calcMinMax();
         this.renderEngine.resetView();
-        this.renderEngine.recalcChildrenSizes();
+        this.renderEngine.recalcChildrenLayout();
         this.renderEngine.calcTimeGrid();
 
         this.plugins.forEach((plugin) => plugin.postInit?.());

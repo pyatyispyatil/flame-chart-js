@@ -4,7 +4,7 @@ import { SeparatedInteractionsEngine } from '../engines/separated-interactions-e
 
 export abstract class UIPlugin<S = {}> extends EventEmitter {
     name: string;
-    abstract height?: number;
+    abstract height?: number | 'flexible';
 
     interactionsEngine: SeparatedInteractionsEngine;
     renderEngine: OffscreenRenderEngine;
@@ -16,6 +16,10 @@ export abstract class UIPlugin<S = {}> extends EventEmitter {
     protected constructor(name: string) {
         super();
         this.name = name;
+    }
+
+    get fullHeight() {
+        return typeof this.height === 'number' ? this.height : 0;
     }
 
     init(renderEngine: OffscreenRenderEngine, interactionsEngine: SeparatedInteractionsEngine) {

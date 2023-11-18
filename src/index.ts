@@ -12,7 +12,11 @@ export type { FlameChartStyles, FlameChartSettings, FlameChartOptions } from './
 export * from './types';
 
 export { FlameChartContainer } from './flame-chart-container';
-export type { FlameChartContainerSettings, FlameChartContainerOptions } from './flame-chart-container';
+export type {
+    FlameChartContainerSettings,
+    FlameChartContainerOptions,
+    FlameChartPatterns,
+} from './flame-chart-container';
 
 export type {
     DefaultPatterns,

@@ -570,16 +570,22 @@ export class BasicRenderEngine extends EventEmitter {
         this.ctx.fill();
     }
 
-    renderTriangle(color: string, x: number, y: number, width: number, height: number, direction: TriangleDirections) {
-        this.renderShape(
-            color,
-            getTrianglePoints(width, height, direction).map(({ x, y }) => ({
-                x: x - width / 2,
-                y: y - height / 2,
-            })),
-            x,
-            y,
-        );
+    renderTriangle({
+        color,
+        x,
+        y,
+        width,
+        height,
+        direction,
+    }: {
+        color: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        direction: TriangleDirections;
+    }) {
+        this.renderShape(color, getTrianglePoints(width, height, direction), x, y);
     }
 
     renderCircle(color: string, x: number, y: number, radius: number) {

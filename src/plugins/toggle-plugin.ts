@@ -145,14 +145,26 @@ export class TogglePlugin extends UIPlugin<TogglePluginStyles> {
 
         this.renderEngine.setCtxValue('fillStyle', this.styles.fontColor);
         this.renderEngine.addText({ text: this.title, x: triangleFullWidth, y: 0, w: this.renderEngine.width });
-        this.renderEngine.renderTriangle(
-            this.styles.triangleColor,
-            this.styles.leftPadding,
-            this.styles.height / 2,
-            this.styles.triangleWidth,
-            this.styles.triangleHeight,
-            nextEngine.collapsed ? 'right' : 'bottom',
-        );
+
+        if (!nextEngine.collapsed) {
+            this.renderEngine.renderTriangle({
+                color: this.styles.triangleColor,
+                x: this.styles.leftPadding,
+                y: (this.styles.height - this.styles.triangleHeight) / 2,
+                width: this.styles.triangleWidth,
+                height: this.styles.triangleHeight,
+                direction: 'bottom',
+            });
+        } else {
+            this.renderEngine.renderTriangle({
+                color: this.styles.triangleColor,
+                x: this.styles.leftPadding + this.styles.triangleHeight / 2,
+                y: (this.styles.height - this.styles.triangleWidth) / 2,
+                width: this.styles.triangleWidth,
+                height: this.styles.triangleHeight,
+                direction: 'right',
+            });
+        }
 
         const { width: titleWidth } = this.renderEngine.ctx.measureText(this.title);
         const buttonWidth = titleWidth + triangleFullWidth;

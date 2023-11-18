@@ -340,7 +340,7 @@ const flameChart = new FlameChart({
                     
                     // set canvas size
                     canvas.width = 20;
-                    canvas.height = engine.blockHeight + 1;
+                    canvas.height = engine.blockHeight;
                     
                     // draw something on canvas
                     ctx.fillStyle = 'red';

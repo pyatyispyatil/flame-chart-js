@@ -16,7 +16,7 @@ type CombinedPatterns = UnionizePatternsMap<typeof combinedPatterns>;
 
 export type CombinedPatternConfig = (Omit<CombinedPatterns, 'name'> | { creator: PatternCreator })[];
 
-function findNumber(arr, max = Infinity) {
+function findMinIntegerWidth(arr, max = Infinity) {
     const maxNumber = Math.max(...arr);
 
     if (arr.every((n) => maxNumber % n === 0)) {
@@ -60,7 +60,7 @@ export const combinedPattern =
         });
 
         const height = engine.blockHeight * scale;
-        const width = findNumber(
+        const width = findMinIntegerWidth(
             renderedPatterns.map(({ width = 1, scale: patternScale = 1 }) => width * (scale / patternScale)),
             engine.width * scale,
         );

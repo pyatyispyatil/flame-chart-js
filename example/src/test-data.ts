@@ -1,4 +1,4 @@
-import { FlameChartNode, Mark, WaterfallIntervals, WaterfallItems } from '../../src';
+import { FlameChartNode, Mark, Timeseries, WaterfallIntervals, WaterfallItems } from '../../src';
 import { ChartPoints } from '../../src/plugins/utils/chart-render';
 import { examplePatternsNames } from './components/settings/patterns-settings';
 
@@ -388,4 +388,85 @@ export const generateRandomTimeseries = ({ count, start, end, min, max }: Timese
         .fill(null)
         .map(() => [rndFloat(start, end), rndFloat(min ?? 0, max ?? 100)])
         .sort((a, b) => a[0] - b[0]) as ChartPoints;
+};
+
+export const generateRandomCpuTimeseries = (config: TimeseriesConfig) => {
+    return [
+        {
+            name: 'CPU Total',
+            points: generateRandomTimeseries(config),
+            units: '%',
+            min: 0,
+            max: 100,
+            style: {
+                lineColor: 'rgba(239,36,255,0.2)',
+                fillColor: 'rgba(239,36,255,0.2)',
+            },
+        },
+    ];
+};
+
+export const generateRandomCpuAndMemTimeseries = (config: TimeseriesConfig): Timeseries => {
+    const memConfig = {
+        min: 0,
+        max: 8096,
+        ...config,
+    };
+
+    const cpuConfig = {
+        min: 0,
+        max: 50,
+        ...config,
+    };
+
+    return [
+        {
+            name: 'CPU #1',
+            group: 'CPU',
+            points: generateRandomTimeseries(cpuConfig),
+            units: '%',
+            min: 0,
+            max: 100,
+            style: {
+                lineColor: 'rgba(203,179,20,0.2)',
+                fillColor: 'rgba(203,179,20,0.2)',
+            },
+        },
+        {
+            name: 'CPU #2',
+            group: 'CPU',
+            points: generateRandomTimeseries(cpuConfig),
+            units: '%',
+            min: 0,
+            max: 100,
+            style: {
+                lineColor: 'rgba(203,179,20,0.2)',
+                fillColor: 'rgba(203,179,20,0.2)',
+            },
+        },
+        {
+            name: 'Allocated',
+            group: 'Memory',
+            points: generateRandomTimeseries(memConfig),
+            units: 'MB',
+            min: 0,
+            style: {
+                type: 'bar',
+                lineColor: 'rgba(60,122,255,0.2)',
+                fillColor: 'rgba(60,122,255,0.2)',
+            },
+        },
+        {
+            name: 'Free',
+            group: 'Memory',
+            points: generateRandomTimeseries(memConfig),
+            units: 'MB',
+            min: 0,
+            style: {
+                type: 'bar',
+                lineColor: 'rgba(107,223,243,0.2)',
+                fillColor: 'rgba(107,223,243,0.2)',
+            },
+        },
+    ];
 };

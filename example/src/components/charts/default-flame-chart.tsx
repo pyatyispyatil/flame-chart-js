@@ -14,11 +14,11 @@ import { waterfallIntervals } from '../../test-data';
 import { useMemo } from 'react';
 
 export type DefaultFlameChartProps = {
-    flameChartData: FlameChartNode[];
-    waterfallData: WaterfallItems;
-    marksData: Marks;
-    timeseriesData: Timeseries;
-    timeframeTimeseriesData: Timeseries;
+    flameChartData?: FlameChartNode[];
+    waterfallData?: WaterfallItems;
+    marksData?: Marks;
+    timeseriesData?: Timeseries;
+    timeframeTimeseriesData?: Timeseries;
     stylesSettings?: FlameChartContainerStyles<FlameChartStyles>;
     patternsSettings?: DefaultPatterns[];
     onSelect?: (node: NodeTypes) => void;
@@ -35,10 +35,13 @@ export const DefaultFlameChart = ({
     onSelect,
 }: DefaultFlameChartProps) => {
     const waterfall = useMemo(
-        () => ({
-            intervals: waterfallIntervals,
-            items: waterfallData,
-        }),
+        () =>
+            waterfallData
+                ? {
+                      intervals: waterfallIntervals,
+                      items: waterfallData,
+                  }
+                : undefined,
         [waterfallData],
     );
 

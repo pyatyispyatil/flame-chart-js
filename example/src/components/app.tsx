@@ -6,8 +6,9 @@ import { RadioGroup } from './shared/radio-group';
 import { TreeSettings } from './settings/tree-settings';
 import { StylesSettings } from './settings/styles-settings';
 import {
+    generateRandomCpuAndMemTimeseries,
+    generateRandomCpuTimeseries,
     generateRandomMarks,
-    generateRandomTimeseries,
     generateRandomTree,
     generateRandomWaterfallItems,
     MarksConfig,
@@ -42,149 +43,77 @@ const flameChartVariants = [
 ];
 
 export const App = () => {
+    const [state, setState] = useState<{
+        flameChartData: FlameChartNode[];
+        customFlameChartData: FlameChartNodes[];
+        waterfallData: WaterfallItems;
+        marksData: Marks;
+        timeseriesData: Timeseries;
+        timeframeTimeseriesData: Timeseries;
+    }>({
+        flameChartData: [],
+        customFlameChartData: [[], []],
+        waterfallData: [],
+        marksData: [],
+        timeseriesData: [],
+        timeframeTimeseriesData: [],
+    });
     const [treeConfig, setTreeConfig] = useState<TreeConfig>();
     const [stylesSettings, setStylesSettings] = useState({});
     const [patternsSettings, setPatternsSettings] = useState(examplePatterns);
     const [currentChart, setCurrentChart] = useState(ChartType.Default);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [flameChartData, setFlameChartData] = useState<FlameChartNode[] | null>(null);
-    const [customFlameChartData, setCustomFlameChartData] = useState<FlameChartNodes[] | null>(null);
-    const [waterfallData, setWaterfallData] = useState<WaterfallItems | null>(null);
-    const [marksData, setMarksData] = useState<Marks | null>(null);
-    const [timeseriesData, setTimeseriesData] = useState<Timeseries | null>(null);
-    const [timeframeTimeseriesData, setTimeframeTimeseriesData] = useState<Timeseries | null>(null);
     const [selectedData, setSelectedData] = useState<NodeTypes>(null);
 
-    const generateTree = useCallback((chart: ChartType, config?: TreeConfig) => {
-        setIsGenerating(true);
-        setTreeConfig(config);
+    const generateTree = useCallback(
+        (config: TreeConfig, chartType?: ChartType) => {
+            setIsGenerating(true);
+            setTreeConfig(config);
 
-        setTimeout(() => {
-            if (config) {
-                if (chart === ChartType.Default) {
-                    const data = generateRandomTree(config);
-
-                    setFlameChartData(data);
-                } else if (chart === ChartType.Custom) {
-                    const data1 = generateRandomTree(config);
-                    const data2 = generateRandomTree(config);
-
-                    setCustomFlameChartData([data1, data2]);
+            setTimeout(() => {
+                if (config) {
+                    if ((chartType || currentChart) === ChartType.Default) {
+                        setState((state) => ({ ...state, flameChartData: generateRandomTree(config) }));
+                    } else if ((chartType || currentChart) === ChartType.Custom) {
+                        setState((state) => ({
+                            ...state,
+                            customFlameChartData: [generateRandomTree(config), generateRandomTree(config)],
+                        }));
+                    }
                 }
-            }
 
-            setIsGenerating(false);
-        });
-    }, []);
+                setIsGenerating(false);
+            });
+        },
+        [currentChart],
+    );
 
-    const generateWaterfall = useCallback((config?: WaterfallConfig) => {
+    const generateWaterfall = useCallback((config: WaterfallConfig) => {
         setIsGenerating(true);
 
         setTimeout(() => {
-            if (config) {
-                const data = generateRandomWaterfallItems(config);
-
-                setWaterfallData(data);
-            }
-
+            setState((state) => ({ ...state, waterfallData: generateRandomWaterfallItems(config) }));
             setIsGenerating(false);
         });
     }, []);
 
-    const generateMarks = useCallback((config?: MarksConfig) => {
-        if (config) {
-            const data = generateRandomMarks(config);
-
-            setMarksData(data);
-        }
+    const generateMarks = useCallback((config: MarksConfig) => {
+        setState((state) => ({ ...state, marksData: generateRandomMarks(config) }));
     }, []);
 
-    const generateTimeseries = useCallback((config?: TimeseriesConfig) => {
-        if (config) {
-            const cpuConfig = {
-                ...config,
-                min: 0,
-                max: 50,
-            };
-
-            const memConfig = {
-                ...config,
-                min: 0,
-                max: 8096,
-            };
-
-            setTimeframeTimeseriesData([
-                {
-                    name: 'CPU Total',
-                    points: generateRandomTimeseries(cpuConfig),
-                    units: '%',
-                    min: 0,
-                    max: 100,
-                    style: {
-                        lineColor: 'rgba(239,36,255,0.2)',
-                        fillColor: 'rgba(239,36,255,0.2)',
-                    },
-                },
-            ]);
-
-            setTimeseriesData([
-                {
-                    name: 'CPU #1',
-                    group: 'CPU',
-                    points: generateRandomTimeseries(cpuConfig),
-                    units: '%',
-                    min: 0,
-                    max: 100,
-                    style: {
-                        lineColor: 'rgba(203,179,20,0.2)',
-                        fillColor: 'rgba(203,179,20,0.2)',
-                    },
-                },
-                {
-                    name: 'CPU #2',
-                    group: 'CPU',
-                    points: generateRandomTimeseries(cpuConfig),
-                    units: '%',
-                    min: 0,
-                    max: 100,
-                    style: {
-                        lineColor: 'rgba(203,179,20,0.2)',
-                        fillColor: 'rgba(203,179,20,0.2)',
-                    },
-                },
-                {
-                    name: 'Allocated',
-                    group: 'Memory',
-                    points: generateRandomTimeseries(memConfig),
-                    units: 'MB',
-                    min: 0,
-                    style: {
-                        type: 'bar',
-                        lineColor: 'rgba(60,122,255,0.2)',
-                        fillColor: 'rgba(60,122,255,0.2)',
-                    },
-                },
-                {
-                    name: 'Free',
-                    group: 'Memory',
-                    points: generateRandomTimeseries(memConfig),
-                    units: 'MB',
-                    min: 0,
-                    style: {
-                        type: 'bar',
-                        lineColor: 'rgba(107,223,243,0.2)',
-                        fillColor: 'rgba(107,223,243,0.2)',
-                    },
-                },
-            ]);
-        }
+    const generateTimeseries = useCallback((config: TimeseriesConfig) => {
+        setState((state) => ({
+            ...state,
+            timeseriesData: generateRandomCpuAndMemTimeseries(config),
+            timeframeTimeseriesData: generateRandomCpuTimeseries(config),
+        }));
     }, []);
 
     const handleChartChange = useCallback(
-        (value: string) => {
-            setCurrentChart(value as ChartType);
+        (value: ChartType) => {
+            setCurrentChart(value);
 
-            generateTree(value as ChartType, treeConfig);
+            generateTree(treeConfig!, value);
         },
         [treeConfig, generateTree],
     );
@@ -197,19 +126,16 @@ export const App = () => {
                     <RadioGroup value={currentChart} options={flameChartVariants} onChange={handleChartChange} />
                 </Collapse>
                 <Collapse title='Flame chart data settings' isCollapsed={true}>
-                    <TreeSettings
-                        onChange={(config) => generateTree(currentChart, config)}
-                        isGenerating={isGenerating}
-                    />
+                    <TreeSettings onChange={generateTree} isGenerating={isGenerating} />
                 </Collapse>
                 <Collapse title='Waterfall data settings' isCollapsed={true}>
-                    <WaterfallSettings onChange={(config) => generateWaterfall(config)} isGenerating={isGenerating} />
+                    <WaterfallSettings onChange={generateWaterfall} isGenerating={isGenerating} />
                 </Collapse>
                 <Collapse title='Marks data settings' isCollapsed={true}>
-                    <MarksSettings onChange={(config) => generateMarks(config)} isGenerating={isGenerating} />
+                    <MarksSettings onChange={generateMarks} isGenerating={isGenerating} />
                 </Collapse>
                 <Collapse title='Timeseries data settings' isCollapsed={true}>
-                    <TimeseriesSettings onChange={(config) => generateTimeseries(config)} isGenerating={isGenerating} />
+                    <TimeseriesSettings onChange={generateTimeseries} isGenerating={isGenerating} />
                 </Collapse>
                 <Collapse title='Style settings' isCollapsed={true}>
                     <StylesSettings onChange={setStylesSettings} />
@@ -223,25 +149,20 @@ export const App = () => {
                     </Collapse>
                 )}
             </div>
-            {currentChart === 'default' &&
-                flameChartData &&
-                waterfallData &&
-                marksData &&
-                timeseriesData &&
-                timeframeTimeseriesData && (
-                    <DefaultFlameChart
-                        flameChartData={flameChartData}
-                        waterfallData={waterfallData}
-                        marksData={marksData}
-                        timeseriesData={timeseriesData}
-                        timeframeTimeseriesData={timeframeTimeseriesData}
-                        stylesSettings={stylesSettings}
-                        patternsSettings={patternsSettings}
-                        onSelect={setSelectedData}
-                    />
-                )}
-            {currentChart === 'custom' && customFlameChartData && (
-                <CustomFlameChart flameChartData={customFlameChartData} stylesSettings={stylesSettings} />
+            {currentChart === 'default' && (
+                <DefaultFlameChart
+                    flameChartData={state.flameChartData}
+                    waterfallData={state.waterfallData}
+                    marksData={state.marksData}
+                    timeseriesData={state.timeseriesData}
+                    timeframeTimeseriesData={state.timeframeTimeseriesData}
+                    stylesSettings={stylesSettings}
+                    patternsSettings={patternsSettings}
+                    onSelect={setSelectedData}
+                />
+            )}
+            {currentChart === 'custom' && (
+                <CustomFlameChart flameChartData={state.customFlameChartData} stylesSettings={stylesSettings} />
             )}
         </div>
     );

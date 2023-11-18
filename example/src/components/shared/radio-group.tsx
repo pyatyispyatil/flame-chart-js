@@ -1,16 +1,16 @@
 import styles from './radio-group.module.css';
 
-export type RadioGroupProps = {
+export type RadioGroupProps<Values extends string> = {
     className?: string;
-    value: string;
+    value: Values;
     options: {
-        value: string;
+        value: Values;
         label: string;
     }[];
-    onChange: (value: string) => void;
+    onChange: (value: Values) => void;
 };
 
-export const RadioGroup = (props: RadioGroupProps) => {
+export const RadioGroup = <Values extends string>(props: RadioGroupProps<Values>) => {
     const { className, options, value, onChange } = props;
 
     return (

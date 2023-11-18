@@ -59,15 +59,11 @@ export class RenderEngine extends BasicRenderEngine {
     }
 
     calcMinMax() {
-        const min = this.plugins
-            .map(({ min }) => min)
-            .filter(isNumber)
-            .reduce((acc, min) => Math.min(acc, min));
+        const mins = this.plugins.map(({ min }) => min).filter(isNumber);
+        const min = mins.length ? mins.reduce((acc, min) => Math.min(acc, min)) : 0;
 
-        const max = this.plugins
-            .map(({ max }) => max)
-            .filter(isNumber)
-            .reduce((acc, max) => Math.max(acc, max));
+        const maxs = this.plugins.map(({ max }) => max).filter(isNumber);
+        const max = maxs.length ? maxs.reduce((acc, max) => Math.max(acc, max)) : 0;
 
         this.setMinMax(min, max);
     }

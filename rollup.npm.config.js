@@ -12,6 +12,7 @@ const pkg = JSON.parse(fs.readFileSync('./package.json').toString());
 const name = 'flameChartJs';
 const inputFileName = './src/index.ts';
 const reactInputFileName = './src/react.ts';
+const external = Object.keys(pkg.dependencies || {});
 
 const basePlugins = [
     resolve({
@@ -27,7 +28,7 @@ const plugins = basePlugins.concat(peerDepsExternal());
 const reactConfig = {
     plugins,
     input: reactInputFileName,
-    external: [fileURLToPath(new URL('src/index.ts', import.meta.url))],
+    external: [fileURLToPath(new URL('src/index.ts', import.meta.url)), ...external],
 };
 
 const indexPaths = (filePath) => {
@@ -83,6 +84,7 @@ export default [
     {
         plugins,
         input: inputFileName,
+        external,
         output: [
             {
                 banner,

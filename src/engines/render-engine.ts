@@ -233,10 +233,14 @@ export class RenderEngine extends BasicRenderEngine {
 
     override setZoom(zoom: number) {
         if (this.getAccuracy() < MAX_ACCURACY || zoom <= this.zoom) {
-            super.setZoom(zoom);
-            this.children.forEach((engine) => engine.setZoom(zoom));
+            const resolvedZoom = Math.max(zoom, this.getInitialZoom());
 
-            return true;
+            if (resolvedZoom !== this.zoom) {
+                super.setZoom(resolvedZoom);
+                this.children.forEach((engine) => engine.setZoom(resolvedZoom));
+
+                return true;
+            }
         }
 
         return false;
@@ -313,25 +317,26 @@ export class RenderEngine extends BasicRenderEngine {
         }
     }
 
-    render(prepare?: () => void) {
+    render(prepare?: (delta: number) => void) {
         if (typeof this.lastPartialAnimationFrame === 'number') {
             cancelAnimationFrame(this.lastPartialAnimationFrame);
         }
 
         this.requestedRenders = [];
         this.lastPartialAnimationFrame = null;
+        const prevFrameTime = performance.now();
 
         if (!this.lastGlobalAnimationFrame) {
             this.lastGlobalAnimationFrame = requestAnimationFrame(() => {
-                prepare?.();
+                this.lastGlobalAnimationFrame = null;
+
+                prepare?.(performance.now() - prevFrameTime);
 
                 this.timeGrid.recalc();
 
                 this.children.forEach((_, index) => this.renderPlugin(index));
 
                 this.shallowRender();
-
-                this.lastGlobalAnimationFrame = null;
             });
         }
     }

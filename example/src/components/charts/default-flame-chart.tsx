@@ -63,6 +63,7 @@ export const DefaultFlameChart = ({
             settings={settings}
             className={styles.flameChart}
             onSelect={onSelect}
+            hotkeys={true}
         />
     );
 };

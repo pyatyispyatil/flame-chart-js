@@ -3,6 +3,31 @@ import { RenderEngine } from './render-engine';
 import { OffscreenRenderEngine } from './offscreen-render-engine';
 import { CursorTypes, HitRegion, Mouse, RegionTypes } from '../types';
 import { SeparatedInteractionsEngine } from './separated-interactions-engine';
+import { mergeObjects } from '../utils';
+
+const defaultInteractionsOptions: InteractionSettings = {
+    hotkeys: {
+        scrollSpeed: 0.5,
+        zoomSpeed: 0.001,
+        fastMultiplayer: 5,
+        active: false,
+    },
+};
+
+export type InteractionHotkeysSettings = {
+    scrollSpeed: number;
+    zoomSpeed: number;
+    fastMultiplayer: number;
+    active: boolean;
+};
+
+export type InteractionSettings = {
+    hotkeys: InteractionHotkeysSettings;
+};
+
+export type InteractionOptions = {
+    hotkeys?: Partial<InteractionHotkeysSettings>;
+};
 
 export class InteractionsEngine extends EventEmitter {
     private renderEngine: RenderEngine;
@@ -17,12 +42,19 @@ export class InteractionsEngine extends EventEmitter {
     private mouseDownHoveredInstance: SeparatedInteractionsEngine | undefined;
     private hoveredInstance: SeparatedInteractionsEngine | undefined;
     private currentCursor: string | null = null;
+    private keys: Record<string, boolean> = {};
+    private hotkeysActive: boolean = false;
+    private settings: InteractionSettings;
 
-    constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine) {
+    constructor(canvas: HTMLCanvasElement, renderEngine: RenderEngine, settings?: InteractionOptions) {
         super();
 
         this.renderEngine = renderEngine;
         this.canvas = canvas;
+        this.settings = {
+            hotkeys: mergeObjects(defaultInteractionsOptions.hotkeys, settings?.hotkeys),
+        };
+        this.hotkeysActive = Boolean(settings?.hotkeys?.active);
 
         this.hitRegions = [];
         this.instances = [];
@@ -35,6 +67,8 @@ export class InteractionsEngine extends EventEmitter {
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
 
         this.initListeners();
 
@@ -66,6 +100,8 @@ export class InteractionsEngine extends EventEmitter {
             this.canvas.addEventListener('mouseup', this.handleMouseUp);
             this.canvas.addEventListener('mouseleave', this.handleMouseUp);
             this.canvas.addEventListener('mousemove', this.handleMouseMove);
+            document.addEventListener('keydown', this.handleKeyDown);
+            document.addEventListener('keyup', this.handleKeyUp);
         }
     }
 
@@ -76,6 +112,62 @@ export class InteractionsEngine extends EventEmitter {
             this.canvas.removeEventListener('mouseup', this.handleMouseUp);
             this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
             this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+            document.removeEventListener('keydown', this.handleKeyDown);
+            document.removeEventListener('keyup', this.handleKeyUp);
+        }
+    }
+
+    hotkeys(status: boolean) {
+        this.hotkeysActive = status;
+    }
+
+    handleKeyDown(e: KeyboardEvent) {
+        if (!this.keys[e.key] && this.hotkeysActive) {
+            this.keys[e.key] = true;
+            this.continueHandleKeys();
+        }
+    }
+
+    handleKeyUp(e: KeyboardEvent) {
+        if (this.hotkeysActive) {
+            this.keys[e.key] = false;
+        }
+    }
+
+    continueHandleKeys() {
+        this.renderEngine.render((delta) => this.handleKeys(delta));
+    }
+
+    key(code) {
+        return Boolean(this.keys[code]);
+    }
+
+    getSpeed() {
+        const { fastMultiplayer } = this.settings.hotkeys;
+        const isFast = this.key('Shift');
+
+        return isFast ? fastMultiplayer : 1;
+    }
+
+    handleKeys(timeDelta) {
+        const speed = this.getSpeed();
+
+        if (this.key('ArrowRight') || this.key('ArrowLeft')) {
+            const isRight = this.key('ArrowRight');
+            const { scrollSpeed } = this.settings.hotkeys;
+            const positionDelta = ((isRight ? 1 : -1) * scrollSpeed * speed * timeDelta) / this.renderEngine.zoom;
+
+            this.renderEngine.tryToChangePosition(positionDelta);
+            this.continueHandleKeys();
+        }
+
+        if (this.key('=') || this.key('ArrowUp') || this.key('-') || this.key('ArrowDown')) {
+            const isPlus = this.key('=') || this.key('ArrowUp');
+            const { zoomSpeed } = this.settings.hotkeys;
+            const zoomDelta = (isPlus ? -1 : 1) * zoomSpeed * speed * timeDelta * this.renderEngine.zoom;
+
+            this.changeZoom(zoomDelta, this.renderEngine.width / 2);
+            this.continueHandleKeys();
         }
     }
 
@@ -84,35 +176,38 @@ export class InteractionsEngine extends EventEmitter {
 
         e.preventDefault();
 
-        const realView = this.renderEngine.getRealView();
-        const initialZoom = this.renderEngine.getInitialZoom();
         const startPosition = this.renderEngine.positionX;
         const startZoom = this.renderEngine.zoom;
         const positionScrollDelta = deltaX / this.renderEngine.zoom;
-        let zoomDelta = (deltaY / 1000) * this.renderEngine.zoom;
 
         this.renderEngine.tryToChangePosition(positionScrollDelta);
 
-        zoomDelta =
-            this.renderEngine.zoom - zoomDelta >= initialZoom ? zoomDelta : this.renderEngine.zoom - initialZoom;
+        const speed = this.getSpeed();
 
-        if (zoomDelta !== 0) {
-            const zoomed = this.renderEngine.setZoom(this.renderEngine.zoom - zoomDelta);
-
-            if (zoomed) {
-                const proportion = this.mouse.x / this.renderEngine.width;
-                const timeDelta = realView - this.renderEngine.width / this.renderEngine.zoom;
-                const positionDelta = timeDelta * proportion;
-
-                this.renderEngine.tryToChangePosition(positionDelta);
-            }
-        }
+        this.changeZoom((deltaY / 1000) * speed * this.renderEngine.zoom, this.mouse.x);
 
         this.checkRegionHover();
 
         if (startPosition !== this.renderEngine.positionX || startZoom !== this.renderEngine.zoom) {
             this.renderEngine.render();
         }
+    }
+
+    changeZoom(zoomDelta: number, positionX: number = this.renderEngine.width / 2) {
+        const realView = this.renderEngine.getRealView();
+        const zoomed = this.renderEngine.setZoom(this.renderEngine.zoom - zoomDelta);
+
+        if (zoomed) {
+            this.fixPositionAfterZoom(realView, positionX);
+        }
+    }
+
+    fixPositionAfterZoom(realView: number, fromPoint: number) {
+        const proportion = fromPoint / this.renderEngine.width;
+        const timeDelta = realView - this.renderEngine.width / this.renderEngine.zoom;
+        const positionDelta = timeDelta * proportion;
+
+        this.renderEngine.tryToChangePosition(positionDelta);
     }
 
     handleMouseDown() {

@@ -1,5 +1,5 @@
 import { RenderEngine } from './engines/render-engine';
-import { InteractionsEngine } from './engines/interactions-engine';
+import { InteractionOptions, InteractionsEngine } from './engines/interactions-engine';
 import { EventEmitter } from 'events';
 import { TimeGrid, TimeGridStyles } from './engines/time-grid';
 import { RenderOptions, RenderPatterns, RenderStyles } from './engines/basic-render-engine';
@@ -13,7 +13,7 @@ export type FlameChartContainerStyles<Styles = {}> = {
 } & Styles;
 
 export interface FlameChartContainerSettings<Styles = {}> {
-    options?: Partial<RenderOptions>;
+    options?: Partial<RenderOptions & InteractionOptions>;
     styles?: FlameChartContainerStyles<Styles>;
     patterns?: FlameChartPatterns;
 }
@@ -45,7 +45,7 @@ export class FlameChartContainer<Styles = {}> extends EventEmitter {
             plugins,
             timeGrid: this.timeGrid,
         });
-        this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine);
+        this.interactionsEngine = new InteractionsEngine(canvas, this.renderEngine, settings?.options);
         this.plugins = plugins;
 
         const children = Array(this.plugins.length)
@@ -108,6 +108,10 @@ export class FlameChartContainer<Styles = {}> extends EventEmitter {
         this.renderEngine.setPositionX(start);
         this.renderEngine.setZoom(zoom);
         this.renderEngine.render();
+    }
+
+    hotkeys(status: boolean) {
+        this.interactionsEngine.hotkeys(status);
     }
 }
 

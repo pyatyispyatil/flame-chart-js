@@ -1,11 +1,11 @@
 import { Dot, TriangleDirections } from './types';
 
-export const mergeObjects = <S extends Record<PropertyKey, any>>(defaultStyles: S, styles: Partial<S> = {}): S =>
-    Object.keys(defaultStyles).reduce((acc, key: keyof S) => {
-        if (styles[key]) {
-            acc[key] = styles[key]!;
+export const mergeObjects = <S extends Record<PropertyKey, any>>(defaults: S, current: Partial<S> = {}): S =>
+    Object.keys(defaults).reduce((acc, key: keyof S) => {
+        if (current[key]) {
+            acc[key] = current[key]!;
         } else {
-            acc[key] = defaultStyles[key];
+            acc[key] = defaults[key];
         }
 
         return acc;

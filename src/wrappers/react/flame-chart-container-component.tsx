@@ -9,6 +9,7 @@ export type FlameChartContainerProps = {
         start: number;
         end: number;
     };
+    hotkeys?: boolean;
     plugins: UIPlugin[];
     instance?: (instance: FlameChartContainer) => void;
     className?: string;
@@ -74,6 +75,12 @@ export const FlameChartContainerComponent = (props: FlameChartContainerProps) =>
             flameChart.current?.setZoom(props.zoom.start, props.zoom.end);
         }
     }, [props.zoom]);
+
+    useEffect(() => {
+        if (typeof props.hotkeys === 'boolean') {
+            flameChart.current?.hotkeys(props.hotkeys);
+        }
+    }, [props.hotkeys]);
 
     return (
         <div className={props.className} ref={setBoxRef}>

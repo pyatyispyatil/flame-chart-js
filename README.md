@@ -66,6 +66,12 @@ const flameChart = new FlameChart({
         'sub-task': '#000000',
     },
     settings: {
+        hotkeys: {
+          active: true,  // enable navigation using arrow keys
+          scrollSpeed: 0.5, // scroll speed (ArrowLeft, ArrowRight)
+          zoomSpeed: 0.001, // zoom speed (ArrowUp, ArrowDown, -, +)
+          fastMultiplayer: 5, // speed multiplier when zooming and scrolling (activated by Shift key)
+        },
         options: {
             tooltip: () => {
                 /*...*/
@@ -84,29 +90,34 @@ flameChart.on('select', (node, type) => {
 #### Public methods
 
 ```ts
-// set zoom, which start argument is a left bound and end argument is a right bound
-type setZoom = (start: number, end: number) => void;
+class FlameChart {
+    // set zoom, which start argument is a left bound and end argument is a right bound
+    setZoom = (start: number, end: number) => boolean
 
-// set only position of the flame-chart
-type setFlameChartPosition = ({ x: number, y: number }) => void;
+    // set only position of the flame-chart
+    setFlameChartPosition = ({ x: number, y: number }) => void 0
 
-// render all when animationFrame fired
-type render = () => void;
+    // render all when animationFrame fired
+    render = () => void 0
 
-// set new data for the flame-chart
-type setNodes = (nodes: FlameChartNodes) => void;
+    // set new data for the flame-chart
+    setNodes = (nodes: FlameChartNodes) => void 0
 
-// set marks for marks plugin
-type setMarks = (data: Marks) => void;
+    // set marks for marks plugin
+    setMarks = (data: Marks) => void 0
 
-// set chart data for timeseries plugin
-type setTimeseries = (data: Timeseries) => void;
+    // set chart data for timeseries plugin
+    setTimeseries = (data: Timeseries) => void 0
 
-// resize canvas
-type resize = (width: number, height: number) => void;
+    // resize canvas
+    resize = (width: number, height: number) => void 0
 
-// apply new settings, which includes styles or something else
-type setSettings = (settings: Object) => void;
+    // apply new settings, which includes styles or something else
+    setSettings = (settings: Object) => void 0
+
+    // enable/disable navigation using arrow keys
+    hotkeys = (status: boolean) => void 0
+}
 ```
 
 #### Usage with plugins
@@ -127,15 +138,6 @@ const flameChart = new FlameChartContainer({
         new FlameChartPlugin({ data: flameChartData1, colors: flameChartColors, name: 'flameChart1' }),
         new FlameChartPlugin({ data: flameChartData2, colors: flameChartColors, name: 'flameChart2' }),
     ],
-    settings: {
-        options: {
-            tooltip: () => {
-                /*...*/
-            }, // see section "Custom Tooltip" below
-            timeUnits: 'ms',
-        },
-        styles: customStyles, // see section "Styles" below
-    },
 });
 ```
 

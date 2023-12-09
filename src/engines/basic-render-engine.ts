@@ -223,7 +223,11 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     renderBlock(x: number, y: number, w: number, h?: number) {
-        this.ctx.fillRect(x, y, w, h ?? this.blockHeight);
+        const truncatedX = Math.min(this.width, Math.max(0, x));
+        const delta = truncatedX - x;
+        const width = Math.min(this.width - truncatedX, Math.max(0, w - delta));
+
+        this.ctx.fillRect(truncatedX, y, width, h ?? this.blockHeight);
     }
 
     renderStroke(color: string, x: number, y: number, w: number, h: number) {
@@ -328,18 +332,16 @@ export class BasicRenderEngine extends EventEmitter {
     renderRects(rects: RectRenderQueue) {
         Object.entries(rects).forEach(([patternName, colors]) => {
             let matrix = new DOMMatrixReadOnly();
-            let scale = 1;
             let pattern;
 
             if (patternName !== 'none' && this.patterns[patternName]) {
-                scale = this.patterns[patternName].scale ?? scale;
-                pattern = this.patterns[patternName].pattern;
+                pattern = this.patterns[patternName];
 
-                if (scale !== 1) {
-                    matrix = matrix.scale(1 / scale, 1 / scale);
+                if (pattern.scale !== 1) {
+                    matrix = matrix.scale(1 / pattern.scale, 1 / pattern.scale);
                 }
 
-                this.ctx.fillStyle = pattern;
+                this.ctx.fillStyle = pattern.pattern;
                 this.ctxCachedSettings['fillStyle'] = patternName;
             }
 
@@ -350,7 +352,10 @@ export class BasicRenderEngine extends EventEmitter {
 
                 items.forEach((rect) => {
                     if (pattern) {
-                        pattern.setTransform(matrix.translate(rect.x * scale, rect.y * scale));
+                        const fullDeltaX = rect.x * pattern.scale;
+                        const deltaX = fullDeltaX - Math.floor(fullDeltaX / pattern.width) * pattern.width;
+
+                        pattern.pattern.setTransform(matrix.translate(deltaX, rect.y * pattern.scale));
                     }
 
                     this.renderBlock(rect.x, rect.y, rect.w, rect.h);
@@ -508,7 +513,11 @@ export class BasicRenderEngine extends EventEmitter {
     }
 
     createBlockPattern({ name, creator }: { name: string; creator: PatternCreator }) {
-        this.patterns[name] = creator(this);
+        this.patterns[name] = {
+            scale: 1,
+            width: 10,
+            ...creator(this),
+        };
     }
 
     renderTooltipFromData(fields: TooltipField[], mouse: Mouse) {

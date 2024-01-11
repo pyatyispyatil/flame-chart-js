@@ -79,11 +79,13 @@ export class TimeGrid {
     }
 
     forEachTime(cb: (pixelPosition: number, timePosition: number) => void) {
-        for (let i = this.start; i <= this.end; i++) {
-            const timePosition = i * this.delta + this.renderEngine.min;
-            const pixelPosition = this.renderEngine.timeToPosition(Number(timePosition.toFixed(this.accuracy)));
+        if (Number.isFinite(this.start) && Number.isFinite(this.end)) {
+            for (let i = this.start; i <= this.end; i++) {
+                const timePosition = i * this.delta + this.renderEngine.min;
+                const pixelPosition = this.renderEngine.timeToPosition(Number(timePosition.toFixed(this.accuracy)));
 
-            cb(pixelPosition, timePosition);
+                cb(pixelPosition, timePosition);
+            }
         }
     }
 

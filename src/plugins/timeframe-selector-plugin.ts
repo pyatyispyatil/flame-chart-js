@@ -488,13 +488,12 @@ export class TimeframeSelectorPlugin extends UIPlugin<TimeframeSelectorPluginSty
     }
 
     offscreenRender() {
-        const zoom = this.offscreenRenderEngine.getInitialZoom();
-
-        this.offscreenRenderEngine.setZoom(zoom);
-        this.offscreenRenderEngine.setPositionX(this.offscreenRenderEngine.min);
+        this.offscreenRenderEngine.recalcMinMax();
+        this.offscreenRenderEngine.resetParentView();
         this.offscreenRenderEngine.clear();
 
         this.timeGrid.recalc();
+        this.timeGrid.renderEngine.resetView();
         this.timeGrid.renderLines(0, this.offscreenRenderEngine.height);
         this.timeGrid.renderTimes();
 
